@@ -1,300 +1,1355 @@
-﻿# Tài liệu giải thích Database & Nghiệp vụ
-## Hệ thống Truy xuất Nguồn gốc Nông sản theo Chuỗi Cung ứng (Đề tài 02)
-
-Tài liệu này giải thích thiết kế cơ sở dữ liệu và các quy tắc nghiệp vụ, đồng bộ với **Business_Process.md** và **Database.md**.
-
-- **Script schema:** [`AgriDB.sql`](AgriDB.sql)
-- **Nguồn nghiệp vụ:** [`Business_Process.md`](Business_Process.md)
-- **Tài liệu schema:** [`Database.md`](Database.md)
-- **DBMS:** SQL Server 2022
-- **Database name:** `AgriTraceabilityDB`
-
----
-
-## 1. Tổng quan
-
-Thiết kế hiện tại tập trung vào một mô hình cơ bản và thực tế:
-- `Organizations` chứa thông tin các bên tham gia chuỗi cung ứng.
-- `Users` lưu vai trò người dùng theo chuỗi và tổ chức.
-- `Products` liên kết với tổ chức.
-- `Batches` là thực thể trung tâm, đại diện lô hàng.
-- `BatchImages` lưu ảnh minh hoạ cho từng lô.
-- `SupplyChainEvents` ghi nhận lịch sử hành trình lô hàng.
-- `BatchRelations` mô tả quan hệ tách/gộp giữa các lô.
-
-Mục tiêu là giữ dữ liệu đơn giản, dễ hiểu và tránh ghi trạng thái nghiệp vụ trực tiếp vào lịch sử sự kiện.
-
----
-
-## 2. Thiết kế chính
-
-- Dùng `INT IDENTITY` cho các khoá chính.
-- Dùng trường chuỗi (`NVARCHAR`) cho `Organizations.Type` và `Users.Role` để giảm độ phức tạp.
-- Giữ `Batches` làm thực thể lô hiện tại còn `SupplyChainEvents` lưu lịch sử bất biến.
-- `BatchImages` lưu ảnh riêng, không nhúng vào Batches.
-- Dùng `BatchRelations` để biểu diễn quan hệ `SPLIT`/`MERGE` mà không đặt nhiều trạng thái vào bản ghi batch.
-
----
-
-## 3. Các bảng chính
-
-### 3.1. `Organizations`
-
-- Lưu thông tin tổ chức tham gia chuỗi cung ứng.
-- `Type` phân loại đơn giản: `FARM`, `PROCESSOR`, `DISTRIBUTOR`, `RETAILER`.
-- `Status` theo dõi trạng thái hoạt động.
-
-```sql
-CREATE TABLE Organizations (
-    Id INT IDENTITY PRIMARY KEY,
-    Name NVARCHAR(200) NOT NULL,
-    Type NVARCHAR(50) NOT NULL, -- FARM / PROCESSOR / DISTRIBUTOR / RETAILER
-    Status NVARCHAR(20) NOT NULL DEFAULT 'ACTIVE', -- ACTIVE / INACTIVE / SUSPENDED
-    CreatedAt DATETIME DEFAULT GETDATE()
-);
-```
-
-### 3.2. `Users`
-
-- Lưu tài khoản người dùng.
-- `Role` định nghĩa quyền: `ADMIN`, `ORGADMIN`, `FARMER`, `OPERATOR`, `INSPECTOR`.
-
-```sql
-CREATE TABLE Users (
-    Id INT IDENTITY PRIMARY KEY,
-    FullName NVARCHAR(200),
-    Email NVARCHAR(200) UNIQUE NOT NULL,
-    PasswordHash NVARCHAR(500),
-    Role NVARCHAR(50) NOT NULL, -- ADMIN / ORGADMIN / FARMER / OPERATOR / INSPECTOR
-    OrganizationId INT NULL,
-    IsActive BIT DEFAULT 1,
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Users_Organizations FOREIGN KEY (OrganizationId) REFERENCES Organizations(Id)
-);
-```
-
-Notes:
-- Người dùng có thể liên kết với một tổ chức hoặc không nếu là tài khoản hệ thống.
-
-### 3.3. `Products`
-
-- Lưu sản phẩm do tổ chức quản lý.
-- `Category` và `Unit` giữ nguyên dạng chuỗi để giảm phức tạp.
-
-```sql
-CREATE TABLE Products (
-    Id INT IDENTITY PRIMARY KEY,
-    Name NVARCHAR(200),
-    Category NVARCHAR(100),
-    Unit NVARCHAR(50),
-    OrganizationId INT NOT NULL,
-    CONSTRAINT FK_Products_Organizations FOREIGN KEY (OrganizationId) REFERENCES Organizations(Id)
-);
-```
-
-### 3.4. `Batches`
-
-- Đại diện một lô hàng cụ thể.
-- Lưu số lượng, mã QR và trạng thái hiện thời.
-- `ParentBatchId`/`RootBatchId` hỗ trợ truy vết phân nhánh.
-
-```sql
-CREATE TABLE Batches (
-    Id INT IDENTITY PRIMARY KEY,
-    ProductId INT NOT NULL,
-    BatchCode NVARCHAR(100) UNIQUE NOT NULL,
-    Quantity DECIMAL(18,2) NOT NULL,
-    CurrentOrganizationId INT NULL,
-    ParentBatchId INT NULL,
-    RootBatchId INT NULL,
-    QRCode NVARCHAR(500),
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Batches_Products FOREIGN KEY (ProductId) REFERENCES Products(Id),
-    CONSTRAINT FK_Batches_Organizations FOREIGN KEY (CurrentOrganizationId) REFERENCES Organizations(Id),
-    CONSTRAINT FK_Batches_Parent FOREIGN KEY (ParentBatchId) REFERENCES Batches(Id)
-);
-```
-
-### 3.5. `BatchImages`
-
-- Lưu ảnh minh hoạ cho lô hàng.
-- Mỗi lô có thể có nhiều ảnh.
-- `EventId` cho phép gắn ảnh với một sự kiện cụ thể.
-
-```sql
-CREATE TABLE BatchImages (
-    Id INT IDENTITY PRIMARY KEY,
-    BatchId INT NOT NULL,
-    ImageUrl NVARCHAR(500) NOT NULL,
-    Caption NVARCHAR(200),
-    DisplayOrder INT DEFAULT 0,
-    EventId INT NULL,
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_BatchImages_Batches FOREIGN KEY (BatchId) REFERENCES Batches(Id),
-    CONSTRAINT FK_BatchImages_Events FOREIGN KEY (EventId) REFERENCES SupplyChainEvents(Id)
-);
-```
-
-**API tương ứng:** `POST /batches/{batchId}/images` (upload ảnh), ảnh được trả về trong `GET /batches/{batchId}` (mảng `images`).
-
----
-
-### 3.6. `SupplyChainEvents`
-
-- Lưu lịch sử bất biến của từng lô — **append-only**, không sửa/xoá.
-- `EventType` là chuỗi mô tả hành động: `HARVEST`, `PROCESS`, `PACKAGE`, `TRANSPORT`, `RECEIVE`, `INSPECT`, `SPLIT`, `MERGE`.
-- `PreviousHash` và `CurrentHash` tạo thành hash chain SHA-256 chống giả mạo.
-- `EventData` là JSON string linh hoạt chứa dữ liệu chi tiết theo từng loại sự kiện.
-
-```sql
-CREATE TABLE SupplyChainEvents (
-    Id INT IDENTITY PRIMARY KEY,
-    BatchId INT NOT NULL,
-    EventType NVARCHAR(50) NOT NULL, -- HARVEST / PROCESS / PACKAGE / TRANSPORT / INSPECT / RECEIVE / SPLIT / MERGE
-    OrganizationId INT NOT NULL,
-    UserId INT NOT NULL,
-    EventData NVARCHAR(MAX),
-    Location NVARCHAR(200),
-    PreviousHash NVARCHAR(500),
-    CurrentHash NVARCHAR(500),
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Events_Batches FOREIGN KEY (BatchId) REFERENCES Batches(Id),
-    CONSTRAINT FK_Events_Organizations FOREIGN KEY (OrganizationId) REFERENCES Organizations(Id),
-    CONSTRAINT FK_Events_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
-);
-```
-
-**API tương ứng:** `GET /batches/{id}/events` (danh sách), `POST /batches/{id}/events` (ghi mới), `GET /batches/{id}/events/verify-integrity` (xác minh hash chain).
-
----
-
-### 3.7. `Inspections`
-
-- Lưu kết quả kiểm định chất lượng.
-- `Result` nhận giá trị: `PASS`, `FAIL`, `PENDING`.
-
-```sql
-CREATE TABLE Inspections (
-    Id INT IDENTITY PRIMARY KEY,
-    BatchId INT NOT NULL,
-    InspectorId INT NOT NULL,
-    Result NVARCHAR(100),
-    Notes NVARCHAR(MAX),
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Inspections_Batches FOREIGN KEY (BatchId) REFERENCES Batches(Id),
-    CONSTRAINT FK_Inspections_Users FOREIGN KEY (InspectorId) REFERENCES Users(Id)
-);
-```
-
-**API tương ứng:** `GET /batches/{id}/inspections`, `POST /batches/{id}/inspections`, `GET /inspections/{id}`.
-
----
-
-### 3.8. `Certificates`
-
-- Lưu chứng nhận gắn với lô hàng (VietGAP, GlobalGAP, Organic, ISO...).
-- `InspectionId` là tuỳ chọn — hỗ trợ chứng nhận từ bên ngoài không qua kiểm định nội bộ.
-
-```sql
-CREATE TABLE Certificates (
-    Id INT IDENTITY PRIMARY KEY,
-    BatchId INT NOT NULL,
-    InspectionId INT NULL,
-    CertificateType NVARCHAR(100),
-    FileUrl NVARCHAR(500),
-    IssuedAt DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Certificates_Batches FOREIGN KEY (BatchId) REFERENCES Batches(Id),
-    CONSTRAINT FK_Certificates_Inspections FOREIGN KEY (InspectionId) REFERENCES Inspections(Id)
-);
-```
-
-**API tương ứng:** `GET /batches/{id}/certificates`, `POST /batches/{id}/certificates`.
-
----
-
-### 3.9. `Recalls`
-
-- Lưu sự kiện thu hồi sản phẩm.
-- `Severity` phân loại mức độ: `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`.
-
-```sql
-CREATE TABLE Recalls (
-    Id INT IDENTITY PRIMARY KEY,
-    BatchId INT NOT NULL,
-    Reason NVARCHAR(500),
-    Severity NVARCHAR(50),
-    CreatedBy INT NOT NULL,
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Recalls_Batches FOREIGN KEY (BatchId) REFERENCES Batches(Id),
-    CONSTRAINT FK_Recalls_Users FOREIGN KEY (CreatedBy) REFERENCES Users(Id)
-);
-```
-
-**API tương ứng:** `GET /recalls`, `POST /recalls`, `PATCH /recalls/{id}/resolve`.
-
----
-
-### 3.10. `Notifications`
-
-- Lưu thông báo gửi tới người dùng.
-- `IsRead` đánh dấu trạng thái đã đọc.
-
-```sql
-CREATE TABLE Notifications (
-    Id INT IDENTITY PRIMARY KEY,
-    UserId INT NOT NULL,
-    Title NVARCHAR(200),
-    Message NVARCHAR(MAX),
-    IsRead BIT DEFAULT 0,
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Notifications_Users FOREIGN KEY (UserId) REFERENCES Users(Id)
-);
-```
-
-**API tương ứng:** `GET /notifications`, `PATCH /notifications/{id}/read`, `PATCH /notifications/read-all`, `GET /notifications/unread-count`.
-
----
-
-### 3.11. `BatchRelations`
-
-- Mô tả quan hệ `SPLIT` và `MERGE` giữa các lô.
-- `SourceBatchId` là lô nguồn, `TargetBatchId` là lô đích.
-- `Quantity` ghi lại số lượng tham gia quan hệ.
-
-```sql
-CREATE TABLE BatchRelations (
-    Id INT IDENTITY PRIMARY KEY,
-    SourceBatchId INT NOT NULL,
-    TargetBatchId INT NOT NULL,
-    RelationType NVARCHAR(50), -- SPLIT / MERGE
-    Quantity DECIMAL(18,2),
-    CreatedAt DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_Rel_Source FOREIGN KEY (SourceBatchId) REFERENCES Batches(Id),
-    CONSTRAINT FK_Rel_Target FOREIGN KEY (TargetBatchId) REFERENCES Batches(Id)
-);
-```
-
-**API tương ứng:** `POST /batches/{id}/split` (tạo SPLIT relation), `POST /batches/merge` (tạo MERGE relation), `GET /public/trace/{batchId}/lineage` (truy vết phả hệ).
-
----
-
-## 4. Quy tắc nghiệp vụ chính
-
-- `Batches` lưu thông tin hiện tại của lô; `SupplyChainEvents` lưu lịch sử bất biến.
-- `BatchRelations` ghi lại tách/gộp mà không đặt nhiều trạng thái lên `Batches`.
-- `BatchImages` lưu ảnh minh hoạ, có thể gắn với sự kiện cụ thể qua `EventId`.
-- `Users.Role` và `Organizations.Type` quyết định quyền thực thi hoạt động.
-- `SupplyChainEvents` là append-only, không sửa/xoá dữ liệu lịch sử.
-- `Certificates` có thể gắn với `Inspections` hoặc là chứng nhận bên ngoài.
-- `Recalls` liên kết với `Batch` để phát thông báo và truy vết.
-- `Inspections` chỉ có thể được tạo bởi user có role `INSPECTOR`.
-- `Recalls` có `Severity` phân loại mức độ (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`).
-
----
-
-## 5. Lưu ý so với thiết kế cũ
-
-- Loại bỏ các bảng lookup nhiều lớp như `OrganizationTypes`, `UnitTypes`, `Units`, `BatchSplits`, `BatchMerges`, `BatchMergeSources`.
-- Thêm `BatchImages` để hỗ trợ upload ảnh lô hàng — tách riêng khỏi `Batches` giúp dễ mở rộng.
-- Giữ model đơn giản hơn, phù hợp với phiên bản `New_DataBase.md`.
-- Chỉ dùng các bảng cần thiết để hỗ trợ truy vết, kiểm định, chứng nhận, thu hồi và minh hoạ ảnh.
+Database_Va_NghiepVu_v4.md
+
+1. Overview
+2. Business Actors & Roles
+3. Organization Model
+4. Authentication & Authorization
+5. Product Management
+6. Batch Management
+7. Supply Chain Event Management
+8. Hash Chain Mechanism
+9. Batch Split
+10. Batch Merge
+11. Quality Inspection
+12. Certificate Management
+13. Recall Management
+14. Public Traceability
+15. Notification
+16. Database Schema Overview
+17. Business Rules
+18. API Mapping Recommendation
+19. Clean Architecture Mapping
+
+Database & Business Specification
+Agricultural Supply Chain Traceability System
+Version 4.0
+
+Database: AgriTraceabilityDB
+DBMS: SQL Server 2022
+Architecture: Clean Architecture + DDD
+Backend: ASP.NET Core Web API (.NET 8)
+Frontend: React TypeScript
+
+1. Overview
+1.1 System Description
+
+Agricultural Supply Chain Traceability System là hệ thống quản lý truy xuất nguồn gốc nông sản xuyên suốt chuỗi cung ứng.
+
+Hệ thống quản lý vòng đời của một Batch (lô hàng):
+
+Farm
+
+↓
+
+Processing
+
+↓
+
+Packaging
+
+↓
+
+Transportation
+
+↓
+
+Distribution
+
+↓
+
+Retail
+
+↓
+
+Consumer
+
+Mỗi Batch được tạo ra sẽ có:
+
+Unique Batch Code
+QR Code
+Supply Chain Timeline
+
+Mọi hoạt động tác động lên Batch sẽ tạo ra một:
+
+SupplyChainEvent
+
+Ví dụ:
+
+Farmer harvest tomato
+
+        ↓
+
+Event:
+HARVEST
+
+
+        ↓
+
+Processor receives
+
+
+        ↓
+
+Event:
+RECEIVE
+
+
+        ↓
+
+Distributor transport
+
+
+        ↓
+
+Event:
+TRANSPORT
+
+1.2 Main Objectives
+
+Hệ thống có các mục tiêu chính:
+
+1. Traceability
+
+Cho phép người tiêu dùng:
+
+Scan QR Code
+
+↓
+
+View complete product history
+
+Thông tin bao gồm:
+
+Farm origin
+Harvest date
+Processing history
+Transportation history
+Inspection result
+Certificate
+Recall status
+2. Data Integrity
+
+Lịch sử Supply Chain Event:
+
+Không được sửa
+Không được xoá
+
+Áp dụng:
+
+Append-only Event History
+
+Mỗi event được bảo vệ bằng:
+
+SHA-256 Hash Chain
+
+3. Supply Chain Management
+
+Hỗ trợ các bên:
+
+Farmer
+Processor
+Distributor
+Retailer
+Inspector
+
+ghi nhận hoạt động trong chuỗi.
+
+4. Product Safety
+
+Hỗ trợ:
+
+Quality Inspection
+Certificate
+Recall
+Notification
+2. Business Actors
+2.1 System Admin
+Description
+
+Người quản trị toàn hệ thống.
+
+Responsibilities
+Manage organizations
+Manage users
+Manage roles
+Manage lookup data
+Create recall
+Monitor system
+
+Example:
+
+Admin creates a new farm organization
+
+↓
+
+Assign Organization Admin
+
+2.2 Organization Admin
+Description
+
+Quản trị viên của một tổ chức trong chuỗi cung ứng.
+
+Ví dụ:
+
+Farm ABC
+
+Processor XYZ
+
+Distributor DEF
+
+Responsibilities
+Manage employees
+Manage products
+Manage batches
+View reports
+
+Không trực tiếp thực hiện event nghiệp vụ.
+
+2.3 Staff
+Description
+
+Nhân viên thực hiện nghiệp vụ tại tổ chức.
+
+Đây là role chung.
+
+Không tạo Role:
+
+Farmer
+
+Distributor
+
+Processor
+
+vì đây là:
+
+Organization Type
+
+Ví dụ:
+
+User:
+
+Role:
+
+Staff
+
+
+Organization:
+
+ABC Farm
+
+
+Organization Type:
+
+FARM
+
+
+=> Người này là Farmer.
+
+2.4 Inspector
+Description
+
+Đơn vị kiểm định chất lượng.
+
+Responsibilities:
+
+Perform inspection
+Upload certificates
+Create inspection report
+2.5 Consumer
+Description
+
+Người tiêu dùng cuối.
+
+Đặc điểm:
+
+Không cần đăng nhập
+Read only
+
+Flow:
+
+Scan QR
+
+↓
+
+Public Traceability
+
+↓
+
+View Timeline
+
+3. Organization Model
+3.1 Organization Types
+
+Organization Type đại diện cho vị trí trong chuỗi cung ứng.
+
+Table:
+
+OrganizationTypes
+
+Values:
+
+Code	Description
+FARM	Nông trại
+PROCESSOR	Cơ sở sơ chế
+DISTRIBUTOR	Nhà phân phối
+RETAILER	Cửa hàng bán lẻ
+INSPECTION	Đơn vị kiểm định
+SYSTEM	Hệ thống
+3.2 Organization
+
+Một Organization đại diện cho một đơn vị tham gia chuỗi.
+
+Example:
+
+Organization
+
+Farm ABC
+
+
+Type:
+
+FARM
+
+
+Database:
+
+Organizations
+
+Id
+
+OrganizationTypeId
+
+Name
+
+Address
+
+CreatedAt
+
+3.3 User Relationship
+
+Quan hệ:
+
+Organization
+
+
+      |
+
+      |
+
+     Users
+
+
+
+Một user:
+
+Thuộc một organization
+Có một role
+
+Ví dụ:
+
+Nguyen Van A
+
+
+Role:
+
+Staff
+
+
+Organization:
+
+Farm ABC
+
+
+4. Authentication & Authorization
+4.1 Authentication
+
+Sử dụng:
+
+JWT Authentication
+
+
+Flow:
+
+User Login
+
+↓
+
+Validate Email Password
+
+↓
+
+Generate Access Token
+
+↓
+
+Generate Refresh Token
+
+↓
+
+Return User Information
+
+4.2 Authorization
+
+Có 2 lớp permission:
+
+Layer 1: Role Permission
+
+Ví dụ:
+
+SystemAdmin
+
+OrganizationAdmin
+
+Staff
+
+Inspector
+
+Layer 2: Organization Event Permission
+
+Kiểm tra:
+
+OrganizationType
+
++
+
+EventType
+
+
+Ví dụ:
+
+Farmer:
+
+Allowed:
+
+HARVEST
+
+Distributor:
+
+Allowed:
+
+RECEIVE
+
+TRANSPORT
+
+DISTRIBUTION
+
+SPLIT
+
+MERGE
+
+5. Database Core Design
+
+Database gồm các nhóm:
+
+Identity
+Users
+
+Roles
+
+RefreshTokens
+
+Organization
+Organizations
+
+OrganizationTypes
+
+OrganizationTypeEvents
+
+Product
+Categories
+
+Products
+
+UnitTypes
+
+Units
+
+Traceability Core
+Batches
+
+SupplyChainEvents
+
+Advanced
+BatchSplits
+
+BatchSplitDetails
+
+BatchMerges
+
+BatchMergeSources
+
+Quality
+QualityInspections
+
+Certificates
+
+System
+Recalls
+
+Notifications
+
+6. Product Management
+6.1 Purpose
+
+Product Management quản lý danh mục sản phẩm nông nghiệp được tham gia vào chuỗi cung ứng.
+
+Ví dụ:
+
+Category:
+
+Vegetable
+
+
+Product:
+
+Tomato
+
+
+Unit:
+
+Kg
+
+6.2 Category
+
+Category đại diện cho nhóm sản phẩm.
+
+Ví dụ:
+
+Category	Example
+Vegetable	Tomato
+Fruit	Mango
+Rice	Jasmine Rice
+
+Database:
+
+Categories
+
+Id
+
+Name
+
+Description
+
+
+Business Rule:
+
+Một Category có nhiều Product.
+Product chỉ thuộc một Category.
+
+Relationship:
+
+Category
+
+   |
+
+   | 1 - N
+
+   |
+
+Product
+
+6.3 Product
+
+Product đại diện cho loại nông sản.
+
+Ví dụ:
+
+Product:
+
+Fresh Tomato
+
+
+Category:
+
+Vegetable
+
+
+Unit:
+
+Kg
+
+
+Database:
+
+Products
+
+
+Id
+
+OrganizationId
+
+CategoryId
+
+UnitId
+
+Name
+
+CreatedAt
+
+
+Business Rule:
+
+Product thuộc một Organization.
+
+Ví dụ:
+
+Farm ABC
+
+ |
+
+Tomato Product
+
+Product không thay đổi trong suốt vòng đời Batch.
+6.4 Unit Management
+
+Hệ thống hỗ trợ đơn vị đo:
+
+Ví dụ:
+
+Kg
+
+Ton
+
+Box
+
+Package
+
+
+Database:
+
+UnitTypes
+
+Units
+
+
+Ví dụ:
+
+UnitType:
+
+Weight
+
+
+Units:
+
+Kilogram
+
+kg
+
+
+Ton
+
+t
+
+
+Business Rule:
+
+Không xoá Unit đã được sử dụng.
+Chỉ deactivate.
+
+Ví dụ:
+
+Unit
+
+Kg
+
+
+Status:
+
+Inactive
+
+7. Batch Management
+7.1 Batch Definition
+
+Batch là thực thể trung tâm của hệ thống.
+
+Một Batch đại diện cho một lô hàng vật lý trong chuỗi cung ứng.
+
+Ví dụ:
+
+Batch:
+
+TOMATO-2026-001
+
+
+Product:
+
+Tomato
+
+
+Quantity:
+
+500 KG
+
+
+QR:
+
+https://system.com/trace/TOMATO-2026-001
+
+7.2 Batch Lifecycle
+
+Luồng tổng quát:
+
+Farmer
+
+
+↓
+
+Create Batch
+
+
+↓
+
+Generate QR Code
+
+
+↓
+
+Harvest Event
+
+
+↓
+
+Processing
+
+
+↓
+
+Transportation
+
+
+↓
+
+Distribution
+
+
+↓
+
+Retail
+
+
+↓
+
+Consumer Scan QR
+
+7.3 Batch Creation Process
+
+Actor:
+
+Staff
+
+Organization Type:
+
+FARM
+
+
+Flow:
+
+Input Product
+
+↓
+
+Input Harvest Date
+
+↓
+
+Input Quantity
+
+↓
+
+Select Unit
+
+↓
+
+Generate Batch Code
+
+↓
+
+Generate QR Code
+
+↓
+
+Save Batch
+
+↓
+
+Create HARVEST Event
+
+7.4 Batch Database
+
+Table:
+
+Batches
+
+
+Structure:
+
+Id
+
+
+ProductId
+
+
+CreatedOrganizationId
+
+
+CurrentOrganizationId
+
+
+BatchCode
+
+
+QRCode
+
+
+Quantity
+
+
+UnitId
+
+
+RemainingQuantity
+
+
+Status
+
+
+ParentBatchId
+
+
+RootBatchId
+
+
+HarvestDate
+
+
+ExpirationDate
+
+
+CreatedAt
+
+7.5 Batch Fields Explanation
+BatchCode
+
+Mã duy nhất của Batch.
+
+Ví dụ:
+
+TOMATO-20260707-001
+
+
+Rule:
+
+UNIQUE
+
+NOT NULL
+
+QRCode
+
+Lưu URL truy xuất.
+
+Ví dụ:
+
+https://agri.com/trace/abc123
+
+
+Consumer:
+
+Scan QR
+
+↓
+
+Open URL
+
+↓
+
+Load Timeline
+
+Quantity
+
+Số lượng ban đầu.
+
+Ví dụ:
+
+500 KG
+
+
+Rule:
+
+Không thay đổi.
+
+Sai:
+
+UPDATE Quantity = 400
+
+
+Đúng:
+
+Tạo Event:
+
+PROCESSING
+
+QuantityAfter = 400
+
+RemainingQuantity
+
+Số lượng còn lại dùng cho Split.
+
+Ví dụ:
+
+Batch:
+
+500 KG
+
+
+Split:
+
+200 KG
+
++
+
+300 KG
+
+
+Remaining:
+
+0 KG
+
+CurrentOrganizationId
+
+Tổ chức đang giữ Batch.
+
+Ví dụ:
+
+Ban đầu:
+
+Farm ABC
+
+
+Sau vận chuyển:
+
+Distributor XYZ
+
+
+Update:
+
+CurrentOrganizationId
+
+8. Supply Chain Event Management
+8.1 Event Definition
+
+SupplyChainEvent là bản ghi lịch sử của mọi hoạt động xảy ra với Batch.
+
+Ví dụ:
+
+Farm harvest tomato
+
+
+=
+
+Event:
+
+
+HARVEST
+
+Distributor transports tomato
+
+
+=
+
+Event:
+
+
+TRANSPORT
+
+8.2 Event Types
+
+Table:
+
+EventTypes
+
+
+Danh sách:
+
+Event	Meaning
+HARVEST	Thu hoạch
+RECEIVE	Nhận hàng
+PROCESSING	Sơ chế
+PACKAGING	Đóng gói
+TRANSPORT	Vận chuyển
+DISTRIBUTION	Phân phối
+RETAIL	Bán lẻ
+SALE	Bán hàng
+INSPECTION	Kiểm định
+SPLIT	Chia lô
+MERGE	Gộp lô
+RECALL	Thu hồi
+8.3 Event Flow
+
+Ví dụ:
+
+Farmer:
+
+Create Batch
+
+↓
+
+Create Event
+
+HARVEST
+
+
+Processor:
+
+Receive Batch
+
+↓
+
+Create Event
+
+RECEIVE
+
+
+↓
+
+Process Product
+
+
+↓
+
+Create Event
+
+PROCESSING
+
+
+Distributor:
+
+Transport
+
+↓
+
+Create Event
+
+TRANSPORT
+
+8.4 SupplyChainEvent Database
+
+Table:
+
+SupplyChainEvents
+
+
+Fields:
+
+Id
+
+
+BatchId
+
+
+EventTypeId
+
+
+OrganizationId
+
+
+PerformedByUserId
+
+
+Description
+
+
+QuantityAfter
+
+
+UnitAfterId
+
+
+Location
+
+
+PreviousHash
+
+
+CurrentHash
+
+
+EventTime
+
+
+CreatedAt
+
+9. Hash Chain Mechanism
+9.1 Purpose
+
+Đảm bảo lịch sử Batch không bị chỉnh sửa.
+
+Không dùng blockchain thật.
+
+Sử dụng:
+
+SHA-256 Hash Chain
+
+9.2 Hash Logic
+
+Ví dụ:
+
+Batch:
+
+Tomato Batch
+
+
+Event 1:
+
+HARVEST
+
+
+CurrentHash:
+
+AAA111
+
+
+Event 2:
+
+PROCESSING
+
+
+PreviousHash:
+
+AAA111
+
+
+CurrentHash:
+
+BBB222
+
+
+Event 3:
+
+TRANSPORT
+
+
+PreviousHash:
+
+BBB222
+
+
+CurrentHash:
+
+CCC333
+
+
+Chuỗi:
+
+Event1
+
+  |
+
+Hash A
+
+  |
+
+Event2
+
+  |
+
+Hash B
+
+  |
+
+Event3
+
+  |
+
+Hash C
+
+9.3 Hash Formula
+CurrentHash
+
+=
+
+SHA256(
+
+PreviousHash
+
++
+
+EventData
+
+)
+
+
+Ví dụ:
+
+Input:
+
+PreviousHash:
+
+AAA111
+
+
+EventData:
+
+{
+
+type:"TRANSPORT",
+
+time:"2026-07-07"
+
+}
+
+
+Output:
+
+BBB222
+
+9.4 Business Rules
+
+SupplyChainEvent:
+
+Không được:
+
+UPDATE
+
+DELETE
+
+
+Chỉ:
+
+INSERT
+
+
+Nếu sửa Event cũ:
+
+Hash Chain Broken
+
+
+Hệ thống phát hiện.
+
+10. Batch Split Management
+10.1 Purpose
+
+Chia một Batch thành nhiều Batch nhỏ hơn.
+
+Ví dụ:
+
+500kg Tomato
+
+
+       Split
+
+
+200kg Retail A
+
+
+300kg Retail B
+
+10.2 Actor
+
+Không phải Farmer.
+
+Actor:
+
+Processor
+
+hoặc
+
+Distributor
+
+10.3 Split Flow
+Select Parent Batch
+
+
+↓
+
+Input Child Quantity
+
+
+↓
+
+Validate Remaining Quantity
+
+
+↓
+
+Create Split Event
+
+
+↓
+
+Create Child Batch
+
+
+↓
+
+Generate Child QR
+
+
+↓
+
+Save Split History
+
+10.4 Database
+BatchSplits
+Id
+
+ParentBatchId
+
+EventId
+
+CreatedBy
+
+CreatedAt
+
+BatchSplitDetails
+Id
+
+SplitId
+
+ChildBatchId
+
+Quantity
+
+10.5 Example
+
+Before:
+
+Batch A
+
+
+Quantity:
+
+500KG
+
+
+Split:
+
+Batch A
+
+ |
+
+ +--- Batch B 200KG
+
+ |
+
+ +--- Batch C 300KG
+
+
+Database:
+
+BatchSplit:
+
+Parent:
+
+A
+
+
+Detail:
+
+A -> B
+
+200KG
+
+
+A -> C
+
+300KG
