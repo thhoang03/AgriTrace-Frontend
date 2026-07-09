@@ -1,18 +1,51 @@
-import { useState } from "react";
-import { Camera, Lock, Bell, Moon, Save, CheckCircle } from "lucide-react";
+import { useState, useRef } from "react";
+import { Camera, Lock, Bell, Moon, Save, CheckCircle, AlertCircle } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { authService } from "../services/authService";
 
 export function ProfilePage() {
   const { user } = useAuth();
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [pwdMsg, setPwdMsg] = useState("");
+  const [pwdError, setPwdError] = useState("");
   const [notifs, setNotifs] = useState({
     email: true, sms: false, recall: true, inspection: true, batch: true,
   });
+  const nameRef = useRef<HTMLInputElement>(null);
+  const currentPwdRef = useRef<HTMLInputElement>(null);
+  const newPwdRef = useRef<HTMLInputElement>(null);
+  const confirmPwdRef = useRef<HTMLInputElement>(null);
 
   const handleSave = async () => {
-    await new Promise((r) => setTimeout(r, 600));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setSaveError("");
+    try {
+      if (user?.id && nameRef.current?.value) {
+        await authService.updateProfile(Number(user.id), nameRef.current.value);
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (e: any) {
+      setSaveError(e.message || "Lưu thất bại");
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setPwdMsg("");
+    setPwdError("");
+    try {
+      await authService.changePassword(
+        currentPwdRef.current?.value || "",
+        newPwdRef.current?.value || "",
+        confirmPwdRef.current?.value || ""
+      );
+      setPwdMsg("Đổi mật khẩu thành công!");
+      if (currentPwdRef.current) currentPwdRef.current.value = "";
+      if (newPwdRef.current) newPwdRef.current.value = "";
+      if (confirmPwdRef.current) confirmPwdRef.current.value = "";
+    } catch (e: any) {
+      setPwdError(e.message || "Đổi mật khẩu thất bại");
+    }
   };
 
   return (
@@ -43,7 +76,7 @@ export function ProfilePage() {
               <span className="text-gray-400 text-sm">{user?.organization}</span>
             </div>
           </div>
-          <div className="ml-auto pb-2">
+          <div className="ml-auto pb-2 flex flex-col items-end gap-1">
             <button
               onClick={handleSave}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all ${saved ? "opacity-80" : "hover:opacity-90"}`}
@@ -51,6 +84,7 @@ export function ProfilePage() {
             >
               {saved ? <><CheckCircle className="w-4 h-4" /> Saved!</> : <><Save className="w-4 h-4" /> Save Changes</>}
             </button>
+            {saveError && <span className="text-xs text-red-500 flex items-center gap-1"><AlertCircle className="w-3 h-3" />{saveError}</span>}
           </div>
         </div>
 
@@ -61,14 +95,17 @@ export function ProfilePage() {
               <h3 className="font-semibold text-gray-900 mb-5" style={{ fontSize: 15 }}>Personal Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { label: "Full Name", value: user?.name, type: "text" },
+                  { label: "Full Name", value: user?.name, type: "text", ref: nameRef },
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  ...([] as any[]),
                   { label: "Username", value: user?.username, type: "text" },
                   { label: "Email Address", value: user?.email, type: "email" },
                   { label: "Phone Number", value: user?.phone, type: "tel" },
-                ].map(({ label, value, type }) => (
+                ].map(({ label, value, type, ref }: any) => (
                   <div key={label}>
                     <label className="text-sm font-medium text-gray-600 mb-1.5 block">{label}</label>
                     <input
+                      ref={ref}
                       type={type}
                       defaultValue={value || ""}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400"
@@ -105,10 +142,15 @@ export function ProfilePage() {
                 <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Change Password</h3>
               </div>
               <div className="space-y-4">
-                {["Current Password", "New Password", "Confirm New Password"].map((label) => (
+                {[
+                  { label: "Current Password", ref: currentPwdRef },
+                  { label: "New Password", ref: newPwdRef },
+                  { label: "Confirm New Password", ref: confirmPwdRef },
+                ].map(({ label, ref }) => (
                   <div key={label}>
                     <label className="text-sm font-medium text-gray-600 mb-1.5 block">{label}</label>
                     <input
+                      ref={ref}
                       type="password"
                       placeholder="••••••••"
                       className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400"
@@ -119,7 +161,9 @@ export function ProfilePage() {
                 <div className="p-3 rounded-xl text-sm" style={{ background: "#E8F5E9" }}>
                   <p className="text-green-700">Password must be at least 8 characters with uppercase, lowercase, and numbers.</p>
                 </div>
-                <button className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ background: "#2E7D32" }}>
+                {pwdError && <p className="text-sm text-red-500 flex items-center gap-1"><AlertCircle className="w-4 h-4" />{pwdError}</p>}
+                {pwdMsg && <p className="text-sm text-green-600 flex items-center gap-1"><CheckCircle className="w-4 h-4" />{pwdMsg}</p>}
+                <button onClick={handleChangePassword} className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity" style={{ background: "#2E7D32" }}>
                   Update Password
                 </button>
               </div>

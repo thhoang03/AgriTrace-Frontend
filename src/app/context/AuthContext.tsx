@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
+import { authService, LoginResponse } from "../services/authService";
 
 export interface User {
   id: string;
@@ -14,22 +15,24 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
-  login: (username: string, password: string, role: string) => void;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const mockUser: User = {
-  id: "USR-001",
-  name: "Nguyễn Văn An",
-  username: "admin",
-  email: "nguyenvanan@agritrace.gov.vn",
-  phone: "+84 901 234 567",
-  role: "Administrator",
-  organization: "Ministry of Agriculture and Rural Development",
-  avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
-};
+function mapApiUser(data: LoginResponse["user"]): User {
+  return {
+    id: String(data.userId),
+    name: data.fullName,
+    username: data.email,
+    email: data.email,
+    phone: "",
+    role: data.role as User["role"],
+    organization: data.organizationName,
+    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.fullName)}&background=2E7D32&color=fff`,
+  };
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
@@ -37,8 +40,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return stored ? JSON.parse(stored) : null;
   });
 
-  const login = (_username: string, _password: string, role: string) => {
-    const u = { ...mockUser, role: role as User["role"] };
+  const login = async (email: string, password: string) => {
+    const data = await authService.login(email, password);
+    sessionStorage.setItem("agritrace_auth", JSON.stringify({
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+    }));
+    const u = mapApiUser(data.user);
     setUser(u);
     sessionStorage.setItem("agritrace_user", JSON.stringify(u));
   };
@@ -46,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setUser(null);
     sessionStorage.removeItem("agritrace_user");
+    sessionStorage.removeItem("agritrace_auth");
   };
 
   return (
