@@ -1,1670 +1,940 @@
-# API Specification — Agricultural Supply Chain Traceability System
+API Specification — Agricultural Supply Chain Traceability System
 
-**Version:** 2.0
-**Base URL:** `https://api.agritrace.vn/api/v1`  
-**Public Trace URL:** `https://agritrace.vn/trace/{batchId}`  
-**Format:** REST / JSON  
-**Encoding:** UTF-8  
-**Auth Scheme:** Bearer JWT (Access Token + Refresh Token)
+Version: 1.0
+Base URL: https://api.agritrace.vn/api/v1
+Format: REST / JSON
+Encoding: UTF-8
+Authentication: JWT Bearer Token
 
----
+1. Quy ước chung
+1.1 Request Headers
+Header	Bắt buộc	Mô tả
+Content-Type	Có	application/json
+Authorization	Có (API bảo vệ)	Bearer <access_token>
+Accept-Language	Không	vi hoặc en
 
-## Mục lục
+Ví dụ:
 
-1. [Quy ước chung](#1-quy-ước-chung)
-2. [Phân quyền (RBAC)](#2-phân-quyền-rbac)
-3. [Xác thực — Auth](#3-xác-thực--auth)
-4. [Quản lý Tổ chức — Organizations](#4-quản-lý-tổ-chức--organizations)
-5. [Quản lý Người dùng — Users](#5-quản-lý-người-dùng--users)
-6. [Quản lý Sản phẩm — Products](#6-quản-lý-sản-phẩm--products)
-7. [Quản lý Lô hàng — Batches](#7-quản-lý-lô-hàng--batches)
-8. [Chuỗi sự kiện — Supply Chain Events](#8-chuỗi-sự-kiện--supply-chain-events)
-9. [Tách lô — Batch Split](#9-tách-lô--batch-split)
-10. [Gộp lô — Batch Merge](#10-gộp-lô--batch-merge)
-11. [Kiểm định Chất lượng — Quality Inspections](#11-kiểm-định-chất-lượng--quality-inspections)
-12. [Chứng nhận — Certificates](#12-chứng-nhận--certificates)
-13. [Thu hồi sản phẩm — Recalls](#13-thu-hồi-sản-phẩm--recalls)
-14. [Thông báo — Notifications](#14-thông-báo--notifications)
-15. [Tra cứu Công khai — Public Traceability](#15-tra-cứu-công-khai--public-traceability)
-16. [Dashboard & Analytics](#16-dashboard--analytics)
-17. [Lookup / Danh mục hệ thống](#17-lookup--danh-mục-hệ-thống)
-18. [Mã lỗi chung](#18-mã-lỗi-chung)
+Authorization: Bearer eyJhbGciOiJIUzI1...
+1.2 Response Format
 
----
+Tất cả API trả về cùng một cấu trúc:
 
-## 1. Quy ước chung
-
-### 1.1. Request Headers
-
-| Header | Bắt buộc | Mô tả |
-|--------|----------|-------|
-| `Content-Type` | Có (với body) | `application/json` |
-| `Authorization` | Có (các route bảo vệ) | `Bearer <access_token>` |
-| `Accept-Language` | Không | `vi` hoặc `en` |
-
-### 1.2. Response Envelope
-
-Mọi response đều bọc trong envelope chuẩn:
-
-```json
+Thành công
 {
-  "success": true,
-  "data": { ... },
-  "message": "string",
-  "errors": null,
-  "timestamp": "2026-07-06T06:00:00Z"
+    "success": true,
+    "data": {},
+    "message": "Thực hiện thành công",
+    "timestamp": "2026-07-07T10:00:00Z"
 }
-```
-
-**Response lỗi:**
-
-```json
+Lỗi
 {
-  "success": false,
-  "data": null,
-  "message": "Validation failed",
-  "errors": [
-    { "field": "email", "code": "REQUIRED", "message": "Email là bắt buộc" }
-  ],
-  "timestamp": "2026-07-06T06:00:00Z"
+    "success": false,
+    "data": null,
+    "message": "Validation failed",
+    "errors": [
+        {
+            "field": "email",
+            "code": "REQUIRED",
+            "message": "Email không được để trống"
+        }
+    ],
+    "timestamp": "2026-07-07T10:00:00Z"
 }
-```
+1.3 Pagination
 
-### 1.3. Phân trang (Pagination)
+Các API trả danh sách hỗ trợ:
 
-Các endpoint trả về danh sách hỗ trợ query params sau:
+Parameter	Type	Default	Description
+page	int	1	Trang hiện tại
+pageSize	int	20	Số lượng bản ghi
+sortBy	string	-	Cột sắp xếp
+sortDir	string	asc	asc / desc
 
-| Param | Kiểu | Mặc định | Mô tả |
-|-------|------|----------|-------|
-| `page` | int | `1` | Trang hiện tại |
-| `pageSize` | int | `20` | Số bản ghi/trang (tối đa 100) |
-| `sortBy` | string | — | Tên cột sắp xếp |
-| `sortDir` | string | `asc` | `asc` hoặc `desc` |
+Response:
 
-**Response body phân trang:**
-
-```json
 {
-  "success": true,
-  "data": {
-    "items": [ ... ],
-    "totalCount": 150,
-    "page": 1,
-    "pageSize": 20,
-    "totalPages": 8
-  }
+    "items": [],
+    "totalCount":100,
+    "page":1,
+    "pageSize":20,
+    "totalPages":5
 }
-```
-
-### 1.4. Định dạng thời gian
-
-Toàn bộ datetime sử dụng **ISO 8601 UTC**: `"2026-07-06T06:00:00Z"`
-
-### 1.5. HTTP Status Codes
-
-| Code | Ý nghĩa |
-|------|---------|
-| `200 OK` | Thành công (GET, PUT, PATCH) |
-| `201 Created` | Tạo mới thành công (POST) |
-| `204 No Content` | Thành công không trả body (DELETE) |
-| `400 Bad Request` | Dữ liệu đầu vào không hợp lệ |
-| `401 Unauthorized` | Chưa xác thực hoặc token hết hạn |
-| `403 Forbidden` | Không đủ quyền |
-| `404 Not Found` | Không tìm thấy resource |
-| `409 Conflict` | Xung đột dữ liệu (duplicate, sai trạng thái) |
-| `422 Unprocessable Entity` | Vi phạm quy tắc nghiệp vụ |
-| `500 Internal Server Error` | Lỗi hệ thống |
-
----
-
-## 2. Phân quyền (RBAC)
-
-### 2.1. Danh sách Roles
-
-| Role | Mô tả |
-|------|-------|
-| `ADMIN` | Toàn quyền hệ thống |
-| `ORGADMIN` | Quản trị trong phạm vi tổ chức của mình |
-| `FARMER` | Quản lý nông trại — tạo lô và ghi nhận thu hoạch |
-| `OPERATOR` | Vận hành chuỗi cung ứng — chế biến, vận chuyển, tách/gộp lô |
-| `INSPECTOR` | Thực hiện kiểm định, cấp chứng nhận, thu hồi sản phẩm |
-
-> **Consumer** không có tài khoản — chỉ truy cập Public API.
-
-### 2.2. Ma trận phân quyền tổng quan
-
-| Tính năng | ADMIN | ORGADMIN | FARMER | OPERATOR | INSPECTOR |
-|-----------|:-----:|:--------:|:------:|:--------:|:---------:|
-| Quản lý tổ chức | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Quản lý người dùng (toàn hệ thống) | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Quản lý người dùng (trong tổ chức) | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Quản lý sản phẩm | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Tạo Batch | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Ghi Supply Chain Event | ✅ | ✅ | ✅ | ✅ | ❌ |
-| Split / Merge Batch | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Kiểm định chất lượng | ✅ | ❌ | ❌ | ❌ | ✅ |
-| Cấp chứng nhận | ✅ | ❌ | ❌ | ❌ | ✅ |
-| Kích hoạt Recall | ✅ | ❌ | ❌ | ❌ | ✅ |
-| Xem Dashboard | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Public Traceability | Public | Public | Public | Public | Public |
-
-### 2.3. Phân quyền Event theo Organization Type
-
-| Organization Type | Sự kiện được phép |
-|------------------|--------------------|
-| `FARM` | `HARVEST` |
-| `PROCESSOR` | `PROCESS`, `PACKAGE`, `TRANSPORT`, `SPLIT`, `MERGE` |
-| `DISTRIBUTOR` | `TRANSPORT`, `RECEIVE`, `SPLIT`, `MERGE` |
-| `RETAILER` | `RECEIVE` |
-
-> `INSPECT` event được ghi bởi user có role `INSPECTOR` (không phụ thuộc Organization Type).
-
----
-
-## 3. Xác thực — Auth
-
-### 3.1. Đăng nhập
-
-```
+1.4 HTTP Status Code
+Code	Ý nghĩa
+200	Request thành công
+201	Tạo mới thành công
+204	Xóa thành công không trả dữ liệu
+400	Dữ liệu không hợp lệ
+401	Chưa đăng nhập
+403	Không đủ quyền
+404	Không tìm thấy dữ liệu
+409	Trùng dữ liệu
+422	Sai nghiệp vụ
+500	Lỗi server
+2. Phân quyền (RBAC)
+2.1 Danh sách Role
+Role	Mô tả
+ADMIN	Quản trị toàn hệ thống
+MANAGER	Quản lý doanh nghiệp
+FARMER	Nông dân tạo và quản lý lô hàng
+PROCESSOR	Nhà máy chế biến
+DISTRIBUTOR	Đơn vị phân phối
+INSPECTOR	Đơn vị kiểm định
+CUSTOMER	Người mua tra cứu sản phẩm
+2.2 Permission Matrix
+Chức năng	ADMIN	MANAGER	FARMER	PROCESSOR	INSPECTOR
+Quản lý User	✓	✓	-	-	-
+Tạo sản phẩm	✓	✓	-	-	-
+Tạo Batch	✓	✓	✓	-	-
+Ghi nhận Event	✓	✓	✓	✓	-
+Kiểm định	✓	-	-	-	✓
+Cấp chứng nhận	✓	-	-	-	✓
+Thu hồi sản phẩm	✓	-	-	-	✓
+Tra cứu QR	Public	Public	Public	Public	Public
+3. Xác thực — Auth
+3.1 Đăng nhập
 POST /auth/login
-```
 
-**Authorization:** Không yêu cầu
+Authorization:
 
-**Request Body:**
+Public
 
-```json
+Request:
+
 {
-  "email": "user@agritrace.vn",
-  "password": "P@ssw0rd123"
+    "email":"farmer@gmail.com",
+    "password":"12345678"
 }
-```
 
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `email` | string | ✅ | Email đăng ký |
-| `password` | string | ✅ | Mật khẩu (min 8 ký tự) |
+Response:
 
-**Response `200 OK`:**
-
-```json
 {
-  "success": true,
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5...",
-    "accessTokenExpiresAt": "2026-07-06T07:00:00Z",
-    "refreshToken": "d7f3a1b2c4e5...",
-    "refreshTokenExpiresAt": "2026-07-13T06:00:00Z",
-    "user": {
-      "userId": 1,
-      "fullName": "Nguyễn Văn A",
-      "email": "user@agritrace.vn",
-      "role": "FARMER",
-      "organizationId": 1,
-      "organizationName": "Nông trại Sơn La",
-      "organizationType": "FARM"
+ "success":true,
+ "data":{
+    "accessToken":"jwt_token",
+    "refreshToken":"refresh_token",
+    "user":{
+        "id":1,
+        "name":"Nguyen Van A",
+        "role":"FARMER"
     }
-  },
-  "message": "Đăng nhập thành công"
+ }
 }
-```
-
-**Lỗi:**
-
-| HTTP | Code | Mô tả |
-|------|------|-------|
-| `401` | `INVALID_CREDENTIALS` | Email hoặc mật khẩu sai |
-| `403` | `ACCOUNT_DEACTIVATED` | Tài khoản bị vô hiệu hóa |
-
----
-
-### 3.2. Làm mới Access Token
-
-```
+3.2 Refresh Token
 POST /auth/refresh-token
-```
 
-**Authorization:** Không yêu cầu (dùng refresh token)
+Request:
 
-**Request Body:**
-
-```json
 {
-  "refreshToken": "d7f3a1b2c4e5..."
+ "refreshToken":"xxxxxx"
 }
-```
 
-**Response `200 OK`:**
+Response:
 
-```json
 {
-  "success": true,
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5...",
-    "accessTokenExpiresAt": "2026-07-06T08:00:00Z",
-    "refreshToken": "new_refresh_token_value...",
-    "refreshTokenExpiresAt": "2026-07-13T07:00:00Z"
-  }
+ "success":true,
+ "data":{
+    "accessToken":"new_access_token",
+    "refreshToken":"new_refresh_token"
+ }
 }
-```
-
-> **Cơ chế xoay vòng:** Mỗi lần refresh, `refreshToken` cũ bị revoke và cấp token mới (Token Rotation).
-
-**Lỗi:**
-
-| HTTP | Code | Mô tả |
-|------|------|-------|
-| `401` | `INVALID_REFRESH_TOKEN` | Token không hợp lệ hoặc đã bị revoke |
-| `401` | `REFRESH_TOKEN_EXPIRED` | Token đã hết hạn |
-
----
-
-### 3.3. Đăng xuất
-
-```
+3.3 Logout
 POST /auth/logout
-```
 
-**Authorization:** `Bearer <access_token>`
+Authorization:
 
-**Request Body:**
+Bearer Token
 
-```json
-{
-  "refreshToken": "d7f3a1b2c4e5..."
-}
-```
+Response:
 
-**Response `204 No Content`**
-
----
-
-### 3.4. Thông tin người dùng hiện tại
-
-```
+204 No Content
+3.4 Lấy thông tin User hiện tại
 GET /auth/me
-```
 
-**Authorization:** `Bearer <access_token>`
+Response:
 
-**Response `200 OK`:**
-
-```json
 {
-  "success": true,
-  "data": {
-    "userId": 1,
-    "fullName": "Nguyễn Văn A",
-    "email": "user@agritrace.vn",
-    "role": "FARMER",
-    "isActive": true,
-    "organizationId": 1,
-    "organizationName": "Nông trại Sơn La",
-    "organizationType": "FARM"
-  }
+ "id":1,
+ "name":"Nguyen Van A",
+ "email":"farmer@gmail.com",
+ "role":"FARMER"
 }
-```
-
----
-
-### 3.5. Đổi mật khẩu
-
-```
-PUT /auth/change-password
-```
-
-**Authorization:** `Bearer <access_token>`
-
-**Request Body:**
-
-```json
-{
-  "currentPassword": "OldP@ss123",
-  "newPassword": "NewP@ss456",
-  "confirmNewPassword": "NewP@ss456"
-}
-```
-
-**Response `200 OK`**
-
-**Lỗi:**
-
-| HTTP | Code | Mô tả |
-|------|------|-------|
-| `400` | `WRONG_CURRENT_PASSWORD` | Mật khẩu hiện tại sai |
-| `400` | `PASSWORD_MISMATCH` | `newPassword` ≠ `confirmNewPassword` |
-
----
-
-## 4. Quản lý Tổ chức — Organizations
-
-### 4.1. Lấy danh sách tổ chức
-
-```
+4. Quản lý tổ chức — Organizations
+4.1 Lấy danh sách tổ chức
 GET /organizations
-```
 
-**Authorization:** `Admin`
+Role:
 
-**Query Params:**
+ADMIN
 
-| Param | Kiểu | Mô tả |
-|-------|------|-------|
-| `type` | string | Lọc theo loại tổ chức (`FARM`, `PROCESSOR`, `DISTRIBUTOR`, `RETAILER`) |
-| `status` | string | Lọc theo trạng thái (`ACTIVE`, `INACTIVE`, `SUSPENDED`) |
-| `search` | string | Tìm theo tên |
-| `page`, `pageSize` | int | Phân trang |
+Query:
 
-**Response `200 OK`:**
+?page=1&pageSize=20
 
-```json
+Response:
+
 {
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "organizationId": 1,
-        "name": "Nông trại Sơn La",
-        "type": "FARM",
-        "status": "ACTIVE",
-        "createdAt": "2026-01-01T00:00:00Z"
-      }
-    ],
-    "totalCount": 45,
-    "page": 1,
-    "pageSize": 20,
-    "totalPages": 3
-  }
+ "items":[
+    {
+     "organizationId":1,
+     "name":"Farm ABC",
+     "type":"FARM",
+     "status":"ACTIVE"
+    }
+ ]
 }
-```
+4.2 Xem chi tiết tổ chức
+GET /organizations/{id}
 
----
+Response:
 
-### 4.2. Lấy chi tiết tổ chức
-
-```
-GET /organizations/{organizationId}
-```
-
-**Authorization:** `ADMIN` | `ORGADMIN` (chỉ xem tổ chức mình)
-
-**Response `200 OK`:** Object tổ chức đầy đủ.
-
----
-
-### 4.3. Tạo tổ chức mới
-
-```
+{
+ "organizationId":1,
+ "name":"Farm ABC",
+ "address":"Da Lat",
+ "type":"FARM"
+}
+4.3 Tạo tổ chức
 POST /organizations
-```
 
-**Authorization:** `ADMIN`
+Role:
 
-**Request Body:**
+ADMIN
 
-```json
+Request:
+
 {
-  "name": "Nông trại Sơn La",
-  "type": "FARM"
+"name":"Green Farm",
+"type":"FARM",
+"address":"Lam Dong"
 }
-```
 
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `name` | string | ✅ | Tên tổ chức (unique, max 200) |
-| `type` | string | ✅ | Loại tổ chức (`FARM`, `PROCESSOR`, `DISTRIBUTOR`, `RETAILER`) |
+Response:
 
-**Response `201 Created`:**
-
-```json
 {
-  "success": true,
-  "data": {
-    "organizationId": 1,
-    "name": "Nông trại Sơn La",
-    "type": "FARM",
-    "status": "ACTIVE",
-    "createdAt": "2026-07-06T06:30:00Z"
-  }
+"organizationId":10,
+"name":"Green Farm"
 }
-```
+4.4 Cập nhật tổ chức
+PUT /organizations/{id}
 
----
+Request:
 
-### 4.4. Cập nhật tổ chức
-
-```
-PUT /organizations/{organizationId}
-```
-
-**Authorization:** `ADMIN`
-
-**Request Body:**
-
-```json
 {
-  "name": "Nông trại Sơn La mới",
-  "type": "FARM"
+"name":"Green Farm Update"
 }
-```
+4.5 Thay đổi trạng thái
+PATCH /organizations/{id}/status
 
-**Response `200 OK`:** Object tổ chức sau cập nhật.
+Request:
 
----
-
-### 4.5. Cập nhật trạng thái tổ chức
-
-```
-PATCH /organizations/{organizationId}/status
-```
-
-**Authorization:** `ADMIN`
-
-**Request Body:**
-
-```json
 {
-  "status": "INACTIVE"
+"status":"INACTIVE"
 }
-```
 
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `status` | string | ✅ | `ACTIVE`, `INACTIVE`, hoặc `SUSPENDED` |
-
-**Response `200 OK`**
-
----
-
-## 5. Quản lý Người dùng — Users
-
-### 5.1. Lấy danh sách người dùng
-
-```
+5. Quản lý Người dùng — Users
+5.1 Lấy danh sách người dùng
 GET /users
-```
 
-**Authorization:** `ADMIN` (toàn hệ thống) | `ORGADMIN` (trong tổ chức mình)
+Authorization:
 
-**Query Params:** `organizationId`, `role`, `isActive`, `search`, `page`, `pageSize`
-
-**Response `200 OK`:**
-
-```json
+ADMIN | MANAGER
+Query Parameters
+Parameter	Type	Description
+organizationId	int	Lọc theo tổ chức
+role	string	Lọc theo quyền
+search	string	Tìm kiếm theo tên/email
+page	int	Trang hiện tại
+pageSize	int	Số lượng bản ghi
+Response 200 OK
 {
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "userId": 1,
-        "fullName": "Nguyễn Văn A",
-        "email": "user@agritrace.vn",
-        "role": "FARMER",
-        "organizationId": 1,
-        "organizationName": "Nông trại Sơn La",
-        "isActive": true,
-        "createdAt": "2026-01-01T00:00:00Z"
-      }
-    ],
-    "totalCount": 30,
-    "page": 1,
-    "pageSize": 20,
-    "totalPages": 2
-  }
+    "success": true,
+    "data": {
+        "items": [
+            {
+                "userId": 1,
+                "fullName": "Nguyễn Văn A",
+                "email": "farmer@gmail.com",
+                "role": "FARMER",
+                "organizationId": 1,
+                "organizationName": "Green Farm",
+                "isActive": true,
+                "createdAt": "2026-07-01T10:00:00Z"
+            }
+        ],
+        "totalCount": 20,
+        "page": 1,
+        "pageSize": 20,
+        "totalPages": 1
+    }
 }
-```
-
----
-
-### 5.2. Lấy chi tiết người dùng
-
-```
+5.2 Lấy thông tin chi tiết User
 GET /users/{userId}
-```
 
-**Authorization:** `ADMIN` | `ORGADMIN` | Chủ tài khoản
+Authorization
 
----
-
-### 5.3. Tạo người dùng mới
-
-```
+ADMIN | MANAGER | Self
+Response
+{
+    "success": true,
+    "data": {
+        "userId":1,
+        "fullName":"Nguyễn Văn A",
+        "email":"farmer@gmail.com",
+        "role":"FARMER",
+        "organizationId":1,
+        "phone":"090xxxxxxx",
+        "isActive":true
+    }
+}
+5.3 Tạo User mới
 POST /users
-```
 
-**Authorization:** `ADMIN` | `ORGADMIN`
+Authorization
 
-**Request Body:**
-
-```json
+ADMIN | MANAGER
+Request Body
 {
-  "organizationId": 1,
-  "role": "FARMER",
-  "fullName": "Trần Thị B",
-  "email": "tranb@agritrace.vn",
-  "password": "TempP@ss123"
+    "organizationId":1,
+    "fullName":"Trần Văn B",
+    "email":"tranb@gmail.com",
+    "password":"12345678",
+    "role":"FARMER"
 }
-```
-
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `organizationId` | int | ❌ | Tổ chức trực thuộc (có thể null cho ADMIN) |
-| `role` | string | ✅ | `ADMIN`, `ORGADMIN`, `FARMER`, `OPERATOR`, `INSPECTOR` |
-| `fullName` | string | ✅ | Họ tên (max 200) |
-| `email` | string | ✅ | Email đăng nhập (unique) |
-| `password` | string | ✅ | Mật khẩu khởi tạo (min 8) |
-
-**Response `201 Created`:** Object người dùng vừa tạo.
-
----
-
-### 5.4. Cập nhật người dùng
-
-```
+Field Description
+Field	Type	Required	Description
+organizationId	int	No	ID tổ chức
+fullName	string	Yes	Họ tên
+email	string	Yes	Email đăng nhập
+password	string	Yes	Mật khẩu
+role	string	Yes	Quyền user
+Response 201 Created
+{
+    "success":true,
+    "message":"Tạo người dùng thành công",
+    "data":{
+        "userId":10
+    }
+}
+5.4 Cập nhật User
 PUT /users/{userId}
-```
 
-**Authorization:** `ADMIN` | `ORGADMIN` | Chủ tài khoản
+Authorization:
 
-**Request Body:**
+ADMIN | MANAGER | Self
 
-```json
+Request:
+
 {
-  "fullName": "Trần Thị B",
-  "role": "OPERATOR"
+    "fullName":"Nguyễn Văn C",
+    "phone":"098888888",
+    "role":"PROCESSOR"
 }
-```
 
-**Response `200 OK`:** Object người dùng sau cập nhật.
+Response:
 
----
-
-### 5.5. Kích hoạt / Vô hiệu hóa tài khoản
-
-```
+{
+    "success":true,
+    "message":"Cập nhật thành công"
+}
+5.5 Kích hoạt / Vô hiệu hóa tài khoản
 PATCH /users/{userId}/status
-```
 
-**Authorization:** `ADMIN` | `ORGADMIN`
+Request:
 
-**Request Body:** `{ "isActive": false }`
-
-**Response `200 OK`**
-
----
-
-## 6. Quản lý Sản phẩm — Products
-
-### 6.1. Lấy danh sách sản phẩm
-
-```
-GET /products
-```
-
-**Authorization:** Authenticated
-
-**Query Params:** `organizationId`, `category`, `search`, `page`, `pageSize`
-
-**Response `200 OK`:**
-
-```json
 {
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "productId": 1,
-        "organizationId": 1,
-        "organizationName": "Nông trại Sơn La",
-        "name": "Cà chua bi",
-        "category": "Rau củ",
-        "unit": "kg"
-      }
+    "isActive":false
+}
+
+Response:
+
+{
+    "success":true,
+    "message":"Đã cập nhật trạng thái tài khoản"
+}
+
+
+6. Quản lý Danh mục sản phẩm — Categories
+6.1 Lấy danh sách Category
+
+GET /categories
+
+Authorization:
+
+Authenticated
+
+Query:
+
+Parameter	Type	Description
+search	string	Tìm kiếm tên category
+page	int	Trang hiện tại
+pageSize	int	Số lượng bản ghi
+
+Response:
+
+{
+    "success":true,
+    "data":{
+        "items":[
+            {
+                "categoryId":1,
+                "name":"Rau củ",
+                "description":"Nhóm rau củ quả",
+                "isActive":true
+            }
+        ],
+        "totalCount":10,
+        "page":1,
+        "pageSize":20,
+        "totalPages":1
+    }
+}
+6.2 Chi tiết Category
+
+GET
+
+/categories/{categoryId}
+
+Authorization:
+
+Authenticated
+
+Response:
+
+{
+ "success":true,
+ "data":{
+    "categoryId":1,
+    "name":"Coffee",
+    "description":"Sản phẩm cà phê",
+    "isActive":true
+ }
+}
+6.3 Tạo Category
+
+POST
+
+/categories
+
+Authorization:
+
+ADMIN | MANAGER
+
+Request:
+
+{
+    "name":"Coffee",
+    "description":"Các loại cà phê"
+}
+
+Response:
+
+{
+ "success":true,
+ "message":"Tạo category thành công",
+ "data":{
+    "categoryId":5
+ }
+}
+6.4 Cập nhật Category
+
+PUT
+
+/categories/{categoryId}
+
+Authorization:
+
+ADMIN | MANAGER
+
+Request:
+
+{
+    "name":"Coffee Premium",
+    "description":"Danh mục cà phê cao cấp"
+}
+6.5 Thay đổi trạng thái Category
+
+PATCH
+
+/categories/{categoryId}/status
+
+Request:
+
+{
+ "isActive":false
+}
+6.6 Xóa Category
+
+DELETE
+
+/categories/{categoryId}
+
+Authorization:
+
+ADMIN
+
+Điều kiện:
+
+Không được xóa nếu đang có Product sử dụng.
+7. Quản lý Sản phẩm — Products (Fix)
+7.1 Danh sách Product
+
+GET
+
+/products
+
+Authorization:
+
+Authenticated
+
+Query:
+
+Parameter	Description
+organizationId	lọc tổ chức
+categoryId	lọc danh mục
+search	tìm tên
+page	trang
+pageSize	số lượng
+
+Response:
+
+{
+ "success":true,
+ "data":{
+    "items":[
+        {
+            "productId":1,
+            "name":"Cà phê Arabica",
+            "categoryId":5,
+            "categoryName":"Coffee",
+            "unit":"kg",
+            "organizationId":1,
+            "isActive":true
+        }
     ],
-    "totalCount": 50,
-    "page": 1,
-    "pageSize": 20,
-    "totalPages": 3
-  }
+    "totalCount":20,
+    "page":1,
+    "pageSize":20,
+    "totalPages":1
+ }
 }
-```
+7.2 Chi tiết Product
 
----
+GET
 
-### 6.2. Lấy chi tiết sản phẩm
+/products/{productId}
 
-```
-GET /products/{productId}
-```
+Response:
 
-**Authorization:** Authenticated
-
----
-
-### 6.3. Tạo sản phẩm
-
-```
-POST /products
-```
-
-**Authorization:** `ADMIN` | `ORGADMIN`
-
-**Request Body:**
-
-```json
 {
-  "organizationId": 1,
-  "name": "Cà chua bi",
-  "category": "Rau củ",
-  "unit": "kg"
-}
-```
-
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `organizationId` | int | ✅ | Tổ chức sở hữu sản phẩm |
-| `name` | string | ✅ | Tên sản phẩm (unique trong tổ chức, max 200) |
-| `category` | string | ❌ | Loại sản phẩm |
-| `unit` | string | ❌ | Đơn vị đo mặc định |
-
-**Response `201 Created`**
-
----
-
-### 6.4. Cập nhật sản phẩm
-
-```
-PUT /products/{productId}
-```
-
-**Authorization:** `ADMIN` | `ORGADMIN`
-
-**Response `200 OK`**
-
----
-
-## 7. Quản lý Lô hàng — Batches
-
-### 7.1. Lấy danh sách lô hàng
-
-```
-GET /batches
-```
-
-**Authorization:** Authenticated
-
-**Query Params:**
-
-| Param | Kiểu | Mô tả |
-|-------|------|-------|
-| `productId` | int | Lọc theo sản phẩm |
-| `organizationId` | int | Lọc theo tổ chức đang giữ |
-| `batchCode` | string | Tìm theo mã lô |
-| `fromDate` | datetime | Lọc từ ngày tạo |
-| `toDate` | datetime | Lọc đến ngày tạo |
-| `page`, `pageSize` | int | Phân trang |
-
-**Response `200 OK`:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "batchId": 1,
-        "batchCode": "BTH-20260701-001",
-        "productId": 1,
-        "productName": "Cà chua bi",
-        "productCategory": "Rau củ",
-        "quantity": 500.0,
-        "currentOrganizationId": 1,
-        "currentOrganizationName": "Nông trại Sơn La",
-        "parentBatchId": null,
-        "rootBatchId": null,
-        "qrCode": "https://agritrace.vn/trace/1",
-        "createdAt": "2026-07-01T06:00:00Z"
-      }
-    ],
-    "totalCount": 120,
-    "page": 1,
-    "pageSize": 20,
-    "totalPages": 6
-  }
-}
-```
-
----
-
-### 7.2. Lấy chi tiết lô hàng
-
-```
-GET /batches/{batchId}
-```
-
-**Authorization:** Authenticated
-
-**Response `200 OK`:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "batchId": 1,
-    "batchCode": "BTH-20260701-001",
-    "productId": 1,
-    "productName": "Cà chua bi",
-    "productCategory": "Rau củ",
-    "quantity": 500.0,
-    "currentOrganizationId": 1,
-    "currentOrganizationName": "Nông trại Sơn La",
-    "parentBatchId": null,
-    "rootBatchId": null,
-    "qrCode": "https://agritrace.vn/trace/1",
-    "createdAt": "2026-07-01T06:00:00Z",
-    "images": [
-      {
-        "batchImageId": 1,
-        "imageUrl": "https://cdn.agritrace.vn/batches/1/img001.jpg",
-        "caption": "Ảnh thu hoạch",
-        "displayOrder": 1,
-        "eventId": null
-      }
-    ]
-  }
-}
-```
-
----
-
-### 7.3. Tạo lô hàng mới
-
-```
-POST /batches
-```
-
-**Authorization:** `ORGADMIN` | `FARMER`
-
-> Việc tạo lô tự động ghi nhận sự kiện `HARVEST` đầu tiên trong chuỗi SupplyChainEvents của lô này.
-
-**Request Body:**
-
-```json
-{
-  "productId": 1,
-  "quantity": 500.0
-}
-```
-
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `productId` | int | ✅ | Sản phẩm (bất biến sau khi tạo) |
-| `quantity` | decimal | ✅ | Số lượng ban đầu (> 0) |
-
-**Response `201 Created`:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "batchId": 1,
-    "batchCode": "BTH-20260701-001",
-    "qrCode": "https://agritrace.vn/trace/1"
-  },
-  "message": "Lô hàng tạo thành công, mã QR đã được cấp phát"
-}
-```
-
----
-
-### 7.4. Tải xuống QR Code
-
-```
-GET /batches/{batchId}/qr-code
-```
-
-**Authorization:** Authenticated
-
-**Response `200 OK`:** `Content-Type: image/png` — File ảnh PNG mã QR.
-
----
-
-### 7.5. Upload ảnh lô hàng
-
-```
-POST /batches/{batchId}/images
-```
-
-**Authorization:** `ORGADMIN` | `FARMER` | `OPERATOR` (trong tổ chức giữ lô)
-
-**Content-Type:** `multipart/form-data`
-
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `file` | file | ✅ | Ảnh (jpg/png, max 5MB) |
-| `caption` | string | ❌ | Chú thích |
-| `displayOrder` | int | ❌ | Thứ tự hiển thị |
-| `eventId` | int | ❌ | Liên kết sự kiện |
-
-**Response `201 Created`:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "batchImageId": 1,
-    "batchId": 1,
-    "imageUrl": "https://cdn.agritrace.vn/batches/1/img001.jpg",
-    "caption": "Ảnh thu hoạch",
-    "displayOrder": 1,
-    "eventId": null,
-    "createdAt": "2026-07-01T07:00:00Z"
-  }
-}
-```
-
----
-
-## 8. Chuỗi sự kiện — Supply Chain Events
-
-> **Nguyên tắc bất biến:** `SupplyChainEvents` là **Append-only**. Không cung cấp API UPDATE hoặc DELETE.
-
-### 8.1. Danh sách Event Types
-
-| Event Type | Mô tả | Org Type được phép |
-|------------|-------|-------------------|
-| `HARVEST` | Thu hoạch | FARM |
-| `PROCESS` | Chế biến | PROCESSOR |
-| `PACKAGE` | Đóng gói | PROCESSOR |
-| `TRANSPORT` | Vận chuyển | PROCESSOR, DISTRIBUTOR |
-| `RECEIVE` | Nhận hàng | DISTRIBUTOR, RETAILER |
-| `INSPECT` | Kiểm định | INSPECTOR (role) |
-| `SPLIT` | Tách lô | PROCESSOR, DISTRIBUTOR |
-| `MERGE` | Gộp lô | PROCESSOR, DISTRIBUTOR |
-
-> **Lưu ý:** `INSPECT` event được ghi bởi user có role `INSPECTOR`, không phụ thuộc vào Organization Type.
-
-### 8.2. Lấy lịch sử sự kiện
-
-```
-GET /batches/{batchId}/events
-```
-
-**Authorization:** Authenticated
-
-**Query Params:** `page`, `pageSize`
-
-**Response `200 OK`:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "eventId": 1,
-        "batchId": 1,
-        "eventType": "HARVEST",
-        "organizationId": 1,
-        "organizationName": "Nông trại Sơn La",
-        "userId": 1,
-        "userName": "Nguyễn Văn A",
-        "location": "Xã Mường Bon, Sơn La",
-        "eventData": null,
-        "previousHash": null,
-        "currentHash": "a3f1b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2",
-        "createdAt": "2026-07-01T06:05:00Z"
-      }
-    ],
-    "totalCount": 5,
-    "hashChainValid": true
-  }
-}
-```
-
----
-
-### 8.3. Ghi nhận sự kiện mới
-
-```
-POST /batches/{batchId}/events
-```
-
-**Authorization:** `ORGADMIN` | `FARMER` | `OPERATOR`
-
-**Request Body:**
-
-```json
-{
-  "eventType": "PROCESS",
-  "organizationId": 2,
-  "location": "Khu chế biến A - TP. Sơn La",
-  "eventData": "{\"temperature\": 25, \"humidity\": 70}",
-  "eventTime": "2026-07-02T08:00:00Z"
-}
-```
-
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `eventType` | string | ✅ | Loại sự kiện (xem danh sách 8.1) |
-| `organizationId` | int | ✅ | Tổ chức thực hiện sự kiện |
-| `location` | string | ❌ | Địa điểm |
-| `eventData` | string (JSON) | ❌ | Dữ liệu chi tiết sự kiện (JSON string) |
-| `eventTime` | datetime | ❌ | Thời điểm thực tế (lưu trong eventData nếu có) |
-
-> `organizationId` mặc định lấy từ tổ chức của user đang xác thực nếu không truyền.
-
-**Response `201 Created`:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "eventId": 2,
-    "batchId": 1,
-    "eventType": "PROCESS",
-    "previousHash": "a3f1b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2",
-    "currentHash": "b4a2c1d3e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
-    "createdAt": "2026-07-02T08:01:00Z"
-  },
-  "message": "Sự kiện đã được ghi nhận thành công"
-}
-```
-
----
-
-### 8.4. Kiểm tra tính toàn vẹn Hash Chain
-
-```
-GET /batches/{batchId}/events/verify-integrity
-```
-
-**Authorization:** `ADMIN` | `INSPECTOR`
-
-**Response `200 OK`:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "isValid": true,
-    "totalEvents": 5
-  }
-}
-```
-
----
-
-## 9. Tách lô — Batch Split
-
-```
-POST /batches/{batchId}/split
-```
-
-**Authorization:** `ORGADMIN` | `OPERATOR`
-
-**Ràng buộc nghiệp vụ:**
-- Lô cha phải tồn tại và chưa bị thu hồi.
-- `SUM(childBatches[].quantity)` <= `quantity` lô cha.
-- Mỗi lô con có cùng `ProductId`.
-
-**Request Body:**
-
-```json
-{
-  "childBatches": [
-    { "quantity": 100.0 },
-    { "quantity": 150.0 }
-  ],
-  "location": "Kho Sơn La",
-  "eventTime": "2026-07-03T07:00:00Z"
-}
-```
-
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `childBatches` | array | ✅ | Danh sách lô con |
-| `childBatches[].quantity` | decimal | ✅ | Số lượng lô con (> 0) |
-| `location` | string | ❌ | Địa điểm tách lô |
-| `eventTime` | datetime | ❌ | Thời điểm thực tế |
-
-**Response `201 Created`:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "parentBatchId": 1,
-    "splitEventId": 3,
-    "childBatches": [
-      { "batchId": 2, "batchCode": "BTH-20260703-002", "quantity": 100.0, "qrCode": "https://agritrace.vn/trace/2" },
-      { "batchId": 3, "batchCode": "BTH-20260703-003", "quantity": 150.0, "qrCode": "https://agritrace.vn/trace/3" }
-    ]
-  }
-}
-```
-
-> Quan hệ tách lô được ghi trong bảng `BatchRelations` với `RelationType = 'SPLIT'`.
-
----
-
-## 10. Gộp lô — Batch Merge
-
-```
-POST /batches/merge
-```
-
-**Authorization:** `ORGADMIN` | `OPERATOR`
-
-**Request Body:**
-
-```json
-{
-  "sources": [
-    { "batchId": 2, "quantity": 80.0 },
-    { "batchId": 3, "quantity": 120.0 }
-  ],
-  "location": "Kho phân phối Hà Nội",
-  "description": "Gộp 2 lô nhỏ thành lô lớn",
-  "eventTime": "2026-07-04T07:00:00Z"
-}
-```
-
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `sources` | array | ✅ | Danh sách lô nguồn |
-| `sources[].batchId` | int | ✅ | ID lô nguồn |
-| `sources[].quantity` | decimal | ✅ | Số lượng lấy từ lô nguồn |
-| `location` | string | ❌ | Địa điểm gộp lô |
-| `description` | string | ❌ | Ghi chú |
-| `eventTime` | datetime | ❌ | Thời điểm thực tế |
-
-**Ràng buộc nghiệp vụ:**
-- Các lô nguồn phải cùng `ProductId`.
-- `quantity` mỗi lô nguồn không vượt quá `quantity` của lô đó.
-
-**Response `201 Created`:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "resultBatch": {
-      "batchId": 4,
-      "batchCode": "BTH-20260704-004",
-      "totalQuantity": 200.0,
-      "qrCode": "https://agritrace.vn/trace/4"
+ "success":true,
+ "data":{
+    "productId":1,
+    "name":"Cà phê Arabica",
+    "category":{
+        "id":5,
+        "name":"Coffee"
     },
-    "mergeEventId": 4,
-    "sourceBatches": [2, 3]
-  }
+    "unit":"kg",
+    "organizationId":1
+ }
 }
-```
+7.3 Tạo Product
 
-> Quan hệ gộp lô được ghi trong bảng `BatchRelations` với `RelationType = 'MERGE'`.
+POST
 
----
+/products
 
-## 11. Kiểm định Chất lượng — Quality Inspections
+Authorization:
 
-### 11.1. Lấy danh sách kiểm định
+ADMIN | MANAGER
 
-```
-GET /batches/{batchId}/inspections
-```
+Request:
 
-**Authorization:** `ADMIN` | `ORGADMIN` | `INSPECTOR`
-
-**Response `200 OK`:**
-
-```json
 {
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "inspectionId": 1,
-        "batchId": 1,
-        "inspectorId": 3,
-        "inspectorName": "Trần Văn C",
-        "result": "PASS",
-        "notes": "Mẫu đạt tiêu chuẩn VietGAP",
-        "createdAt": "2026-07-02T10:00:00Z"
-      }
-    ]
-  }
+    "name":"Cà phê Arabica",
+    "categoryId":5,
+    "unit":"kg",
+    "organizationId":1
 }
-```
 
----
+Response:
 
-### 11.2. Tạo kiểm định mới
-
-```
-POST /batches/{batchId}/inspections
-```
-
-**Authorization:** `INSPECTOR`
-
-**Request Body:**
-
-```json
 {
-  "result": "PASS",
-  "notes": "Mẫu đạt tiêu chuẩn VietGAP, độ ẩm 12.5%"
+ "success":true,
+ "message":"Tạo sản phẩm thành công",
+ "data":{
+    "productId":10
+ }
 }
-```
+7.4 Update Product
 
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `result` | string | ✅ | `PASS`, `FAIL`, `PENDING` |
-| `notes` | string | ❌ | Ghi chú chi tiết |
+PUT
 
-> Việc tạo inspection tự động ghi sự kiện `INSPECT` trong SupplyChainEvents.
+/products/{productId}
 
-**Response `201 Created`**
+Request:
 
----
-
-### 11.3. Lấy chi tiết kiểm định
-
-```
-GET /inspections/{inspectionId}
-```
-
-**Authorization:** `ADMIN` | `INSPECTOR` | `ORGADMIN`
-
----
-
-## 12. Chứng nhận — Certificates
-
-### 12.1. Lấy danh sách chứng nhận
-
-```
-GET /batches/{batchId}/certificates
-```
-
-**Authorization:** `ADMIN` | `ORGADMIN` | `INSPECTOR`
-
-**Response `200 OK`:**
-
-```json
 {
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "certificateId": 1,
-        "batchId": 1,
-        "inspectionId": 1,
-        "certificateType": "VietGAP",
-        "fileUrl": "https://cdn.agritrace.vn/certs/vietgap001.pdf",
-        "issuedAt": "2026-06-01T00:00:00Z"
-      }
-    ]
-  }
+"name":"Arabica Premium",
+"categoryId":5,
+"unit":"kg"
 }
-```
+7.5 Product Status
 
----
+PATCH
 
-### 12.2. Tạo chứng nhận mới
+/products/{productId}/status
 
-```
-POST /batches/{batchId}/certificates
-```
+Request:
 
-**Authorization:** `INSPECTOR`
-
-**Request Body:**
-
-```json
 {
-  "inspectionId": 1,
-  "certificateType": "VietGAP",
-  "fileUrl": "https://cdn.agritrace.vn/certs/vietgap001.pdf"
+"isActive":false
 }
-```
+7.6 Delete Product
 
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `inspectionId` | int | ❌ | ID kiểm định liên quan (nếu có) |
-| `certificateType` | string | ✅ | Loại chứng nhận (VietGAP, GlobalGAP, Organic, ISO...) |
-| `fileUrl` | string | ✅ | URL file chứng nhận |
+DELETE
 
-**Response `201 Created`**
+/products/{productId}
 
----
+Authorization:
 
-## 13. Thu hồi sản phẩm — Recalls
+ADMIN
+8. Supply Chain Events (Fix quyền)
+8.3 Ghi nhận Event
 
-### 13.1. Lấy danh sách thu hồi
+POST
 
-```
-GET /recalls
-```
+/batches/{batchId}/events
 
-**Authorization:** `ADMIN` | `INSPECTOR`
+Authorization:
 
-**Response `200 OK`:**
+ADMIN
+MANAGER
+FARMER
+PROCESSOR
 
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "recallId": 1,
-        "batchId": 1,
-        "reason": "Phát hiện dư lượng hóa chất vượt ngưỡng",
-        "severity": "CRITICAL",
-        "createdBy": 3,
-        "createdByName": "Trần Văn C",
-        "createdAt": "2026-07-05T10:00:00Z"
-      }
-    ]
-  }
-}
-```
+Không cho:
 
----
+INSPECTOR
+CUSTOMER
 
-### 13.2. Kích hoạt Thu hồi
+vì Event là hoạt động vận hành.
 
-```
-POST /recalls
-```
+11. Quality Inspection (Fix)
+11.1 Danh sách kiểm định
 
-**Authorization:** `ADMIN` | `INSPECTOR`
+GET
 
-**Request Body:**
+/batches/{batchId}/inspections
 
-```json
-{
-  "batchId": 1,
-  "reason": "Phát hiện dư lượng hóa chất vượt ngưỡng",
-  "severity": "CRITICAL"
-}
-```
+Authorization:
 
-| Field | Kiểu | Bắt buộc | Mô tả |
-|-------|------|----------|-------|
-| `batchId` | int | ✅ | ID lô hàng bị thu hồi |
-| `reason` | string | ✅ | Lý do thu hồi |
-| `severity` | string | ✅ | `LOW`, `MEDIUM`, `HIGH`, `CRITICAL` |
+ADMIN
+MANAGER
+INSPECTOR
+12. Certificate (Fix)
+12.1 Danh sách chứng nhận
 
-**Response `201 Created`**
+GET
 
----
+/batches/{batchId}/certificates
 
-### 13.3. Giải quyết Thu hồi
+Authorization:
 
-```
-PATCH /recalls/{recallId}/resolve
-```
+Authenticated
+13. Recall (Fix)
+13.1 Danh sách Recall
 
-**Authorization:** `ADMIN` | `INSPECTOR`
+GET
 
----
+/recalls
 
-## 14. Thông báo — Notifications
+Authorization:
 
-### 14.1. Lấy danh sách thông báo
+ADMIN
+INSPECTOR
+16. Analytics (Fix)
+Batch Distribution
 
-```
-GET /notifications
-```
+GET
 
-**Authorization:** Authenticated
+/analytics/batch-distribution
 
-**Response `200 OK`:**
+Authorization:
 
-```json
-{
-  "success": true,
-  "data": {
-    "items": [
-      {
-        "notificationId": 1,
-        "title": "Thu hồi sản phẩm",
-        "message": "Lô hàng BTH-20260701-001 đã bị thu hồi",
-        "isRead": false,
-        "createdAt": "2026-07-05T10:01:00Z"
-      }
-    ]
-  }
-}
-```
+ADMIN
+MANAGER
+17. Lookup bổ sung
 
----
+Bổ sung Category:
 
-### 14.2. Đánh dấu đã đọc
+Method	Endpoint	Description
+GET	/roles	Danh sách role
+GET	/organization-types	Loại tổ chức
+GET	/event-types	Loại event
+GET	/categories	Danh mục sản phẩm
+18. Error Code bổ sung
 
-```
-PATCH /notifications/{notificationId}/read
-```
+Thêm:
 
-**Authorization:** Authenticated
+Code	HTTP	Mô tả
+CATEGORY_IN_USE	409	Category đang được sử dụng
+PRODUCT_IN_USE	409	Product đang có Batch
+INVALID_QUANTITY	422	Số lượng không hợp lệ
+INVALID_EVENT_TYPE	422	Event không hợp lệ
+BATCH_ALREADY_RECALLED	409	Batch đã Recall
 
-**Response `200 OK`**
-
----
-
-### 14.3. Đánh dấu tất cả đã đọc
-
-```
-PATCH /notifications/read-all
-```
-
-**Authorization:** Authenticated
-
-**Response `200 OK`**
-
----
-
-### 14.4. Số thông báo chưa đọc
-
-```
-GET /notifications/unread-count
-```
-
-**Authorization:** Authenticated
-
-**Response `200 OK`:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "unreadCount": 5
-  }
-}
-```
-
----
-
-## 15. Tra cứu Công khai — Public Traceability
-
-> **Không yêu cầu xác thực.** Tối ưu mobile. Redis Cache TTL 5 phút.
-
-### 15.1. Tra cứu lô hàng theo BatchId / QR
-
-```
+# Phụ lục A — Luồng hoạt động API
+A.1. Quy trình đăng nhập
+Người dùng
+    │
+    │ POST /auth/login
+    ▼
+Backend API
+    │
+    │ Kiểm tra Email & Password
+    ▼
+SQL Server
+    │
+    │ Trả thông tin User
+    ▼
+Backend API
+    │
+    │ Sinh Access Token
+    │ Sinh Refresh Token
+    ▼
+Người dùng
+A.2. Quy trình tạo Batch
+Farmer
+    │
+    │ POST /batches
+    ▼
+Backend API
+    │
+    ├── Kiểm tra Product
+    ├── Sinh BatchCode
+    ├── Sinh QR Code
+    ├── Tạo Batch
+    ├── Ghi Event HARVEST
+    └── Sinh Hash đầu tiên
+    ▼
+SQL Server
+    │
+    ▼
+Response
+    │
+    ├── BatchId
+    ├── BatchCode
+    └── QR Code URL
+A.3. Quy trình ghi nhận Supply Chain Event
+User
+    │
+    │ POST /batches/{id}/events
+    ▼
+Backend API
+    │
+    ├── Kiểm tra quyền
+    ├── Lấy Current Hash của Event gần nhất
+    ├── Tính Previous Hash
+    ├── Sinh Current Hash mới
+    ├── Lưu Event
+    ▼
+SQL Server
+    │
+    ▼
+Response
+    │
+    ├── EventId
+    ├── PreviousHash
+    └── CurrentHash
+A.4. Quy trình Split Batch
+Operator
+    │
+    │ POST /batches/{id}/split
+    ▼
+Backend API
+    │
+    ├── Kiểm tra Batch
+    ├── Kiểm tra Quantity
+    ├── Tạo các Batch con
+    ├── Ghi BatchRelation
+    ├── Ghi Event SPLIT
+    ▼
+SQL Server
+    │
+    ▼
+Response
+A.5. Quy trình Merge Batch
+Operator
+    │
+    │ POST /batches/merge
+    ▼
+Backend API
+    │
+    ├── Kiểm tra Product
+    ├── Kiểm tra Quantity
+    ├── Tạo Batch mới
+    ├── Ghi BatchRelation
+    ├── Ghi Event MERGE
+    ▼
+SQL Server
+    │
+    ▼
+Response
+A.6. Quy trình Public Trace
+Consumer
+    │
+    │ Quét QR Code
+    ▼
 GET /public/trace/{batchId}
-```
+    │
+    ▼
+Backend API
+    │
+    ├── Kiểm tra Redis Cache
+    │
+    ├── Nếu Cache Hit
+    │       │
+    │       ▼
+    │    Trả dữ liệu
+    │
+    └── Nếu Cache Miss
+            │
+            ├── Query SQL Server
+            ├── Batch
+            ├── Events
+            ├── Certificates
+            ├── Inspections
+            ├── Recall
+            ├── Lưu Redis (TTL 5 phút)
+            ▼
+        Trả dữ liệu
 
-**Authorization:** Không yêu cầu
 
-**Response `200 OK`:** Trả về toàn bộ timeline sự kiện, chứng nhận, kiểm định, phả hệ của lô hàng nông sản.
-
-```json
+# Phụ lục B — JWT Token Structure
+Access Token Payload
 {
-  "success": true,
-  "data": {
-    "batch": {
-      "batchId": 1,
-      "batchCode": "BTH-20260701-001",
-      "productName": "Cà chua bi",
-      "productCategory": "Rau củ",
-      "quantity": 500.0,
-      "currentOrganizationName": "Nông trại Sơn La",
-      "qrCode": "https://agritrace.vn/trace/1",
-      "createdAt": "2026-07-01T06:00:00Z"
-    },
-    "events": [
-      {
-        "eventType": "HARVEST",
-        "organizationName": "Nông trại Sơn La",
-        "location": "Xã Mường Bon, Sơn La",
-        "eventData": null,
-        "createdAt": "2026-07-01T06:05:00Z"
-      }
-    ],
-    "inspections": [],
-    "certificates": [],
-    "recalls": []
-  }
+    "sub": "1",
+    "email": "admin@agritrace.vn",
+    "role": "ADMIN",
+    "organizationId": 1,
+    "organizationType": "FARM",
+    "jti": "2fcf44e3-a123-4d56-bf87-123456789abc",
+    "iat": 1783400400,
+    "exp": 1783404000
 }
-```
+JWT Claims
+Claim	Ý nghĩa
+sub	ID người dùng
+email	Email đăng nhập
+role	Vai trò của người dùng
+organizationId	ID tổ chức
+organizationType	Loại tổ chức
+jti	JWT Identifier
+iat	Thời điểm phát hành Token
+exp	Thời điểm hết hạn Token
+Refresh Token
+Được lưu trong bảng RefreshTokens.
+Thời gian hết hạn mặc định 07 ngày.
+Hỗ trợ Token Rotation.
+Khi Refresh Token mới được cấp, Refresh Token cũ sẽ bị thu hồi (Revoke).
 
----
+Phụ lục C — Tổng hợp Endpoint
+STT	Method	Endpoint	Authorization	Mô tả
+Authentication				
+1	POST	/auth/login	Public	Đăng nhập
+2	POST	/auth/refresh-token	Public	Làm mới Access Token
+3	POST	/auth/logout	Bearer	Đăng xuất
+4	GET	/auth/me	Bearer	Thông tin người dùng hiện tại
+5	PUT	/auth/change-password	Bearer	Đổi mật khẩu
+6	POST	/auth/forgot-password	Public	Quên mật khẩu
+7	POST	/auth/reset-password	Public	Đặt lại mật khẩu
+Organizations				
+8	GET	/organizations	ADMIN	Danh sách tổ chức
+9	GET	/organizations/{id}	ADMIN	Chi tiết tổ chức
+10	POST	/organizations	ADMIN	Tạo tổ chức
+11	PUT	/organizations/{id}	ADMIN	Cập nhật tổ chức
+12	PATCH	/organizations/{id}/status	ADMIN	Thay đổi trạng thái
+13	GET	/organizations/{id}/users	ADMIN, MANAGER	Người dùng thuộc tổ chức
+14	GET	/organizations/{id}/products	ADMIN, MANAGER	Sản phẩm của tổ chức
+Users				
+15	GET	/users	ADMIN, MANAGER	Danh sách người dùng
+16	GET	/users/{id}	ADMIN, MANAGER, Self	Chi tiết người dùng
+17	POST	/users	ADMIN, MANAGER	Tạo người dùng
+18	PUT	/users/{id}	ADMIN, MANAGER, Self	Cập nhật người dùng
+19	PATCH	/users/{id}/status	ADMIN, MANAGER	Khóa/Mở khóa tài khoản
+20	GET	/users/profile	Bearer	Hồ sơ cá nhân
+21	PUT	/users/profile	Bearer	Cập nhật hồ sơ
+Categories				
+22	GET	/categories	Authenticated	Danh sách danh mục
+23	GET	/categories/{id}	Authenticated	Chi tiết danh mục
+24	POST	/categories	ADMIN, MANAGER	Tạo danh mục
+25	PUT	/categories/{id}	ADMIN, MANAGER	Cập nhật danh mục
+26	DELETE	/categories/{id}	ADMIN	Xóa danh mục
+Products				
+27	GET	/products	Authenticated	Danh sách sản phẩm
+28	GET	/products/{id}	Authenticated	Chi tiết sản phẩm
+29	POST	/products	ADMIN, MANAGER	Tạo sản phẩm
+30	PUT	/products/{id}	ADMIN, MANAGER	Cập nhật sản phẩm
+31	DELETE	/products/{id}	ADMIN	Xóa sản phẩm
+32	GET	/products/{id}/images	Authenticated	Danh sách ảnh sản phẩm
+33	POST	/products/{id}/images	ADMIN, MANAGER	Upload ảnh
+34	DELETE	/products/images/{imageId}	ADMIN, MANAGER	Xóa ảnh
+Batches				
+35	GET	/batches	Authenticated	Danh sách Batch
+36	GET	/batches/{id}	Authenticated	Chi tiết Batch
+37	POST	/batches	FARMER, MANAGER	Tạo Batch
+38	PUT	/batches/{id}	FARMER, MANAGER	Cập nhật Batch
+39	PATCH	/batches/{id}/status	MANAGER	Cập nhật trạng thái
+40	GET	/batches/{id}/qr-code	Authenticated	Lấy QR Code
+41	GET	/batches/{id}/images	Authenticated	Danh sách ảnh Batch
+42	POST	/batches/{id}/images	FARMER, MANAGER, PROCESSOR	Upload ảnh Batch
+43	DELETE	/batches/images/{imageId}	FARMER, MANAGER	Xóa ảnh Batch
+Supply Chain Events				
+44	GET	/batches/{id}/events	Authenticated	Danh sách Event
+45	GET	/events/{id}	Authenticated	Chi tiết Event
+46	POST	/batches/{id}/events	FARMER, MANAGER, PROCESSOR	Thêm Event
+47	GET	/batches/{id}/events/verify	ADMIN, INSPECTOR	Kiểm tra Hash Chain
+Batch Split & Merge				
+48	POST	/batches/{id}/split	PROCESSOR, MANAGER	Tách Batch
+49	POST	/batches/merge	PROCESSOR, MANAGER	Gộp Batch
+Quality Inspection				
+50	GET	/batches/{id}/inspections	ADMIN, INSPECTOR	Danh sách kiểm định
+51	POST	/batches/{id}/inspections	INSPECTOR	Tạo kiểm định
+52	GET	/inspections/{id}	ADMIN, INSPECTOR	Chi tiết kiểm định
+53	PUT	/inspections/{id}	INSPECTOR	Cập nhật kiểm định
+Certificates				
+54	GET	/batches/{id}/certificates	Authenticated	Danh sách chứng nhận
+55	GET	/certificates/{id}	Authenticated	Chi tiết chứng nhận
+56	POST	/batches/{id}/certificates	INSPECTOR	Cấp chứng nhận
+57	DELETE	/certificates/{id}	ADMIN	Thu hồi chứng nhận
+Recalls				
+58	GET	/recalls	ADMIN, INSPECTOR	Danh sách Recall
+59	GET	/recalls/{id}	ADMIN, INSPECTOR	Chi tiết Recall
+60	POST	/recalls	ADMIN, INSPECTOR	Thu hồi Batch
+61	PATCH	/recalls/{id}/resolve	ADMIN, INSPECTOR	Kết thúc Recall
+Notifications				
+62	GET	/notifications	Bearer	Danh sách thông báo
+63	PATCH	/notifications/{id}/read	Bearer	Đánh dấu đã đọc
+64	PATCH	/notifications/read-all	Bearer	Đánh dấu tất cả
+65	GET	/notifications/unread-count	Bearer	Số thông báo chưa đọc
+Public Traceability				
+66	GET	/public/trace/{batchId}	Public	Tra cứu QR
+67	GET	/public/trace/{batchId}/lineage	Public	Phả hệ Batch
+Analytics				
+68	GET	/analytics/overview	ADMIN	Dashboard tổng quan
+69	GET	/analytics/batch-distribution	ADMIN, MANAGER	Thống kê Batch
+70	GET	/analytics/processing-time	ADMIN, MANAGER	Thời gian xử lý
+71	GET	/analytics/traceback/{batchId}	ADMIN, INSPECTOR	Truy vết ngược
+Lookup				
+72	GET	/roles	Authenticated	Danh sách Role
+73	GET	/organization-types	Authenticated	Danh sách loại tổ chức
+74	GET	/event-types	Authenticated	Danh sách loại Event
+75	GET	/inspection-results	Authenticated	Danh sách kết quả kiểm định
+76	GET	/certificate-types	Authenticated	Danh sách loại chứng nhận
+77	GET	/recall-severities	Authenticated	Danh sách mức độ Recall
+78	GET	/units	Authenticated	Danh sách đơn vị tính
 
-### 15.2. Lấy phả hệ lô hàng (Lineage)
-
-```
-GET /public/trace/{batchId}/lineage
-```
-
-**Authorization:** Không yêu cầu
-
-**Response `200 OK`:**
-
-```json
-{
-  "success": true,
-  "data": {
-    "nodes": [
-      { "batchId": 1, "batchCode": "BTH-20260701-001", "quantity": 500.0 },
-      { "batchId": 2, "batchCode": "BTH-20260703-002", "quantity": 100.0 },
-      { "batchId": 3, "batchCode": "BTH-20260703-003", "quantity": 150.0 }
-    ],
-    "edges": [
-      { "sourceBatchId": 1, "targetBatchId": 2, "relationType": "SPLIT" },
-      { "sourceBatchId": 1, "targetBatchId": 3, "relationType": "SPLIT" }
-    ]
-  }
-}
-```
-
----
-
-## 16. Dashboard & Analytics
-
-### 16.1. Tổng quan hệ thống
-
-```
-GET /analytics/overview
-```
-
-**Authorization:** `ADMIN`
-
----
-
-### 16.2. Phân bổ lô hàng theo tổ chức
-
-```
-GET /analytics/batch-distribution
-```
-
-**Authorization:** `ADMIN` | `ORGADMIN`
-
----
-
-### 16.3. Thời gian xử lý trung bình
-
-```
-GET /analytics/processing-time
-```
-
-**Authorization:** `ADMIN` | `ORGADMIN`
-
----
-
-### 16.4. Truy vết ngược (Traceback Analysis)
-
-```
-GET /analytics/traceback/{batchId}
-```
-
-**Authorization:** `ADMIN` | `INSPECTOR`
-
----
-
-## 17. Lookup / Danh mục hệ thống
-
-Phân quyền: **Authenticated**
-
-| Endpoint | Mô tả |
-|----------|-------|
-| `GET /roles` | Danh sách vai trò (`ADMIN`, `ORGADMIN`, `FARMER`, `OPERATOR`, `INSPECTOR`) |
-| `GET /organization-types` | Danh sách loại tổ chức (`FARM`, `PROCESSOR`, `DISTRIBUTOR`, `RETAILER`) |
-| `GET /event-types` | Danh sách loại sự kiện (`HARVEST`, `PROCESS`, `PACKAGE`, `TRANSPORT`, `RECEIVE`, `INSPECT`, `SPLIT`, `MERGE`) |
-
-> Các danh mục này được định nghĩa tĩnh trong ứng dụng (enum/hằng số), không có bảng lookup riêng trong CSDL.
-
----
-
-## 18. Mã lỗi chung
-
-| Error Code | HTTP | Mô tả |
-|-----------|------|-------|
-| `VALIDATION_ERROR` | 400 | Dữ liệu đầu vào không hợp lệ |
-| `REQUIRED_FIELD` | 400 | Thiếu trường bắt buộc |
-| `INVALID_FORMAT` | 400 | Định dạng dữ liệu sai |
-| `WRONG_CURRENT_PASSWORD` | 400 | Mật khẩu hiện tại sai |
-| `PASSWORD_MISMATCH` | 400 | Mật khẩu xác nhận không khớp |
-| `UNAUTHORIZED` | 401 | Chưa xác thực |
-| `TOKEN_EXPIRED` | 401 | Access Token hết hạn |
-| `INVALID_REFRESH_TOKEN` | 401 | Refresh Token không hợp lệ |
-| `REFRESH_TOKEN_EXPIRED` | 401 | Refresh Token hết hạn |
-| `FORBIDDEN` | 403 | Không đủ quyền thực hiện |
-| `ACCOUNT_DEACTIVATED` | 403 | Tài khoản bị vô hiệu hóa |
-| `EVENT_TYPE_NOT_ALLOWED` | 403 | Loại tổ chức không được phép thực hiện event |
-| `SPLIT_NOT_ALLOWED` | 403 | Organization Type không được tách lô |
-| `NOT_FOUND` | 404 | Không tìm thấy tài nguyên |
-| `BATCH_NOT_FOUND` | 404 | Lô hàng không tồn tại |
-| `DUPLICATE_EMAIL` | 409 | Email đã tồn tại |
-| `DUPLICATE_NAME` | 409 | Tên đã tồn tại |
-| `BATCH_RECALLED` | 409 | Lô hàng đang bị thu hồi |
-| `QUANTITY_EXCEEDS_REMAINING` | 422 | Số lượng vượt quá lượng còn lại |
-| `PRODUCT_ID_MISMATCH` | 422 | Sản phẩm không đồng nhất giữa các lô nguồn |
-| `MERGE_SOURCE_CONFLICT` | 422 | Lô nguồn không hợp lệ hoặc đã bị thu hồi |
-| `HASH_CHAIN_BROKEN` | 422 | Chuỗi hash bị gãy — toàn vẹn dữ liệu vi phạm |
-| `INTERNAL_ERROR` | 500 | Lỗi hệ thống nội bộ |
-
----
-
-## Phụ lục A — Sơ đồ luồng API
-
-```mermaid
-sequenceDiagram
-    participant F as Farmer (FARM)
-    participant API as Backend API
-    participant DB as SQL Server
-    participant Cache as Redis
-
-    F->>API: POST /batches
-    API->>DB: INSERT Batches
-    API->>DB: INSERT SupplyChainEvent(Harvest) + CurrentHash
-    API-->>F: 201 batchId, batchCode, qrCode
-
-    F->>API: POST /batches/{id}/events
-    API->>DB: Lấy CurrentHash event gần nhất
-    API->>DB: INSERT SupplyChainEvent(PreviousHash, CurrentHash)
-    API-->>F: 201 eventId, currentHash
-
-    Note over API, Cache: Consumer quét mã QR
-    Consumer->>API: GET /public/trace/{batchId}
-    API->>Cache: Kiểm tra Cache
-    alt Cache hit
-        Cache-->>API: Trả dữ liệu cached
-    else Cache miss
-        API->>DB: Query Batch + Events + Certificates + Inspections + Recalls
-        API->>Cache: Lưu với TTL 5 phút
-    end
-    API-->>Consumer: 200 timeline, certificates, inspections
-```
-
----
-
-## Phụ lục B — JWT Token Structure
-
-**Access Token Payload (Claims):**
-
-```json
-{
-  "sub": "1",
-  "email": "user@agritrace.vn",
-  "role": "FARMER",
-  "organizationId": 1,
-  "organizationType": "FARM",
-  "jti": "unique-jwt-id",
-  "iat": 1751688000,
-  "exp": 1751691600
-}
-```
-
-| Claim | Mô tả |
-|-------|-------|
-| `sub` | UserId (int) |
-| `email` | Email người dùng |
-| `role` | Tên Role (dùng RBAC) |
-| `organizationId` | ID tổ chức |
-| `organizationType` | Loại tổ chức (dùng kiểm tra quyền Event) |
-| `jti` | JWT ID — liên kết với RefreshToken |
-| `iat` | Thời điểm cấp phát (Unix timestamp) |
-| `exp` | Thời điểm hết hạn (mặc định: 1 giờ) |
-
-**Refresh Token:** Lưu trong bảng RefreshTokens, thời hạn 7 ngày, hỗ trợ **Token Rotation**.
-
----
-
-## Phụ lục C — Tổng hợp Endpoint
-
-| # | Method | Endpoint | Auth | Mô tả |
-|---|--------|----------|------|-------|
-| 1 | POST | `/auth/login` | Public | Đăng nhập |
-| 2 | POST | `/auth/refresh-token` | Public | Làm mới token |
-| 3 | POST | `/auth/logout` | Bearer | Đăng xuất |
-| 4 | GET | `/auth/me` | Bearer | Thông tin bản thân |
-| 5 | PUT | `/auth/change-password` | Bearer | Đổi mật khẩu |
-| 6 | GET | `/organizations` | ADMIN | Danh sách tổ chức |
-| 7 | GET | `/organizations/{id}` | ADMIN/ORGADMIN | Chi tiết tổ chức |
-| 8 | POST | `/organizations` | ADMIN | Tạo tổ chức |
-| 9 | PUT | `/organizations/{id}` | ADMIN | Cập nhật tổ chức |
-| 10 | PATCH | `/organizations/{id}/status` | ADMIN | Đổi trạng thái tổ chức |
-| 11 | GET | `/users` | ADMIN/ORGADMIN | Danh sách người dùng |
-| 12 | GET | `/users/{id}` | ADMIN/ORGADMIN/Self | Chi tiết người dùng |
-| 13 | POST | `/users` | ADMIN/ORGADMIN | Tạo người dùng |
-| 14 | PUT | `/users/{id}` | ADMIN/ORGADMIN/Self | Cập nhật người dùng |
-| 15 | PATCH | `/users/{id}/status` | ADMIN/ORGADMIN | Đổi trạng thái tài khoản |
-| 16 | GET | `/products` | Authenticated | Danh sách sản phẩm |
-| 17 | GET | `/products/{id}` | Authenticated | Chi tiết sản phẩm |
-| 18 | POST | `/products` | ADMIN/ORGADMIN | Tạo sản phẩm |
-| 19 | PUT | `/products/{id}` | ADMIN/ORGADMIN | Cập nhật sản phẩm |
-| 20 | GET | `/batches` | Authenticated | Danh sách lô hàng |
-| 21 | GET | `/batches/{id}` | Authenticated | Chi tiết lô hàng |
-| 22 | POST | `/batches` | ORGADMIN/FARMER | Tạo lô hàng |
-| 23 | GET | `/batches/{id}/qr-code` | Authenticated | Tải QR Code |
-| 24 | POST | `/batches/{id}/images` | ORGADMIN/FARMER/OPERATOR | Upload ảnh lô hàng |
-| 25 | GET | `/batches/{id}/events` | Authenticated | Lịch sử sự kiện |
-| 26 | POST | `/batches/{id}/events` | ORGADMIN/FARMER/OPERATOR | Ghi sự kiện mới |
-| 27 | GET | `/batches/{id}/events/verify-integrity` | ADMIN/INSPECTOR | Xác minh Hash Chain |
-| 28 | POST | `/batches/{id}/split` | ORGADMIN/OPERATOR | Tách lô |
-| 29 | POST | `/batches/merge` | ORGADMIN/OPERATOR | Gộp lô |
-| 30 | GET | `/batches/{id}/inspections` | ADMIN/ORGADMIN/INSPECTOR | Danh sách kiểm định |
-| 31 | POST | `/batches/{id}/inspections` | INSPECTOR | Tạo kiểm định |
-| 32 | GET | `/inspections/{id}` | ADMIN/INSPECTOR/ORGADMIN | Chi tiết kiểm định |
-| 33 | GET | `/batches/{id}/certificates` | ADMIN/ORGADMIN/INSPECTOR | Danh sách chứng nhận |
-| 34 | POST | `/batches/{id}/certificates` | INSPECTOR | Tạo chứng nhận |
-| 35 | GET | `/recalls` | ADMIN/INSPECTOR | Danh sách thu hồi |
-| 36 | POST | `/recalls` | ADMIN/INSPECTOR | Kích hoạt thu hồi |
-| 37 | PATCH | `/recalls/{id}/resolve` | ADMIN/INSPECTOR | Giải quyết thu hồi |
-| 38 | GET | `/notifications` | Bearer | Danh sách thông báo |
-| 39 | PATCH | `/notifications/{id}/read` | Bearer | Đánh dấu đọc |
-| 40 | PATCH | `/notifications/read-all` | Bearer | Đánh dấu tất cả đọc |
-| 41 | GET | `/notifications/unread-count` | Bearer | Số thông báo chưa đọc |
-| 42 | GET | `/public/trace/{batchId}` | **Public** | Tra cứu công khai |
-| 43 | GET | `/public/trace/{batchId}/lineage` | **Public** | Phả hệ lô hàng |
-| 44 | GET | `/analytics/overview` | ADMIN | Tổng quan hệ thống |
-| 45 | GET | `/analytics/batch-distribution` | ADMIN/ORGADMIN | Phân bổ lô hàng |
-| 46 | GET | `/analytics/processing-time` | ADMIN/ORGADMIN | Thời gian xử lý |
-| 47 | GET | `/analytics/traceback/{batchId}` | ADMIN/INSPECTOR | Truy vết ngược |
-| 48 | GET | `/roles` | Authenticated | Lookup: Roles |
-| 49 | GET | `/organization-types` | Authenticated | Lookup: Org Types |
-| 50 | GET | `/event-types` | Authenticated | Lookup: Event Types |
-
----
-
-*Tài liệu dựa trên: Business_Process.md · Database.md · Database_va_Nghiep_vu.md*  
-*Phiên bản: 2.0 — Cập nhật: 2026-07-06*
+Tài liệu này được xây dựng dựa trên thiết kế cơ sở dữ liệu, yêu cầu nghiệp vụ và kiến trúc của hệ thống Agricultural Supply Chain Traceability System. Các API tuân thủ chuẩn RESTful, sử dụng JWT Bearer Authentication, Entity Framework Core, SQL Server và Hash Chain nhằm đảm bảo tính toàn vẹn dữ liệu và khả năng truy xuất nguồn gốc trong chuỗi cung ứng nông sản.

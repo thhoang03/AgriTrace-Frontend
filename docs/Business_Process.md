@@ -1,470 +1,325 @@
-# Agricultural Supply Chain Traceability System
+Agricultural Supply Chain Traceability System
+Business Process Specification
+Version 2.0
+1. System Overview
 
-## Business Process Specification
+Hệ thống quản lý toàn bộ vòng đời của một lô nông sản từ:
 
-Version: 2.0 (BA Fixed Edition)
+Farm
+ ↓
+Processing
+ ↓
+Packaging
+ ↓
+Transportation
+ ↓
+Distribution
+ ↓
+Retail
+ ↓
+Consumer
 
----
 
-# 1. Overview
+Mỗi Batch có:
 
-The Agricultural Supply Chain Traceability System records the complete lifecycle of an agricultural product batch from farm to consumer.
+Batch Code duy nhất
+QR Code
+Product
+Current Organization
+Supply Chain Timeline
 
-Each batch has a unique QR Code.
+Mọi hoạt động tạo ra một:
 
-Every operation performed on a batch creates an immutable Supply Chain Event.
+SupplyChainEvent
 
-SupplyChainEvents are append-only and cannot be modified or deleted.
 
-The integrity of the event timeline is ensured using a SHA-256 Hash Chain mechanism.
+Event:
 
----
+Không update
+Không delete
+Append-only
 
-# 2. Actors
+Tính toàn vẹn dùng:
 
-## 2.1 System Admin
+SHA-256 Hash Chain
 
-System governance and control.
+2. Actors (FIX)
+2.1 System Admin
 
-Responsibilities:
-
-- Manage users and roles
-- Manage organizations
-- Manage system configuration data
-- Create and manage recall events
-- Monitor system activities
-
----
-
-## 2.2 Farmer (Producer)
-
-Initial stage of the supply chain.
-
-Responsibilities:
-
-- Create agricultural batch
-- Record harvest information
-- Transfer batch to supply chain operator
-
----
-
-## 2.3 Supply Chain Operator
-
-Handles processing and logistics.
+Quản trị toàn hệ thống.
 
 Responsibilities:
 
-- Receive batches
-- Process and package products
-- Transport and distribute batches
-- Record supply chain events
-- Perform batch split and merge operations
+Quản lý Organization
+Quản lý User
+Quản lý Role
+Quản lý Event Type
+Tạo Recall
+Monitor system
 
----
+Database:
 
-## 2.4 Inspector
+Users
+Organizations
+EventTypes
 
-Quality assurance authority.
+2.2 Organization Admin
+
+Đại diện quản lý một doanh nghiệp.
+
+Ví dụ:
+
+Da Lat Farm
+
+Vin Distribution
+
+ABC Retail
+
 
 Responsibilities:
 
-- Perform quality inspection
-- Record inspection results
-- Upload certificates (VietGAP, GlobalGAP, Organic, ISO)
-- Approve or reject batch quality
+Quản lý nhân viên trong tổ chức
+Quản lý sản phẩm
+Quản lý Batch
+Xem báo cáo
 
----
+Database:
 
-## 2.5 Consumer
+Products
 
-End user.
+Batches
+
+Users
+
+2.3 Farmer
+
+Đã tách riêng.
+
+Không phải Operator.
 
 Responsibilities:
 
-- Scan QR Code
-- View full traceability timeline
-- View certificates and recall status
+Tạo Batch mới
+Nhập thông tin thu hoạch
+Tạo Harvest Event
 
-Consumer does not require authentication.
+Ví dụ:
 
----
+Harvest tomato 1000kg
 
-# 3. Main Business Processes
+Generate QR
 
-The system consists of the following major business processes:
 
-1. User Authentication
-2. Organization Management
-3. Product Management
-4. Batch Management
-5. Supply Chain Event Management
-6. Batch Split
-7. Batch Merge
-8. Quality Inspection
-9. Certificate Management
-10. Product Recall
-11. Public Traceability
-12. Notification
+Database:
 
----
+Batches
 
-# 4. Business Process Descriptions
+SupplyChainEvents
 
-## 4.1 User Authentication
+2.4 Operator
 
-Goal: Authenticate users using JWT.
+Nhân viên vận hành trong Processor / Distributor / Retailer.
+
+Ví dụ:
+
+Nhân viên kho.
+
+Responsibilities:
+
+Receive Batch
+Processing Event
+Packaging Event
+Transport Event
+Distribution Event
+Split Batch
+Merge Batch
+
+Database:
+
+SupplyChainEvents
+
+BatchSplits
+
+BatchMerges
+
+2.5 Inspector
+
+Người kiểm định.
+
+Responsibilities:
+
+Kiểm tra chất lượng
+Upload certificate
+Tạo inspection report
+
+Database:
+
+QualityInspections
+
+Certificates
+
+2.6 Consumer
+
+Không login.
+
+Responsibilities:
+
+Scan QR
+View timeline
+View certificate
+View recall
+
+Database:
+
+Read only:
+
+Batches
+
+Events
+
+Certificates
+
+Recalls
+
+3. Main Business Processes
+
+Anh sửa lại còn 10 process chính.
+
+Không nên chia nhỏ quá vì đề yêu cầu:
+
+Main Business Processes
+
+BP01 - User Authentication
+
+Actor:
+
+System User
+
 
 Flow:
 
 Login
+
 ↓
-Validate credentials
+
+Input Email Password
+
 ↓
-Generate access token
+
+Validate
+
 ↓
-Generate refresh token
+
+Generate JWT Access Token
+
 ↓
-Return user information
 
-Alternative:
+Generate Refresh Token
 
-Invalid credentials → Unauthorized response
+↓
 
----
+Return User Profile
 
-## 4.2 Organization Management
 
-Actor: System Admin
+Database:
+
+Users
+
+BP02 - Organization Management
+
+Actor:
+
+System Admin
+
 
 Flow:
 
-Create organization
+Create Organization
+
 ↓
-Define organization type
+
+Select Organization Type
+
+(FARM/PROCESSOR/DISTRIBUTOR/RETAILER)
+
 ↓
-Assign admin user
+
+Create Organization Admin
+
 ↓
-Activate organization
 
-Outputs:
+Activate Organization
 
-- Organization
-- Admin User
 
----
+Output:
 
-## 4.3 Product Management
+Organization
 
-Actor: System Admin / Organization Admin (optional simplification)
+User
+
+
+Database:
+
+Organizations
+
+Users
+
+OrganizationTypes
+
+BP03 - Product Management
+
+Actor:
+
+Organization Admin
+
 
 Flow:
 
-Create category
+Create Category
+
 ↓
-Create product
+
+Create Unit
+
 ↓
-Assign unit
+
+Create Product
+
 ↓
-Activate product
 
-Outputs:
+Assign Product Owner Organization
 
-- Product catalog
+↓
 
----
+Product Available
 
-## 4.4 Batch Management
 
-Actor: Farmer
+Database:
+
+Products
+
+Categories
+
+Units
+
+BP04 - Batch Creation
+
+Actor:
+
+Farmer
+
 
 Flow:
 
-Select product
-↓
-Input harvest information
-↓
-Input quantity
-↓
-Generate batch code
-↓
-Generate QR code
-↓
-Save batch
-
-Outputs:
-
-- Batch
-- QR Code
-
----
-
-## 4.5 Supply Chain Event Management
-
-Actor: Supply Chain Operator
-
-Flow:
-
-Scan QR Code
-↓
-Find batch
-↓
-Select event type
-↓
-Input event details
-↓
-Generate previous hash
-↓
-Generate current hash
-↓
-Save event
-↓
-Update timeline
-
-Rules:
-
-- Append-only
-- No update/delete allowed
-- Hash chain ensures integrity
-
----
-
-## 4.6 Batch Split
-
-Actor: Operator
-
-Flow:
-
-Select batch
-↓
-Define split quantities
-↓
-Create child batches
-↓
-Record split event
-↓
-Generate new QR codes
-
----
-
-## 4.7 Batch Merge
-
-Actor: Operator
-
-Flow:
-
-Select multiple batches
-↓
-Define merge quantity
-↓
-Create merged batch
-↓
-Record merge event
-↓
-Generate new QR code
-
----
-
-## 4.8 Quality Inspection
-
-Actor: Inspector
-
-Flow:
-
-Select batch
-↓
-Perform inspection
-↓
-Record result
-↓
-Upload attachments
-
----
-
-## 4.9 Certificate Management
-
-Actor: Inspector
-
-Flow:
-
-Select batch
-↓
-Select inspection
-↓
-Upload certificate
-↓
-Attach to batch
-
----
-
-## 4.10 Product Recall
-
-Actor: System Admin / Inspector
-
-Flow:
-
-Select batch
-↓
-Create recall
-↓
-Define severity
-↓
-Notify stakeholders
-↓
-Update public traceability
-
----
-
-## 4.11 Public Traceability
-
-Actor: Consumer
-
-Flow:
-
-Scan QR
-↓
-Open public page
-↓
-Load batch
-↓
-Load events timeline
-↓
-Load inspections
-↓
-Load certificates
-↓
-Display full history
-
----
-
-## 4.12 Notification
-
-Actor: System
-
-Trigger events:
-
-- Recall created
-- Inspection completed
-- Certificate issued
-- Batch updated
-
-Flow:
-
-System event triggered
-↓
-Identify affected users
-↓
-Create notifications
-↓
-User views notifications
-
----
-
-# 5. Core Business Rules
-
-## Batch Rules
-
-- Each batch belongs to one product
-- Each batch belongs to one current operator
-- Batch may have parent/root batch
-
-## Supply Chain Event Rules
-
-- One batch → many events
-- Events are append-only
-- No update or delete
-
----
-
-# End of Document
-
-
-Save Event
+Create Batch
 
 ↓
 
-Update Timeline
-
-Outputs
-
-SupplyChainEvent
-
-Important Rules
-
-Events are Append-only.
-
-Events cannot be updated.
-
-Events cannot be deleted.
-
-Every event references the previous event using PreviousHash.
-
----
-
-# Business Process 6
-## Batch Split
-
-Actor
-
-Operator
-
-Goal
-
-Split one batch into multiple batches.
-
-Flow
-
-Select Parent Batch
+Select Product
 
 ↓
 
-Input Child Quantities
-
-↓
-
-Create Child Batch
-
-↓
-
-Create Split Event
-
-↓
-
-Generate New QR Codes
-
-↓
-
-Update Remaining Quantity
-
-Outputs
-
-Parent Batch
-
-Child Batches
-
-Business Rules
-
-The total child quantity must not exceed the remaining quantity of the parent batch.
-
-Parent batch remains in the system.
-
-Every child batch stores ParentBatchId and RootBatchId.
-
----
-
-# Business Process 7
-## Batch Merge
-
-Actor
-
-Operator
-
-Goal
-
-Merge multiple batches into one batch.
-
-Flow
-
-Select Source Batches
+Input Harvest Date
 
 ↓
 
@@ -472,11 +327,7 @@ Input Quantity
 
 ↓
 
-Create Merge Event
-
-↓
-
-Create Result Batch
+Generate Batch Code
 
 ↓
 
@@ -484,34 +335,218 @@ Generate QR Code
 
 ↓
 
-Save Merge Information
+Save Batch
 
-Outputs
+↓
 
-Merged Batch
+Create Harvest Event
 
-Business Rules
 
-Source batches remain in history.
+Database:
 
-Merge relationship is stored in BatchMergeSources.
+Batches
 
-Timeline remains traceable.
+SupplyChainEvents
 
----
+BP05 - Supply Chain Event Management ⭐
 
-# Business Process 8
-## Quality Inspection
+Actor:
 
-Actor
+Operator
+
+Farmer
+
+
+Flow:
+
+Scan QR
+
+↓
+
+Find Batch
+
+↓
+
+Validate Permission
+
+↓
+
+Select Event Type
+
+↓
+
+Input Event Data
+
+↓
+
+Generate Previous Hash
+
+↓
+
+Generate Current Hash
+
+↓
+
+Save Event
+
+↓
+
+Update Batch Status
+
+
+Example:
+
+Farmer:
+
+HARVEST
+
+
+Processor:
+
+PROCESSING
+
+PACKAGING
+
+
+Distributor:
+
+TRANSPORT
+
+DISTRIBUTION
+
+
+Retail:
+
+RETAIL
+
+
+Database:
+
+SupplyChainEvents
+
+BP06 - Batch Split
+
+Actor:
+
+Operator
+
+
+Example:
+
+1000kg Rice
+
+
+Split
+
+
+400kg Shop A
+
+600kg Shop B
+
+
+Flow:
+
+Select Batch
+
+↓
+
+Input Split Quantity
+
+↓
+
+Validate Remaining Quantity
+
+↓
+
+Create Child Batch
+
+↓
+
+Create BatchSplit
+
+↓
+
+Create Split Event
+
+↓
+
+Generate QR
+
+
+Database:
+
+Batches
+
+BatchSplits
+
+BatchSplitDetails
+
+SupplyChainEvents
+
+BP07 - Batch Merge
+
+Actor:
+
+Operator
+
+
+Example:
+
+Batch A
+
++
+
+Batch B
+
+
+=
+
+Batch C
+
+
+Flow:
+
+Select Source Batches
+
+↓
+
+Validate Same Product
+
+↓
+
+Create New Batch
+
+↓
+
+Create Merge Record
+
+↓
+
+Create Merge Event
+
+↓
+
+Generate QR
+
+
+Database:
+
+Batches
+
+BatchMerges
+
+BatchMergeSources
+
+SupplyChainEvents
+
+BP08 - Quality Inspection
+
+Actor:
 
 Inspector
 
-Goal
 
-Record product quality.
-
-Flow
+Flow:
 
 Select Batch
 
@@ -525,87 +560,35 @@ Input Result
 
 ↓
 
-Upload Attachment
+Upload Certificate
 
 ↓
 
 Save Inspection
 
-Outputs
 
-Quality Inspection
+Database:
 
-Business Rules
+QualityInspections
 
-Inspection history cannot be deleted.
+Certificates
 
-Multiple inspections are allowed.
+BP09 - Product Recall
 
----
+Actor:
 
-# Business Process 9
-## Certificate Management
-
-Actor
+System Admin
 
 Inspector
 
-Goal
 
-Attach certificates to batches.
-
-Flow
+Flow:
 
 Select Batch
 
 ↓
 
-Select Inspection
-
-↓
-
-Upload Certificate
-
-↓
-
-Save Certificate
-
-Outputs
-
-Certificate
-
-Examples
-
-VietGAP
-
-GlobalGAP
-
-Organic
-
-ISO
-
----
-
-# Business Process 10
-## Product Recall
-
-Actors
-
-Admin
-
-Inspector
-
-Goal
-
-Recall unsafe products.
-
-Flow
-
-Select Batch
-
-↓
-
-Input Recall Reason
+Input Reason
 
 ↓
 
@@ -617,38 +600,27 @@ Create Recall
 
 ↓
 
-Notify Related Organizations
+Find Related Organizations
 
 ↓
 
-Notify Consumers
+Send Notification
 
-Outputs
 
-Recall
+Database:
 
-Notification
+Recalls
 
-Business Rules
+Notifications
 
-Recall never deletes batch history.
+BP10 - Public Traceability
 
-Recall status is visible in Public Traceability.
-
----
-
-# Business Process 11
-## Public Traceability
-
-Actor
+Actor:
 
 Consumer
 
-Goal
 
-Display complete product history.
-
-Flow
+Flow:
 
 Scan QR
 
@@ -662,247 +634,98 @@ Find Batch
 
 ↓
 
-Load Timeline
+Load Events
 
 ↓
 
-Load Certificates
+Load Inspection
 
 ↓
 
-Load Inspections
+Load Certificate
 
 ↓
 
-Load Split History
-
-↓
-
-Load Merge History
+Load Recall Status
 
 ↓
 
 Display Timeline
 
-Outputs
 
-Complete Traceability Information
+Database:
 
-Consumer permissions
+Batches
 
-Read only.
+SupplyChainEvents
 
-No login required.
+QualityInspections
 
----
+Certificates
 
-# Business Process 12
-## Notification
+Recalls
 
-Actors
+4. Business Rules (FIX)
+Batch Rule
 
-System
+Một Batch:
 
-Goal
+belongs to one Product
 
-Notify users.
+belongs to one Current Organization
 
-Trigger Events
+has one QR Code
 
-Recall Created
+Event Rule
 
-Inspection Completed
+Một Event:
 
-Certificate Expired
+belongs to one Batch
 
-Batch Received
+belongs to one Organization
 
-Batch Delivered
+belongs to one User
 
-Flow
+belongs to one EventType
 
-Business Event
 
-↓
+Không được:
 
-Find Related Users
+UPDATE
 
-↓
+DELETE
 
-Create Notification
+Hash Chain Rule
 
-↓
+Ví dụ:
 
-User Login
+Event 1:
 
-↓
+CurrentHash = ABC123
 
-Read Notification
 
-Outputs
+Event 2:
 
-Notification
+PreviousHash = ABC123
 
----
 
-# 4. Core Business Rules
+CurrentHash = XYZ789
 
-## Batch
 
-A Batch belongs to exactly one Product.
+Nếu sửa Event 1:
 
-A Batch belongs to one current Organization.
+Hash chain broken
 
-A Batch may have one Parent Batch.
-
-A Batch may have one Root Batch.
-
----
-
-## SupplyChainEvent
-
-Every Event belongs to exactly one Batch.
-
-Every Event belongs to one EventType.
-
-Every Event belongs to one Organization.
-
-Every Event belongs to one User.
-
-Events are Append-only.
-
-No Update.
-
-No Delete.
-
----
-
-## Hash Chain
-
-Every Event stores
-
-PreviousHash
-
-CurrentHash
-
-CurrentHash = SHA256
-
-PreviousHash + EventData
-
-Any modification invalidates the chain.
-
----
-
-## Quality Inspection
-
-One Batch
-
-↓
-
-Many Inspections
-
----
-
-## Certificate
-
-One Batch
-
-↓
-
-Many Certificates
-
----
-
-## Recall
-
-One Batch
-
-↓
-
-Zero or Many Recalls
-
----
-
-# 5. System Workflow
-
-Farmer
-
-↓
-
-Create Batch
-
-↓
-
-Generate QR
-
-↓
-
-Processing
-
-↓
-
-Packaging
-
-↓
-
-Transportation
-
-↓
-
-Distribution
-
-↓
-
-Retail
-
-↓
-
-Consumer Scan QR
-
-↓
-
-Display Timeline
-
-↓
-
-Quality Inspection
-
-↓
-
-Certificate
-
-↓
-
-Recall (if required)
-
-↓
-
-Notification
-
----
-
-# 6. Non-functional Rules
-
-Append-only Event History
-
-SHA-256 Hash Chain
-
-Role-based Authorization
-
-JWT Authentication
-
-REST API
-
-Clean Architecture
-
-EF Core
-
-SQL Server
-
-Redis Cache
-
-Docker Deployment
-
----
-
-# End of Document
+5. Database Mapping Check
+Business Process	Database
+Login	Users
+Organization	Organizations
+Product	Products
+Batch	Batches
+Event	SupplyChainEvents
+Split	BatchSplits
+Merge	BatchMerges
+Inspection	QualityInspections
+Certificate	Certificates
+Recall	Recalls
+Trace	All read tables
