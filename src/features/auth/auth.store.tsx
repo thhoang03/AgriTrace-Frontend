@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
-import { authService, LoginResponse } from "../services/authService";
+import { authService, LoginResponse } from "../../app/services/authService";
 import { removeToken } from "../../lib/api/token-storage";
 
 export interface User {
