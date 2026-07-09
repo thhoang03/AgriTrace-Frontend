@@ -1,4 +1,5 @@
-import { apiFetch } from "./api";
+import http from "../../lib/api/http";
+import { setToken, removeToken } from "../../lib/api/token-storage";
 
 export interface MeResponse {
   userId: number;
@@ -20,23 +21,29 @@ export interface LoginResponse {
 }
 
 export const authService = {
-  login: (email: string, password: string) =>
-    apiFetch<LoginResponse>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    }),
+  login: async (email: string, password: string): Promise<LoginResponse> => {
+    const res = await http.post("/auth/login", { email, password });
+    setToken(res.data.data.accessToken);
+    return res.data.data;
+  },
 
-  me: () => apiFetch<MeResponse>("/auth/me"),
+  me: async (): Promise<MeResponse> => {
+    const res = await http.get("/auth/me");
+    return res.data.data;
+  },
 
-  changePassword: (currentPassword: string, newPassword: string, confirmNewPassword: string) =>
-    apiFetch("/auth/change-password", {
-      method: "PUT",
-      body: JSON.stringify({ currentPassword, newPassword, confirmNewPassword }),
-    }),
+  changePassword: async (currentPassword: string, newPassword: string, confirmNewPassword: string) => {
+    const res = await http.put("/auth/change-password", { currentPassword, newPassword, confirmNewPassword });
+    return res.data;
+  },
 
-  updateProfile: (userId: number, fullName: string) =>
-    apiFetch(`/users/${userId}`, {
-      method: "PUT",
-      body: JSON.stringify({ fullName }),
-    }),
+  updateProfile: async (userId: number, fullName: string) => {
+    const res = await http.put(`/users/${userId}`, { fullName });
+    return res.data;
+  },
+
+  logout: () => {
+    removeToken();
+    sessionStorage.removeItem("agritrace_user");
+  },
 };

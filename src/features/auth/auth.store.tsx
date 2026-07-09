@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { authService, LoginResponse } from "../services/authService";
+import { removeToken } from "../../lib/api/token-storage";
 
 export interface User {
   id: string;
@@ -42,10 +43,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const data = await authService.login(email, password);
-    sessionStorage.setItem("agritrace_auth", JSON.stringify({
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
-    }));
     const u = mapApiUser(data.user);
     setUser(u);
     sessionStorage.setItem("agritrace_user", JSON.stringify(u));
@@ -53,8 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     setUser(null);
+    removeToken();
     sessionStorage.removeItem("agritrace_user");
-    sessionStorage.removeItem("agritrace_auth");
   };
 
   return (
