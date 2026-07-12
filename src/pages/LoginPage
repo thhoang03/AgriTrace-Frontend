@@ -1,0 +1,242 @@
+// src/pages/LoginPage.tsx
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { useAuth } from "../contexts/AuthContext";
+import type { LoginRequest } from "../types/auth.types";
+
+const LoginPage: React.FC = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginRequest>();
+
+  const onSubmit = async (data: LoginRequest) => {
+    setIsLoading(true);
+    setError("");
+    try {
+      await login(data);
+      navigate("/dashboard");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      {/* Left Panel */}
+      <div style={{
+        flex: 1,
+        background: "linear-gradient(135deg, #1a4d2e 0%, #2d7a4f 50%, #1a4d2e 100%)",
+        display: "flex", flexDirection: "column",
+        justifyContent: "center", padding: "48px",
+        position: "relative", overflow: "hidden"
+      }}>
+        {/* Background overlay */}
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1200')",
+          backgroundSize: "cover", backgroundPosition: "center",
+          opacity: 0.3
+        }} />
+        <div style={{ position: "relative", zIndex: 1, color: "white" }}>
+          {/* Logo */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "48px" }}>
+            <div style={{
+              width: "48px", height: "48px", background: "rgba(255,255,255,0.2)",
+              borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "24px"
+            }}>🌿</div>
+            <div>
+              <div style={{ fontWeight: "bold", fontSize: "18px" }}>AgriTrace Vietnam</div>
+              <div style={{ fontSize: "12px", opacity: 0.8 }}>Government Platform</div>
+            </div>
+          </div>
+
+          {/* Shield icon */}
+          <div style={{
+            width: "64px", height: "64px", background: "rgba(255,255,255,0.15)",
+            borderRadius: "16px", display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "32px", marginBottom: "24px"
+          }}>🛡️</div>
+
+          <h1 style={{ fontSize: "36px", fontWeight: "bold", marginBottom: "8px", lineHeight: 1.2 }}>
+            Secure Access to<br />
+            <span style={{ color: "#4ade80" }}>Agricultural Data</span>
+          </h1>
+          <p style={{ opacity: 0.85, marginBottom: "32px", lineHeight: 1.6 }}>
+            The national platform for agricultural supply chain traceability,
+            powered by blockchain technology and verified by the Vietnamese government.
+          </p>
+
+          {["Real-time supply chain visibility", "Blockchain-secured records",
+            "Government-verified certificates", "QR code product authentication"].map((item) => (
+            <div key={item} style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+              <div style={{
+                width: "20px", height: "20px", background: "#16a34a",
+                borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "12px", flexShrink: 0
+              }}>✓</div>
+              <span style={{ opacity: 0.9 }}>{item}</span>
+            </div>
+          ))}
+
+          <div style={{ marginTop: "48px", fontSize: "12px", opacity: 0.7 }}>
+            Ministry of Agriculture and Rural Development of Vietnam
+          </div>
+        </div>
+      </div>
+
+      {/* Right Panel - Login Form */}
+      <div style={{
+        width: "480px", display: "flex", flexDirection: "column",
+        justifyContent: "center", padding: "48px", background: "#f8fafc"
+      }}>
+        <div style={{ marginBottom: "32px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+            <div>
+              <h2 style={{ fontSize: "28px", fontWeight: "bold", color: "#1e293b", margin: 0 }}>
+                Welcome back
+              </h2>
+              <p style={{ color: "#64748b", marginTop: "4px" }}>
+                Sign in to your AgriTrace account
+              </p>
+            </div>
+            <select style={{
+              border: "1px solid #e2e8f0", borderRadius: "8px",
+              padding: "4px 8px", fontSize: "12px", color: "#64748b"
+            }}>
+              <option>EN</option>
+              <option>VI</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div style={{
+            background: "#fef2f2", border: "1px solid #fecaca",
+            borderRadius: "8px", padding: "12px 16px",
+            color: "#dc2626", marginBottom: "16px", fontSize: "14px"
+          }}>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Username Field */}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ display: "block", fontWeight: "500", color: "#374151", marginBottom: "6px" }}>
+              Username
+            </label>
+            <div style={{ position: "relative" }}>
+              <span style={{
+                position: "absolute", left: "12px", top: "50%",
+                transform: "translateY(-50%)", color: "#9ca3af"
+              }}>👤</span>
+              <input
+                {...register("username", { required: "Username is required" })}
+                placeholder="Enter your username"
+                style={{
+                  width: "100%", padding: "12px 12px 12px 40px",
+                  border: `1px solid ${errors.username ? "#ef4444" : "#e2e8f0"}`,
+                  borderRadius: "8px", fontSize: "14px", boxSizing: "border-box",
+                  outline: "none", background: "white"
+                }}
+              />
+            </div>
+            {errors.username && (
+              <p style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
+                {errors.username.message}
+              </p>
+            )}
+          </div>
+
+          {/* Password Field */}
+          <div style={{ marginBottom: "8px" }}>
+            <label style={{ display: "block", fontWeight: "500", color: "#374151", marginBottom: "6px" }}>
+              Password
+            </label>
+            <div style={{ position: "relative" }}>
+              <span style={{
+                position: "absolute", left: "12px", top: "50%",
+                transform: "translateY(-50%)", color: "#9ca3af"
+              }}>🔒</span>
+              <input
+                {...register("password", { required: "Password is required" })}
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                style={{
+                  width: "100%", padding: "12px 40px 12px 40px",
+                  border: `1px solid ${errors.password ? "#ef4444" : "#e2e8f0"}`,
+                  borderRadius: "8px", fontSize: "14px", boxSizing: "border-box",
+                  outline: "none", background: "white"
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: "absolute", right: "12px", top: "50%",
+                  transform: "translateY(-50%)", background: "none",
+                  border: "none", cursor: "pointer", color: "#9ca3af"
+                }}
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
+            {errors.password && (
+              <p style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          {/* Remember me & Forgot password */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "14px", color: "#64748b" }}>
+              <input type="checkbox" style={{ width: "16px", height: "16px" }} />
+              Remember me
+            </label>
+            <button type="button" style={{
+              background: "none", border: "none", color: "#16a34a",
+              cursor: "pointer", fontSize: "14px", fontWeight: "500"
+            }}>
+              Forgot password?
+            </button>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            style={{
+              width: "100%", padding: "14px",
+              background: isLoading ? "#86efac" : "#16a34a",
+              color: "white", border: "none", borderRadius: "8px",
+              fontSize: "16px", fontWeight: "600", cursor: isLoading ? "not-allowed" : "pointer",
+              transition: "background 0.2s"
+            }}
+          >
+            {isLoading ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
+
+        <p style={{ textAlign: "center", fontSize: "12px", color: "#94a3b8", marginTop: "32px" }}>
+          © 2024 Ministry of Agriculture and Rural Development - Vietnam
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default LoginPage;

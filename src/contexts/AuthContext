@@ -1,0 +1,47 @@
+import React, { createContext, useContext, useState, useCallback } from "react";
+import { authApi } from "../api/authApi";
+import { tokenUtils } from "../utils/tokenUtils";
+import type { UserInfo, LoginRequest } from "../types/auth.types";
+
+interface AuthContextType {
+  user: UserInfo | null;
+  isAuthenticated: boolean;
+  login: (data: LoginRequest) => Promise<void>;
+  logout: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<UserInfo | null>(tokenUtils.getUser());
+
+  const login = useCallback(async (data: LoginRequest) => {
+    const response = await authApi.login(data);
+    tokenUtils.setTokens(response.accessToken, response.refreshToken);
+    tokenUtils.setUser(response.user);
+    setUser(response.user);
+  }, []);
+
+  const logout = useCallback(async () => {
+    try { await authApi.logout(); } catch {}
+    tokenUtils.clearTokens();
+    setUser(null);
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated: !!user,
+      login,
+      logout,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth must be used within AuthProvider");
+  return context;
+};
