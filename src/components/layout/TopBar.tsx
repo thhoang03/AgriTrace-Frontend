@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import { Search, Bell, ChevronDown, Menu, X, Settings, LogOut, User } from "lucide-react";
+import { useNavigate, useLocation } from "react-router";
+import { Search, Bell, ChevronDown, Menu, X, Settings, LogOut, User, Home } from "lucide-react";
 import { useAuth } from "../../features/auth/auth.store";
 
 interface TopBarProps {
@@ -11,8 +11,42 @@ interface TopBarProps {
 export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showUser, setShowUser] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Breadcrumb generation
+  const getBreadcrumbs = () => {
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const breadcrumbs: Array<{ label: string; path: string; icon?: any }> = [
+      { label: 'Dashboard', path: '/app/dashboard', icon: Home }
+    ];
+
+    if (pathSegments.length > 0 && pathSegments[0] === 'app') {
+      if (pathSegments.length > 1) {
+        const pageName = pathSegments[1];
+        const pageLabels: Record<string, string> = {
+          'dashboard': 'Dashboard',
+          'batches': 'Batch Management',
+          'supply-chain': 'Supply Chain',
+          'inspection': 'Quality Inspection',
+          'recall': 'Recall Management',
+          'reports': 'Reports',
+          'users': 'User Management',
+          'profile': 'My Profile',
+        };
+        breadcrumbs.push({
+          label: pageLabels[pageName] || pageName.charAt(0).toUpperCase() + pageName.slice(1),
+          path: location.pathname,
+        });
+      }
+    }
+
+    return breadcrumbs;
+  };
+
+  const breadcrumbs = getBreadcrumbs();
 
   const notifications = [
     { id: 1, text: "Recall alert: BTH-2024-006 (Durian)", type: "recall", time: "1h ago" },
@@ -26,11 +60,30 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
         {sidebarOpen ? <X className="w-5 h-5 text-gray-500" /> : <Menu className="w-5 h-5 text-gray-500" />}
       </button>
 
-      <div className="flex-1 max-w-md relative">
+      {/* Breadcrumbs */}
+      <nav className="hidden md:flex items-center gap-2">
+        {breadcrumbs.map((crumb, index) => (
+          <div key={crumb.path} className="flex items-center gap-2">
+            {index > 0 && <span className="text-gray-300">/</span>}
+            <button
+              onClick={() => navigate(crumb.path)}
+              className="flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-green-600"
+              style={{ color: index === breadcrumbs.length - 1 ? "#2E7D32" : "#6B7280" }}
+            >
+              {crumb.icon && <crumb.icon className="w-4 h-4" />}
+              {crumb.label}
+            </button>
+          </div>
+        ))}
+      </nav>
+
+      <div className="flex-1 max-w-md relative ml-auto md:ml-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
           placeholder="Search batches, farms, products..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400 focus:ring-2"
           style={{ background: "#F8FAF8", fontSize: 13 }}
         />
