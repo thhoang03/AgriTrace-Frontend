@@ -16,17 +16,17 @@ import {
 import { useAuth } from "../../features/auth/auth.store";
 
 const navItems = [
-  { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/app/batches", icon: Package, label: "Batch Management" },
-  { to: "/app/supply-chain", icon: Truck, label: "Supply Chain" },
-  { to: "/app/inspection", icon: FlaskConical, label: "Quality Inspection" },
-  { to: "/app/recall", icon: AlertTriangle, label: "Recall Management" },
-  { to: "/app/reports", icon: BarChart3, label: "Reports" },
+  { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },
+  { to: "/app/batches", icon: Package, label: "Batch Management", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR"] },
+  { to: "/app/supply-chain", icon: Truck, label: "Supply Chain", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR"] },
+  { to: "/app/inspection", icon: FlaskConical, label: "Quality Inspection", roles: ["ADMIN", "MANAGER", "INSPECTOR"] },
+  { to: "/app/recall", icon: AlertTriangle, label: "Recall Management", roles: ["ADMIN", "INSPECTOR"] },
+  { to: "/app/reports", icon: BarChart3, label: "Reports", roles: ["ADMIN", "MANAGER"] },
 ];
 
 const adminItems = [
-  { to: "/app/users", icon: Users, label: "User Management" },
-  { to: "/app/profile", icon: UserCircle, label: "My Profile" },
+  { to: "/app/users", icon: Users, label: "User Management", roles: ["ADMIN", "MANAGER"] },
+  { to: "/app/profile", icon: UserCircle, label: "My Profile", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },
 ];
 
 export function Sidebar() {
@@ -37,6 +37,11 @@ export function Sidebar() {
     logout();
     navigate("/login");
   };
+
+  const userRole = user?.role || "CUSTOMER";
+
+  const filteredNavItems = navItems.filter((item) => item.roles.includes(userRole));
+  const filteredAdminItems = adminItems.filter((item) => item.roles.includes(userRole));
 
   return (
     <aside className="flex flex-col h-full" style={{ background: "linear-gradient(180deg, #1B5E20 0%, #2E7D32 60%, #388E3C 100%)" }}>
@@ -59,7 +64,7 @@ export function Sidebar() {
             Main Menu
           </span>
         </div>
-        {navItems.map(({ to, icon: Icon, label }) => (
+        {filteredNavItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
@@ -86,7 +91,7 @@ export function Sidebar() {
             Administration
           </span>
         </div>
-        {adminItems.map(({ to, icon: Icon, label }) => (
+        {filteredAdminItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
