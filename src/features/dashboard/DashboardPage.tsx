@@ -7,12 +7,16 @@ import {
   Package, Leaf, Cog, Truck, ShoppingCart, AlertTriangle,
   Plus, QrCode, FlaskConical, FileText, Bell, TrendingUp, TrendingDown,
 } from "lucide-react";
-import { monthlyProduction, batchStatusData, inspectionData, recallTrend, recentActivities } from "../../lib/data/mockData";
 import { useAuth } from "../auth/auth.store";
+import { useAnalyticsOverview } from "../analytics/analytics.queries";
+import { monthlyProduction, batchStatusData, inspectionData, recallTrend, recentActivities } from "../../lib/data/mockData";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1400&q=80";
 
-const statCards = [
+const PIE_COLORS = ["#2E7D32", "#66BB6A", "#42A5F5", "#FFB300", "#AB47BC", "#A5D6A7"];
+
+// Mock data fallback
+const mockStatCards = [
   { label: "Total Products", value: "48,291", change: "+12%", up: true, icon: Package, color: "#2E7D32", bg: "#E8F5E9" },
   { label: "Today's Harvest", value: "148", change: "+8%", up: true, icon: Leaf, color: "#1976D2", bg: "#E3F2FD" },
   { label: "In Processing", value: "234", change: "-3%", up: false, icon: Cog, color: "#F57C00", bg: "#FFF3E0" },
@@ -28,14 +32,35 @@ const quickActions = [
   { label: "Reports", icon: FileText, color: "#7B1FA2", bg: "#F3E5F5", to: "/app/reports" },
 ];
 
-const PIE_COLORS = ["#2E7D32", "#66BB6A", "#42A5F5", "#FFB300", "#AB47BC", "#A5D6A7"];
-
 export function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { data: analyticsData, isLoading, isError } = useAnalyticsOverview();
 
   const now = new Date();
   const timeGreeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 17 ? "Good afternoon" : "Good evening";
+
+  // Use analytics data if available, otherwise fallback to mock data
+  const statCards = analyticsData?.data ? [
+    { label: "Total Products", value: analyticsData.data.totalProducts.toLocaleString(), change: "+12%", up: true, icon: Package, color: "#2E7D32", bg: "#E8F5E9" },
+    { label: "Today's Harvest", value: analyticsData.data.todayHarvest.toLocaleString(), change: "+8%", up: true, icon: Leaf, color: "#1976D2", bg: "#E3F2FD" },
+    { label: "In Processing", value: analyticsData.data.inProcessing.toLocaleString(), change: "-3%", up: false, icon: Cog, color: "#F57C00", bg: "#FFF3E0" },
+    { label: "In Transport", value: analyticsData.data.inTransport.toLocaleString(), change: "+5%", up: true, icon: Truck, color: "#7B1FA2", bg: "#F3E5F5" },
+    { label: "At Retail", value: analyticsData.data.atRetail.toLocaleString(), change: "+18%", up: true, icon: ShoppingCart, color: "#00695C", bg: "#E0F2F1" },
+    { label: "Recall Alerts", value: analyticsData.data.recallAlerts.toLocaleString(), change: "+2", up: false, icon: AlertTriangle, color: "#E53935", bg: "#FFEBEE" },
+  ] : mockStatCards;
+
+  const chartData = analyticsData?.data ? {
+    monthlyProduction: analyticsData.data.monthlyProduction,
+    batchStatusData: analyticsData.data.batchStatus,
+    inspectionData: analyticsData.data.inspectionResults,
+    recallTrend: analyticsData.data.recallTrend,
+  } : {
+    monthlyProduction,
+    batchStatusData,
+    inspectionData,
+    recallTrend,
+  };
 
   return (
     <div className="pb-8">
@@ -100,7 +125,7 @@ export function DashboardPage() {
               </div>
             </div>
             <ResponsiveContainer width="100%" height={210}>
-              <BarChart data={monthlyProduction} barSize={16} barGap={4}>
+              <BarChart data={chartData.monthlyProduction} barSize={16} barGap={4}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} width={40} />
@@ -122,8 +147,8 @@ export function DashboardPage() {
             </div>
             <ResponsiveContainer width="100%" height={155}>
               <PieChart>
-                <Pie data={batchStatusData} cx="50%" cy="50%" innerRadius={45} outerRadius={68} paddingAngle={3} dataKey="value">
-                  {batchStatusData.map((entry, index) => (
+                <Pie data={chartData.batchStatusData} cx="50%" cy="50%" innerRadius={45} outerRadius={68} paddingAngle={3} dataKey="value">
+                  {chartData.batchStatusData.map((entry, index) => (
                     <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
@@ -131,7 +156,7 @@ export function DashboardPage() {
               </PieChart>
             </ResponsiveContainer>
             <div className="space-y-1.5">
-              {batchStatusData.map((item, i) => (
+              {chartData.batchStatusData.map((item, i) => (
                 <div key={item.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full" style={{ background: PIE_COLORS[i] }} />
@@ -151,7 +176,7 @@ export function DashboardPage() {
               <p className="text-gray-400 text-xs mt-0.5">Pass/Fail/Pending — Last 6 months</p>
             </div>
             <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={inspectionData} barSize={14} barGap={3}>
+              <BarChart data={chartData.inspectionData} barSize={14} barGap={3}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} width={35} />
@@ -170,7 +195,7 @@ export function DashboardPage() {
               <p className="text-gray-400 text-xs mt-0.5">Monthly recall incidents — 2024</p>
             </div>
             <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={recallTrend}>
+              <AreaChart data={chartData.recallTrend}>
                 <defs>
                   <linearGradient id="recallGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#E53935" stopOpacity={0.15} />

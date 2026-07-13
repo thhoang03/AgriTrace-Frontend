@@ -1,61 +1,46 @@
-import React, { createContext, useContext, useState } from "react";
-import { authService, LoginResponse } from "../../app/services/authService";
-import { removeToken } from "../../lib/api/token-storage";
-
-export interface User {
-  id: string;
-  name: string;
-  username: string;
-  email: string;
-  phone: string;
-  role: "Administrator" | "Farmer" | "Processor" | "Distributor" | "Retailer" | "Inspector";
-  organization: string;
-  avatar: string;
-}
+import React, { createContext, useContext, useState, useCallback } from "react";
+import { authApi } from "./auth.api";
+import { setToken, removeToken } from "../../lib/api";
+import type { User } from "./auth.types";
 
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (username: string, password: string, role?: string) => Promise<void>;
   logout: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-
-function mapApiUser(data: LoginResponse["user"]): User {
-  return {
-    id: String(data.userId),
-    name: data.fullName,
-    username: data.email,
-    email: data.email,
-    phone: "",
-    role: data.role as User["role"],
-    organization: data.organizationName,
-    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.fullName)}&background=2E7D32&color=fff`,
-  };
-}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     const stored = sessionStorage.getItem("agritrace_user");
     return stored ? JSON.parse(stored) : null;
   });
+  const [loading, setLoading] = useState(false);
 
-  const login = async (email: string, password: string) => {
-    const data = await authService.login(email, password);
-    const u = mapApiUser(data.user);
-    setUser(u);
-    sessionStorage.setItem("agritrace_user", JSON.stringify(u));
-  };
+  const login = useCallback(async (username: string, password: string, role?: string) => {
+    setLoading(true);
+    try {
+      const res = await authApi.login({ username, password, role });
+      setUser(res.data.user);
+      setToken(res.data.accessToken);
+      sessionStorage.setItem("agritrace_user", JSON.stringify(res.data.user));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
+    authApi.logout().catch(() => {});
     setUser(null);
     removeToken();
     sessionStorage.removeItem("agritrace_user");
-  };
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn: !!user, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoggedIn: !!user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
