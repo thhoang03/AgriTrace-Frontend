@@ -29,6 +29,12 @@ export interface LoginResponse {
   refreshToken: string;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
 export interface AuthState {
   user: User | null;
   isLoggedIn: boolean;

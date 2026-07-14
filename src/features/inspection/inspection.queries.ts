@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { inspectionApi } from "./inspection.api";
-import type { CreateInspectionRequest, InspectionFilters } from "./inspection.types";
+import type { CreateInspectionRequest, InspectionFilters, InspectionItem } from "./inspection.types";
 
 const QUERY_KEY = "inspections";
 
@@ -19,10 +19,18 @@ export function useInspection(id: string) {
   });
 }
 
-export function useCreateInspection() {
+export function useBatchInspections(batchId: string) {
+  return useQuery({
+    queryKey: [QUERY_KEY, "batch", batchId],
+    queryFn: () => inspectionApi.getByBatchId(batchId),
+    enabled: !!batchId,
+  });
+}
+
+export function useCreateInspection(batchId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateInspectionRequest) => inspectionApi.create(data),
+    mutationFn: (data: CreateInspectionRequest) => inspectionApi.create(batchId, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 }
@@ -30,8 +38,8 @@ export function useCreateInspection() {
 export function useUpdateInspection(id: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ status, score, notes }: { status: InspectionItem["status"]; score: number; notes: string }) =>
-      inspectionApi.updateStatus(id, status, score, notes),
+    mutationFn: (data: Partial<CreateInspectionRequest> & { status?: InspectionItem["status"]; score?: number; notes?: string }) =>
+      inspectionApi.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 }

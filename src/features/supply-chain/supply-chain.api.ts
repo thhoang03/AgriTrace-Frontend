@@ -1,5 +1,11 @@
-import { getList, get } from "../../lib/api";
-import type { SupplyChainNode, SupplyChainFilters } from "./supply-chain.types";
+import { getList, get, post } from "../../lib/api";
+import type {
+  SupplyChainNode,
+  SupplyChainFilters,
+  SupplyChainEvent,
+  CreateEventRequest,
+  HashChainVerifyResult,
+} from "./supply-chain.types";
 
 export const supplyChainApi = {
   getChain: (batchId: string) =>
@@ -10,4 +16,16 @@ export const supplyChainApi = {
 
   traceByQR: (qrCode: string) =>
     get<SupplyChainNode[]>(`/supply-chain/trace`, { params: { qrCode } }),
+
+  getEvents: (batchId: string, filters?: SupplyChainFilters) =>
+    getList<SupplyChainEvent>(`/batches/${batchId}/events`, { params: filters }),
+
+  getEventById: (eventId: number | string) =>
+    get<SupplyChainEvent>(`/events/${eventId}`),
+
+  createEvent: (batchId: string, data: CreateEventRequest) =>
+    post<SupplyChainEvent>(`/batches/${batchId}/events`, data),
+
+  verifyHashChain: (batchId: string) =>
+    get<HashChainVerifyResult>(`/batches/${batchId}/events/verify`),
 };

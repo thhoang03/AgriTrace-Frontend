@@ -63,3 +63,16 @@ export interface CreateBatchRequest {
 export interface UpdateBatchRequest extends Partial<CreateBatchRequest> {
   status?: BatchStatus;
 }
+
+export interface BatchQrCode {
+  batchId: number;
+  batchCode: string;
+  qrCodeUrl: string;
+}
+
+export interface BatchImage {
+  imageId: number;
+  url: string;
+  fileName?: string;
+  uploadedAt?: string;
+}
