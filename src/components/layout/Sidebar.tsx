@@ -12,11 +12,13 @@ import {
   Leaf,
   ChevronRight,
   Shield,
+  ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "../../features/auth/auth.store";
 
 const navItems = [
   { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },
+  { to: "/app/products", icon: ShoppingBag, label: "Products", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },
   { to: "/app/batches", icon: Package, label: "Batch Management", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR"] },
   { to: "/app/supply-chain", icon: Truck, label: "Supply Chain", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR"] },
   { to: "/app/inspection", icon: FlaskConical, label: "Quality Inspection", roles: ["ADMIN", "MANAGER", "INSPECTOR"] },
