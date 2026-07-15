@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { authApi } from "../api/authApi";
-import type { ChangePasswordRequest } from "../types/auth.types";
+import { authApi } from "../features/auth/auth.api";
+import type { ChangePasswordRequest } from "../features/auth/auth.types";
 
 const ChangePasswordPage: React.FC = () => {
   const [success, setSuccess] = useState(false);

@@ -1,20 +1,14 @@
-import { get, post, put, patch } from "../../lib/api";
+import { getPaginated, get, post, put, patch } from "../../lib/api";
+import type { UserItem } from "../users/users.types";
+import type {
+  Organization,
+  CreateOrganizationRequest,
+  UpdateOrganizationRequest,
+  UpdateOrganizationStatusRequest,
+  OrganizationFilters,
+} from "./organizations.types";
 
-export interface Organization {
-  organizationId: number;
-  name: string;
-  type: string;
-  address: string;
-  status: "ACTIVE" | "INACTIVE";
-}
-
-export interface OrganizationListResponse {
-  items: Organization[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
+export type { Organization };
 
 const USE_MOCK = true;
 
@@ -22,59 +16,64 @@ const mockOrgs: Organization[] = [
   { organizationId: 1, name: "Green Farm Đà Lạt", type: "FARM", address: "Đà Lạt, Lâm Đồng", status: "ACTIVE" },
   { organizationId: 2, name: "Nhà máy chế biến Tây Nguyên", type: "PROCESSOR", address: "Buôn Ma Thuột, Đắk Lắk", status: "ACTIVE" },
   { organizationId: 3, name: "Công ty phân phối Miền Nam", type: "DISTRIBUTOR", address: "TP. Hồ Chí Minh", status: "ACTIVE" },
-  { organizationId: 4, name: "Siêu thị Xanh", type: "RETAILER", address: "Hà Nội", status: "INACTIVE" },
+  { organizationId: 4, name: "Siêu thị Xanh", type: "RETAIL", address: "Hà Nội", status: "INACTIVE" },
   { organizationId: 5, name: "Trung tâm kiểm định MARD", type: "INSPECTOR", address: "Hà Nội", status: "ACTIVE" },
 ];
 
 const mockDelay = () => new Promise((r) => setTimeout(r, 500));
 
 export const organizationsApi = {
-  getList: async (page = 1, pageSize = 20): Promise<OrganizationListResponse> => {
+  getAll: async (filters?: OrganizationFilters) => {
     if (USE_MOCK) {
       await mockDelay();
-      return { items: mockOrgs, totalCount: mockOrgs.length, page, pageSize, totalPages: 1 };
+      return { data: { items: mockOrgs, totalCount: mockOrgs.length, page: 1, pageSize: 20, totalPages: 1 } };
     }
-    const res = await get<OrganizationListResponse>(`/organizations?page=${page}&pageSize=${pageSize}`);
-    return res.data;
+    return getPaginated<Organization>("/organizations", { params: filters });
   },
 
-  getById: async (id: number): Promise<Organization> => {
+  getById: async (id: number | string) => {
     if (USE_MOCK) {
       await mockDelay();
-      return mockOrgs.find((o) => o.organizationId === id)!;
+      return { data: mockOrgs.find((o) => o.organizationId === Number(id))! };
     }
-    const res = await get<Organization>(`/organizations/${id}`);
-    return res.data;
+    return get<Organization>(`/organizations/${id}`);
   },
 
-  create: async (data: { name: string; type: string; address: string }): Promise<{ organizationId: number }> => {
+  create: async (data: CreateOrganizationRequest) => {
     if (USE_MOCK) {
       await mockDelay();
       const newOrg: Organization = { organizationId: Date.now(), status: "ACTIVE", ...data };
       mockOrgs.push(newOrg);
-      return { organizationId: newOrg.organizationId };
+      return { data: newOrg };
     }
-    const res = await post<{ organizationId: number }>("/organizations", data);
-    return res.data;
+    return post<Organization>("/organizations", data);
   },
 
-  update: async (id: number, data: { name: string; type: string; address: string }): Promise<void> => {
+  update: async (id: number | string, data: UpdateOrganizationRequest) => {
     if (USE_MOCK) {
       await mockDelay();
-      const idx = mockOrgs.findIndex((o) => o.organizationId === id);
+      const idx = mockOrgs.findIndex((o) => o.organizationId === Number(id));
       if (idx !== -1) mockOrgs[idx] = { ...mockOrgs[idx], ...data };
-      return;
+      return { data: mockOrgs[idx] };
     }
-    await put(`/organizations/${id}`, data);
+    return put<Organization>(`/organizations/${id}`, data);
   },
 
-  updateStatus: async (id: number, status: "ACTIVE" | "INACTIVE"): Promise<void> => {
+  updateStatus: async (id: number | string, data: UpdateOrganizationStatusRequest) => {
     if (USE_MOCK) {
       await mockDelay();
-      const idx = mockOrgs.findIndex((o) => o.organizationId === id);
-      if (idx !== -1) mockOrgs[idx].status = status;
-      return;
+      const idx = mockOrgs.findIndex((o) => o.organizationId === Number(id));
+      if (idx !== -1) mockOrgs[idx].status = data.status;
+      return { data: undefined };
     }
-    await patch(`/organizations/${id}/status`, { status });
+    return patch<void>(`/organizations/${id}/status`, data);
+  },
+
+  getUsers: async (id: number | string, params?: { page?: number; pageSize?: number }) => {
+    if (USE_MOCK) {
+      await mockDelay();
+      return { data: { items: [] as UserItem[], totalCount: 0, page: 1, pageSize: 20, totalPages: 0 } };
+    }
+    return getPaginated<UserItem>(`/organizations/${id}/users`, { params });
   },
 };

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, Plus, Edit2, ToggleLeft, ToggleRight, X, Building2, Filter, Eye, CheckCircle, AlertCircle, Users, Package } from "lucide-react";
-import { organizationsApi, Organization } from "./organizations.api";
+import { organizationsApi } from "./organizations.api";
+import type { Organization } from "./organizations.types";
 
 const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
   FARM:        { bg: "#E8F5E9", color: "#1B5E20" },
@@ -37,8 +38,8 @@ export function OrganizationsPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await organizationsApi.getList();
-      setOrgs(res.items);
+      const res = await organizationsApi.getAll();
+      setOrgs(res.data.items);
     } finally {
       setLoading(false);
     }
@@ -73,7 +74,7 @@ export function OrganizationsPage() {
         showAlert("success", `Đã cập nhật "${form.name}" thành công`);
       } else {
         const res = await organizationsApi.create(form);
-        setOrgs((prev) => [...prev, { organizationId: res.organizationId, status: "ACTIVE", ...form }]);
+        setOrgs((prev) => [...prev, { organizationId: res.data.organizationId, status: "ACTIVE", ...form }]);
         showAlert("success", `Đã thêm "${form.name}" thành công`);
       }
       setShowModal(false);
@@ -87,7 +88,7 @@ export function OrganizationsPage() {
   const handleToggleStatus = async (org: Organization) => {
     const newStatus = org.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     try {
-      await organizationsApi.updateStatus(org.organizationId, newStatus);
+      await organizationsApi.updateStatus(org.organizationId, { status: newStatus });
       setOrgs((prev) => prev.map((o) => o.organizationId === org.organizationId ? { ...o, status: newStatus } : o));
       if (detail?.organizationId === org.organizationId) setDetail({ ...detail, status: newStatus });
       showAlert(
