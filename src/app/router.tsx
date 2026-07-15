@@ -14,6 +14,7 @@ import { SupplyChainPage } from "../features/supply-chain/SupplyChainPage";
 import { PublicTracePage } from "../pages/PublicTracePage";
 import { ProductManagementPage } from "../features/products/ProductManagementPage";
 import { ProductDetailPage } from "../features/products/ProductDetailPage";
+import { OrganizationsPage } from "../features/organizations/OrganizationsPage";
 
 export const router = createBrowserRouter([
   { path: "/", Component: HomePage },
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
       { path: "profile", Component: ProfilePage },
       { path: "products", Component: ProductManagementPage },
       { path: "products/:id", Component: ProductDetailPage },
+      { path: "organizations", Component: OrganizationsPage },
     ],
   },
 ]);

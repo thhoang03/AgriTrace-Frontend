@@ -1,14 +1,28 @@
-import { get } from "../../lib/api";
-import type { Category, CategoriesListResponse } from "./categories.types";
+import { getPaginated, get, post, put, patch, del } from "../../lib/api";
+import type {
+  Category,
+  CreateCategoryRequest,
+  UpdateCategoryRequest,
+  UpdateCategoryStatusRequest,
+  CategoryFilters,
+} from "./categories.types";
 
 export const categoriesApi = {
-  // GET /categories - Danh sách categories
-  getCategories: (params?: {
-    search?: string;
-    page?: number;
-    pageSize?: number;
-  }) => get<CategoriesListResponse>("/categories", { params }),
+  getAll: (filters?: CategoryFilters) =>
+    getPaginated<Category>("/categories", { params: filters }),
 
-  // GET /categories/{id} - Chi tiết category
-  getCategory: (id: number) => get<Category>(`/categories/${id}`),
+  getById: (id: number | string) =>
+    get<Category>(`/categories/${id}`),
+
+  create: (data: CreateCategoryRequest) =>
+    post<Category>("/categories", data),
+
+  update: (id: number | string, data: UpdateCategoryRequest) =>
+    put<Category>(`/categories/${id}`, data),
+
+  updateStatus: (id: number | string, data: UpdateCategoryStatusRequest) =>
+    patch<void>(`/categories/${id}/status`, data),
+
+  delete: (id: number | string) =>
+    del(`/categories/${id}`),
 };

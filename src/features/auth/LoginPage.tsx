@@ -8,19 +8,25 @@ const BG_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1
 export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [form, setForm] = useState({ username: "admin", password: "password123" });
-  const [role, setRole] = useState("Administrator");
+  const [form, setForm] = useState({ username: "", password: "" });
   const [showPass, setShowPass] = useState(false);
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [lang, setLang] = useState("en");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    login(form.username, form.password, role);
-    navigate("/app/dashboard");
+    try {
+      await login(form.username, form.password);
+      navigate("/app/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Đăng nhập thất bại");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -150,6 +156,9 @@ export function LoginPage() {
             </button>
           </div>
 
+          {error && (
+            <p className="text-sm text-red-500 text-center">{error}</p>
+          )}
           <button
             type="submit"
             disabled={loading}

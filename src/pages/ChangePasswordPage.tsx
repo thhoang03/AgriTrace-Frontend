@@ -1,0 +1,152 @@
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { authApi } from "../features/auth/auth.api";
+import type { ChangePasswordRequest } from "../features/auth/auth.types";
+
+const ChangePasswordPage: React.FC = () => {
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { register, handleSubmit, watch, reset, formState: { errors } } = useForm<ChangePasswordRequest>();
+  const newPassword = watch("newPassword");
+
+  const onSubmit = async (data: ChangePasswordRequest) => {
+    setIsLoading(true);
+    setError("");
+    setSuccess(false);
+    try {
+      await authApi.changePassword(data);
+      setSuccess(true);
+      reset();
+    } catch (err: any) {
+      setError(err.response?.data?.message || "An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const inputStyle = (hasError: boolean) => ({
+    width: "100%", padding: "12px 16px",
+    border: `1px solid ${hasError ? "#ef4444" : "#e2e8f0"}`,
+    borderRadius: "8px", fontSize: "14px",
+    boxSizing: "border-box" as const, outline: "none"
+  });
+
+  return (
+    <div style={{ maxWidth: "480px", margin: "40px auto", padding: "0 16px" }}>
+      <div style={{
+        background: "white", borderRadius: "12px",
+        boxShadow: "0 4px 6px rgba(0,0,0,0.07)", padding: "32px"
+      }}>
+        <h2 style={{ fontSize: "22px", fontWeight: "bold", color: "#1e293b", marginBottom: "8px" }}>
+          Change Password
+        </h2>
+        <p style={{ color: "#64748b", marginBottom: "24px", fontSize: "14px" }}>
+          For your security, please choose a strong password.
+        </p>
+
+        {success && (
+          <div style={{
+            background: "#f0fdf4", border: "1px solid #bbf7d0",
+            borderRadius: "8px", padding: "12px 16px",
+            color: "#15803d", marginBottom: "16px", fontSize: "14px"
+          }}>
+            ✓ Password changed successfully.
+          </div>
+        )}
+
+        {error && (
+          <div style={{
+            background: "#fef2f2", border: "1px solid #fecaca",
+            borderRadius: "8px", padding: "12px 16px",
+            color: "#dc2626", marginBottom: "16px", fontSize: "14px"
+          }}>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Current Password */}
+          <div style={{ marginBottom: "16px" }}>
+            <label style={{ display: "block", fontWeight: "500", color: "#374151", marginBottom: "6px", fontSize: "14px" }}>
+              Current Password *
+            </label>
+            <input
+              {...register("currentPassword", { required: "Current password is required" })}
+              type="password"
+              placeholder="Enter current password"
+              style={inputStyle(!!errors.currentPassword)}
+            />
+            {errors.currentPassword && (
+              <p style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
+                {errors.currentPassword.message}
+              </p>
+            )}
+          </div>
+
+          {/* New Password */}
+          <div style={{ marginBottom: "16px" }}>
+            <label style={{ display: "block", fontWeight: "500", color: "#374151", marginBottom: "6px", fontSize: "14px" }}>
+              New Password *
+            </label>
+            <input
+              {...register("newPassword", {
+                required: "New password is required",
+                pattern: {
+                  value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,128}$/,
+                  message: "Min 8 chars with uppercase, lowercase, number & special character"
+                }
+              })}
+              type="password"
+              placeholder="Enter new password"
+              style={inputStyle(!!errors.newPassword)}
+            />
+            {errors.newPassword && (
+              <p style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
+                {errors.newPassword.message}
+              </p>
+            )}
+          </div>
+
+          {/* Confirm New Password */}
+          <div style={{ marginBottom: "24px" }}>
+            <label style={{ display: "block", fontWeight: "500", color: "#374151", marginBottom: "6px", fontSize: "14px" }}>
+              Confirm New Password *
+            </label>
+            <input
+              {...register("confirmNewPassword", {
+                required: "Please confirm your new password",
+                validate: (value) => value === newPassword || "Passwords do not match"
+              })}
+              type="password"
+              placeholder="Confirm new password"
+              style={inputStyle(!!errors.confirmNewPassword)}
+            />
+            {errors.confirmNewPassword && (
+              <p style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>
+                {errors.confirmNewPassword.message}
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            style={{
+              width: "100%", padding: "12px",
+              background: isLoading ? "#86efac" : "#16a34a",
+              color: "white", border: "none", borderRadius: "8px",
+              fontSize: "15px", fontWeight: "600",
+              cursor: isLoading ? "not-allowed" : "pointer"
+            }}
+          >
+            {isLoading ? "Updating..." : "Change Password"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default ChangePasswordPage;

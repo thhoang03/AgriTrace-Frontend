@@ -12,3 +12,23 @@ export interface CategoriesListResponse {
   pageSize: number;
   totalPages: number;
 }
+
+export interface CreateCategoryRequest {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateCategoryRequest {
+  name?: string;
+  description?: string;
+}
+
+export interface UpdateCategoryStatusRequest {
+  isActive: boolean;
+}
+
+export interface CategoryFilters {
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
