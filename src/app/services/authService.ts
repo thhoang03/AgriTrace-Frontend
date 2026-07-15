@@ -66,7 +66,11 @@ export const authService = {
     return res.data.data;
   },
 
-  changePassword: async (currentPassword: string, newPassword: string, confirmNewPassword: string) => {
+  changePassword: async (
+    currentPassword: string,
+    newPassword: string,
+    confirmNewPassword: string,
+  ) => {
     if (USE_MOCK) {
       await mockDelay();
       if (!currentPassword || !newPassword || !confirmNewPassword)
@@ -75,7 +79,11 @@ export const authService = {
         throw new Error("Mật khẩu mới không khớp");
       return { success: true };
     }
-    const res = await http.put("/auth/change-password", { currentPassword, newPassword, confirmNewPassword });
+    const res = await http.put("/auth/change-password", {
+      currentPassword,
+      newPassword,
+      confirmNewPassword,
+    });
     return res.data;
   },
 

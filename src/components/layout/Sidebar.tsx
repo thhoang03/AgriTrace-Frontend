@@ -12,6 +12,7 @@ import {
   Leaf,
   ChevronRight,
   Shield,
+  Building2,
 } from "lucide-react";
 import { useAuth } from "../../features/auth/auth.store";
 
@@ -25,6 +26,7 @@ const navItems = [
 ];
 
 const adminItems = [
+  { to: "/app/organizations", icon: Building2, label: "Organizations", roles: ["ADMIN"] },
   { to: "/app/users", icon: Users, label: "User Management", roles: ["ADMIN", "MANAGER"] },
   { to: "/app/profile", icon: UserCircle, label: "My Profile", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },
 ];
@@ -38,7 +40,16 @@ export function Sidebar() {
     navigate("/login");
   };
 
-  const userRole = user?.role || "CUSTOMER";
+  const roleMap: Record<string, string> = {
+    Administrator: "ADMIN",
+    Farmer: "FARMER",
+    Processor: "PROCESSOR",
+    Distributor: "DISTRIBUTOR",
+    Retailer: "RETAILER",
+    Inspector: "INSPECTOR",
+    Manager: "MANAGER",
+  };
+  const userRole = roleMap[user?.role || ""] || user?.role?.toUpperCase() || "CUSTOMER";
 
   const filteredNavItems = navItems.filter((item) => item.roles.includes(userRole));
   const filteredAdminItems = adminItems.filter((item) => item.roles.includes(userRole));
