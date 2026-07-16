@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { ArrowLeft, Edit2, Trash2, Image as ImageIcon, Package, Tag, MapPin, Power } from "lucide-react";
 import { useProductDetail, useProductImages, useDeleteProduct, useUpdateProductStatus } from "./products.queries";
+import { ProductFormModal } from "./ProductFormModal";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1400&q=80";
 
@@ -11,6 +12,7 @@ export function ProductDetailPage() {
   const productId = parseInt(id || "0");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const { data: productData, isLoading, isError } = useProductDetail(productId);
   const { data: imagesData } = useProductImages(productId);
@@ -39,6 +41,10 @@ export function ProductDetailPage() {
     } catch (error) {
       console.error("Error toggling status:", error);
     }
+  };
+
+  const handleEdit = () => {
+    setShowEditModal(true);
   };
 
   if (isLoading) {
@@ -81,16 +87,17 @@ export function ProductDetailPage() {
             </button>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => navigate(`/app/products/${productId}/edit`)}
+                onClick={handleEdit}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 <Edit2 className="w-4 h-4" /> Edit
               </button>
               <button
                 onClick={handleToggleStatus}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                disabled={updateProductStatus.isPending}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
-                <Power className="w-4 h-4" /> {product.isActive ? "Deactivate" : "Activate"}
+                <Power className="w-4 h-4" /> {updateProductStatus.isPending ? "Updating..." : (product.isActive ? "Deactivate" : "Activate")}
               </button>
               <button
                 onClick={() => setShowDeleteModal(true)}
@@ -124,7 +131,7 @@ export function ProductDetailPage() {
                     <Tag className="w-4 h-4" style={{ color: "#2E7D32" }} />
                     <span className="text-xs font-medium text-gray-500 uppercase">Category</span>
                   </div>
-                  <div className="text-sm font-medium text-gray-900">{product.category.name}</div>
+                  <div className="text-sm font-medium text-gray-900">{product.category?.name || product.categoryName || "N/A"}</div>
                 </div>
                 <div className="p-4 rounded-xl" style={{ background: "#F8FAF8" }}>
                   <div className="flex items-center gap-2 mb-2">
@@ -223,6 +230,19 @@ export function ProductDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Edit Product Modal */}
+      <ProductFormModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        productId={productId}
+        initialData={product ? {
+          name: product.name,
+          categoryId: product.categoryId,
+          unit: product.unit,
+          organizationId: product.organizationId,
+        } : undefined}
+      />
     </div>
   );
 }
