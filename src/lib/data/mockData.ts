@@ -414,3 +414,93 @@ export const recentActivities = [
   { id: 5, type: "supply_event", user: "Phạm Văn Đức", action: "added transport event for", target: "BTH-2024-004 (Longan)", time: "3 hours ago", icon: "🚚" },
   { id: 6, type: "batch_created", user: "Đặng Văn Hùng", action: "created new batch", target: "BTH-2024-007 (Black Pepper)", time: "5 hours ago", icon: "📦" },
 ];
+
+export const categories = [
+  { categoryId: 1, name: "Fruits", description: "Fresh fruits from Vietnamese farms", isActive: true },
+  { categoryId: 2, name: "Vegetables", description: "Organic vegetables", isActive: true },
+  { categoryId: 3, name: "Grains", description: "Rice, corn, and other grains", isActive: true },
+  { categoryId: 4, name: "Beverages", description: "Coffee, tea, and other beverages", isActive: true },
+  { categoryId: 5, name: "Spices", description: "Vietnamese spices and herbs", isActive: true },
+  { categoryId: 6, name: "Dairy", description: "Milk and dairy products", isActive: false },
+];
+
+export const products = [
+  {
+    productId: 1,
+    name: "Organic Dragon Fruit",
+    categoryId: 1,
+    categoryName: "Fruits",
+    unit: "kg",
+    organizationId: 1,
+    isActive: true,
+  },
+  {
+    productId: 2,
+    name: "Premium Jasmine Rice",
+    categoryId: 3,
+    categoryName: "Grains",
+    unit: "kg",
+    organizationId: 2,
+    isActive: true,
+  },
+  {
+    productId: 3,
+    name: "Robusta Coffee",
+    categoryId: 4,
+    categoryName: "Beverages",
+    unit: "kg",
+    organizationId: 3,
+    isActive: true,
+  },
+  {
+    productId: 4,
+    name: "Longan Fruit",
+    categoryId: 1,
+    categoryName: "Fruits",
+    unit: "kg",
+    organizationId: 4,
+    isActive: true,
+  },
+  {
+    productId: 5,
+    name: "Bitter Melon",
+    categoryId: 2,
+    categoryName: "Vegetables",
+    unit: "kg",
+    organizationId: 5,
+    isActive: true,
+  },
+  {
+    productId: 6,
+    name: "Durian Monthong",
+    categoryId: 1,
+    categoryName: "Fruits",
+    unit: "kg",
+    organizationId: 6,
+    isActive: false,
+  },
+  {
+    productId: 7,
+    name: "Black Pepper",
+    categoryId: 5,
+    categoryName: "Spices",
+    unit: "kg",
+    organizationId: 7,
+    isActive: true,
+  },
+  {
+    productId: 8,
+    name: "Fresh Milk",
+    categoryId: 6,
+    categoryName: "Dairy",
+    unit: "liter",
+    organizationId: 1,
+    isActive: false,
+  },
+];
+
+export const productImages = [
+  { imageId: 1, imageUrl: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=400&q=80", url: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=400&q=80", isPrimary: true, fileName: "dragon-fruit.jpg", uploadedAt: "2024-06-15" },
+  { imageId: 2, imageUrl: "https://images.unsplash.com/photo-1579113800032-c38bd7635818?w=400&q=80", url: "https://images.unsplash.com/photo-1579113800032-c38bd7635818?w=400&q=80", isPrimary: true, fileName: "rice.jpg", uploadedAt: "2024-06-10" },
+  { imageId: 3, imageUrl: "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=400&q=80", url: "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=400&q=80", isPrimary: true, fileName: "coffee.jpg", uploadedAt: "2024-06-01" },
+];
