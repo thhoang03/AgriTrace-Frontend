@@ -13,6 +13,7 @@ export function ProductDetailPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
 
   const { data: productData, isLoading, isError } = useProductDetail(productId);
   const { data: imagesData } = useProductImages(productId);
@@ -31,13 +32,19 @@ export function ProductDetailPage() {
     }
   };
 
-  const handleToggleStatus = async () => {
+  const handleToggleStatus = () => {
+    if (!product) return;
+    setShowStatusModal(true);
+  };
+
+  const confirmToggleStatus = async () => {
     if (!product) return;
     try {
       await updateProductStatus.mutateAsync({
         id: productId,
         data: { isActive: !product.isActive },
       });
+      setShowStatusModal(false);
     } catch (error) {
       console.error("Error toggling status:", error);
     }
@@ -94,10 +101,9 @@ export function ProductDetailPage() {
               </button>
               <button
                 onClick={handleToggleStatus}
-                disabled={updateProductStatus.isPending}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
               >
-                <Power className="w-4 h-4" /> {updateProductStatus.isPending ? "Updating..." : (product.isActive ? "Deactivate" : "Activate")}
+                <Power className="w-4 h-4" /> {product.isActive ? "Deactivate" : "Activate"}
               </button>
               <button
                 onClick={() => setShowDeleteModal(true)}
@@ -207,6 +213,36 @@ export function ProductDetailPage() {
                 className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
               >
                 {deleteProduct.isPending ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status Toggle Confirmation Modal */}
+      {showStatusModal && product && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {product.isActive ? "Deactivate Product" : "Activate Product"}
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Are you sure you want to {product.isActive ? "deactivate" : "activate"} this product?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowStatusModal(false)}
+                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmToggleStatus}
+                disabled={updateProductStatus.isPending}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
+                style={{ background: product.isActive ? "#F57C00" : "#2E7D32" }}
+              >
+                {updateProductStatus.isPending ? "Updating..." : (product.isActive ? "Deactivate" : "Activate")}
               </button>
             </div>
           </div>
