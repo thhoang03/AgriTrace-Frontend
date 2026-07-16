@@ -351,12 +351,19 @@ export const handlers: Record<string, MockHandler> = {
 
   "PATCH /products/:id/status": (config) => {
     const id = Number(config.url?.split("/").pop());
-    const product = products.find((p) => p.productId === id);
-    if (!product) return { data: null, message: "Not found", status: 404 };
-    return ok({ ...product, ...config.data });
+    const productIndex = products.findIndex((p) => p.productId === id);
+    if (productIndex === -1) return { data: null, message: "Not found", status: 404 };
+    products[productIndex] = { ...products[productIndex], ...config.data };
+    return ok(products[productIndex]);
   },
 
-  "DELETE /products/:id": () => ok(null),
+  "DELETE /products/:id": (config) => {
+    const id = Number(config.url?.split("/").pop());
+    const productIndex = products.findIndex((p) => p.productId === id);
+    if (productIndex === -1) return { data: null, message: "Not found", status: 404 };
+    products.splice(productIndex, 1);
+    return ok(null);
+  },
 
   "GET /products/:id/images": (config) => {
     const productId = Number(config.url?.split("/")[3]);

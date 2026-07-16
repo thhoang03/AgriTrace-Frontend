@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Search, Filter, Plus, Eye, Edit2, Trash2, Power,
+  Search, Filter, Plus, Eye, Edit2, Trash2,
   ChevronLeft, ChevronRight, X, SlidersHorizontal, Package,
 } from "lucide-react";
 import { useProductsList, useDeleteProduct, useUpdateProductStatus } from "./products.queries";
@@ -19,7 +19,6 @@ export function ProductManagementPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
-  const [showStatusModal, setShowStatusModal] = useState<{ id: number; currentStatus: boolean } | null>(null);
   const perPage = 10;
 
   const deleteProduct = useDeleteProduct();
@@ -48,23 +47,6 @@ export function ProductManagementPage() {
       setShowDeleteModal(null);
     } catch (error) {
       console.error("Error deleting product:", error);
-    }
-  };
-
-  const handleToggleStatus = async (id: number, currentStatus: boolean) => {
-    setShowStatusModal({ id, currentStatus });
-  };
-
-  const confirmToggleStatus = async () => {
-    if (!showStatusModal) return;
-    try {
-      await updateProductStatus.mutateAsync({
-        id: showStatusModal.id,
-        data: { isActive: !showStatusModal.currentStatus },
-      });
-      setShowStatusModal(null);
-    } catch (error) {
-      console.error("Error toggling status:", error);
     }
   };
 
@@ -210,13 +192,6 @@ export function ProductManagementPage() {
                               <Edit2 className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => handleToggleStatus(product.productId, product.isActive)}
-                              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
-                              title={product.isActive ? "Deactivate" : "Activate"}
-                            >
-                              <Power className="w-4 h-4" />
-                            </button>
-                            <button
                               onClick={() => setShowDeleteModal(product.productId)}
                               className="p-2 rounded-lg hover:bg-red-50 transition-colors text-gray-500 hover:text-red-600"
                               title="Delete"
@@ -281,36 +256,6 @@ export function ProductManagementPage() {
                 className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
               >
                 {deleteProduct.isPending ? "Deleting..." : "Delete"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Status Toggle Confirmation Modal */}
-      {showStatusModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {showStatusModal.currentStatus ? "Deactivate Product" : "Activate Product"}
-            </h3>
-            <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to {showStatusModal.currentStatus ? "deactivate" : "activate"} this product?
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowStatusModal(null)}
-                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmToggleStatus}
-                disabled={updateProductStatus.isPending}
-                className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
-                style={{ background: showStatusModal.currentStatus ? "#F57C00" : "#2E7D32" }}
-              >
-                {updateProductStatus.isPending ? "Updating..." : (showStatusModal.currentStatus ? "Deactivate" : "Activate")}
               </button>
             </div>
           </div>
