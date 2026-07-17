@@ -414,3 +414,20 @@ export const recentActivities = [
   { id: 5, type: "supply_event", user: "Phạm Văn Đức", action: "added transport event for", target: "BTH-2024-004 (Longan)", time: "3 hours ago", icon: "🚚" },
   { id: 6, type: "batch_created", user: "Đặng Văn Hùng", action: "created new batch", target: "BTH-2024-007 (Black Pepper)", time: "5 hours ago", icon: "📦" },
 ];
+
+export interface CategoryMock {
+  categoryId: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export const categories: CategoryMock[] = [
+  { categoryId: 1, name: "Trái cây tươi", description: "Các loại trái cây tươi thu hoạch trực tiếp từ nông trại", isActive: true },
+  { categoryId: 2, name: "Rau củ hữu cơ", description: "Rau củ trồng theo tiêu chuẩn hữu cơ", isActive: true },
+  { categoryId: 3, name: "Gạo & Ngũ cốc", description: "Gạo, ngô, đậu các loại", isActive: true },
+  { categoryId: 4, name: "Cà phê & Trà", description: "Cà phê nhân, chè các loại", isActive: true },
+  { categoryId: 5, name: "Thủy hải sản", description: "Cá, tôm, hải sản đánh bắt và nuôi trồng", isActive: false },
+  { categoryId: 6, name: "Gia vị", description: "Tiêu, ớt, muối và các loại gia vị", isActive: true },
+  { categoryId: 7, name: "Sữa & Chế phẩm", description: "Sữa tươi, sữa chua, phô mai", isActive: false },
+];
