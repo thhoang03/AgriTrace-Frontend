@@ -62,6 +62,13 @@ export interface UserItem {
   email: string;
 }
 
+export interface CategoryMock {
+  categoryId: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+}
+
 export const batches: Batch[] = [
   {
     id: "BTH-2024-001",
@@ -414,13 +421,6 @@ export const recentActivities = [
   { id: 5, type: "supply_event", user: "Phạm Văn Đức", action: "added transport event for", target: "BTH-2024-004 (Longan)", time: "3 hours ago", icon: "🚚" },
   { id: 6, type: "batch_created", user: "Đặng Văn Hùng", action: "created new batch", target: "BTH-2024-007 (Black Pepper)", time: "5 hours ago", icon: "📦" },
 ];
-
-export interface CategoryMock {
-  categoryId: number;
-  name: string;
-  description?: string;
-  isActive: boolean;
-}
 
 export const categories: CategoryMock[] = [
   { categoryId: 1, name: "Trái cây tươi", description: "Các loại trái cây tươi thu hoạch trực tiếp từ nông trại", isActive: true },

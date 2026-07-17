@@ -12,6 +12,7 @@ import { BatchDeleteModal } from "./BatchDeleteModal";
 import { BatchEditModal } from "./BatchEditModal";
 import { BatchSplitModal } from "./BatchSplitModal";
 import { BatchMergeModal } from "./BatchMergeModal";
+import { batches } from "../../mocks/data";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=1400&q=80";
 

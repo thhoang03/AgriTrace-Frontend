@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { AlertTriangle, Bell, CheckCircle, Clock, Plus, X, Eye } from "lucide-react";
-import { recalls } from "../../lib/data/mockData";
+import { recalls } from "../../mocks/data";
 
 type Severity = "Critical" | "High" | "Medium" | "Low";
 type RecallStatus = "Active" | "Resolved" | "Pending";
