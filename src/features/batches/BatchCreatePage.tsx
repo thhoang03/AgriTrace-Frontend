@@ -6,15 +6,14 @@ import {
 } from "lucide-react";
 import { useCreateBatch } from "./batches.queries";
 import type { CreateBatchRequest } from "./batches.types";
+import { useAuth } from "../auth/auth.store";
+import { useCategoriesList } from "../categories/categories.queries";
 
 const initialForm: CreateBatchRequest = {
   product: "",
   productName: "",
-  categoryId: undefined,
   category: "",
-  farmId: undefined,
   farm: "",
-  farmerId: undefined,
   farmer: "",
   harvestDate: "",
   quantity: 0,
@@ -46,10 +45,48 @@ function FieldLabel({ required, children }: { required?: boolean; children: Reac
   );
 }
 
+function CategorySelect({
+  value,
+  onChange,
+  className,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  className: string;
+}) {
+  const { data, isLoading } = useCategoriesList({ pageSize: 100 });
+  const categories = data?.data?.items ?? [];
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className={className}
+      style={{ appearance: "auto" }}
+    >
+      <option value="">-- Chọn danh mục --</option>
+      {isLoading && <option disabled>Đang tải...</option>}
+      {categories
+        .filter((c) => c.isActive)
+        .map((c) => (
+          <option key={c.categoryId} value={c.name}>
+            {c.name}
+          </option>
+        ))}
+    </select>
+  );
+}
+
 export function BatchCreatePage() {
   const navigate = useNavigate();
   const createBatch = useCreateBatch();
-  const [form, setForm] = useState<CreateBatchRequest>(initialForm);
+  const { user } = useAuth();
+  const [form, setForm] = useState<CreateBatchRequest>({
+    ...initialForm,
+    farm: user?.organization ?? "",
+    farmer: user?.name ?? "",
+    harvestDate: new Date().toISOString().split("T")[0],
+  });
   const [error, setError] = useState("");
   const [activeSection, setActiveSection] = useState<Section>("product");
   const [imageError, setImageError] = useState(false);
@@ -194,13 +231,13 @@ export function BatchCreatePage() {
                     <FieldLabel>Display Name</FieldLabel>
                     <input value={form.productName} onChange={(e) => handleChange("productName", e.target.value)} className={inputClass} placeholder="Optional display name" />
                   </label>
-                  <label className="space-y-1.5">
+                  <label className="space-y-1.5 md:col-span-2">
                     <FieldLabel required>Category</FieldLabel>
-                    <input value={form.category} onChange={(e) => handleChange("category", e.target.value)} className={inputClass} placeholder="e.g. Fruit, Vegetable" />
-                  </label>
-                  <label className="space-y-1.5">
-                    <FieldLabel>Category ID</FieldLabel>
-                    <input type="number" value={form.categoryId ?? ""} onChange={(e) => handleChange("categoryId", Number(e.target.value))} className={inputClass} placeholder="Numeric category ID" />
+                    <CategorySelect
+                      value={form.category}
+                      onChange={(val) => handleChange("category", val)}
+                      className={inputClass}
+                    />
                   </label>
 
                   {/* Image URL with preview */}
@@ -245,23 +282,15 @@ export function BatchCreatePage() {
                   </div>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <label className="space-y-1.5">
+                  <label className="space-y-1.5 md:col-span-2">
                     <FieldLabel required>Farm Name</FieldLabel>
-                    <input value={form.farm} onChange={(e) => handleChange("farm", e.target.value)} className={inputClass} placeholder="Farm / Cooperative name" />
+                    <input value={form.farm} onChange={(e) => handleChange("farm", e.target.value)} disabled className={`${inputClass} bg-gray-50 opacity-70 cursor-not-allowed`} placeholder="Farm / Cooperative name" />
                   </label>
-                  <label className="space-y-1.5">
-                    <FieldLabel>Farm ID</FieldLabel>
-                    <input type="number" value={form.farmId ?? ""} onChange={(e) => handleChange("farmId", Number(e.target.value))} className={inputClass} placeholder="Numeric farm ID" />
-                  </label>
-                  <label className="space-y-1.5">
+                  <label className="space-y-1.5 md:col-span-2">
                     <FieldLabel required>Farmer / Producer</FieldLabel>
-                    <input value={form.farmer} onChange={(e) => handleChange("farmer", e.target.value)} className={inputClass} placeholder="Farmer full name" />
+                    <input value={form.farmer} onChange={(e) => handleChange("farmer", e.target.value)} disabled className={`${inputClass} bg-gray-50 opacity-70 cursor-not-allowed`} placeholder="Farmer full name" />
                   </label>
-                  <label className="space-y-1.5">
-                    <FieldLabel>Farmer ID</FieldLabel>
-                    <input type="number" value={form.farmerId ?? ""} onChange={(e) => handleChange("farmerId", Number(e.target.value))} className={inputClass} placeholder="Numeric farmer ID" />
-                  </label>
-                  <label className="space-y-1.5">
+                  <label className="space-y-1.5 md:col-span-2">
                     <FieldLabel required>Harvest Date</FieldLabel>
                     <input type="date" value={form.harvestDate} onChange={(e) => handleChange("harvestDate", e.target.value)} className={inputClass} />
                   </label>

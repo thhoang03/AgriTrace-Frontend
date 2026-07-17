@@ -37,6 +37,14 @@ export function useBatchQrCode(batchId: string) {
   });
 }
 
+export function useBatchImages(batchId: string) {
+  return useQuery({
+    queryKey: [QUERY_KEY, batchId, "images"],
+    queryFn: () => batchesApi.getImages(batchId),
+    enabled: !!batchId,
+  });
+}
+
 export function useCreateBatch() {
   const qc = useQueryClient();
   return useMutation({
@@ -74,5 +82,21 @@ export function useMergeBatch() {
   return useMutation({
     mutationFn: (data: MergeBatchRequest) => splitMergeApi.merge(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  });
+}
+
+export function useUploadBatchImage(batchId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => batchesApi.uploadImage(batchId, file),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY, batchId] }),
+  });
+}
+
+export function useDeleteBatchImage(batchId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (imageId: number | string) => batchesApi.deleteImage(imageId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY, batchId] }),
   });
 }

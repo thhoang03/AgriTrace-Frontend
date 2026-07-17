@@ -3,12 +3,15 @@ import { useNavigate, useParams } from "react-router";
 import {
   ArrowLeft, QrCode, CheckCircle, MapPin, Calendar, Hash,
   User, Building2, Award, Download, Share2, Shield,
-  Edit2, Scissors, Merge, AlertCircle, Package,
+  Edit2, Scissors, Merge, AlertCircle, Package, Plus,
 } from "lucide-react";
 import { useBatch, useBatchTimeline, useBatchQrCode } from "./batches.queries";
 import { BatchEditModal } from "./BatchEditModal";
 import { BatchSplitModal } from "./BatchSplitModal";
 import { BatchMergeModal } from "./BatchMergeModal";
+import { BatchEventModal } from "./BatchEventModal";
+import { BatchMediaTab } from "./BatchMediaTab";
+import { BatchLineageTab } from "./BatchLineageTab";
 
 const PRODUCT_IMG = "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=800&q=80";
 
@@ -22,7 +25,7 @@ const statusConfig: Record<string, { bg: string; color: string }> = {
   Recalled:     { bg: "#FFEBEE", color: "#C62828" },
 };
 
-const tabs = ["Information", "Timeline", "Certificates", "Audit Log"] as const;
+const tabs = ["Information", "Timeline", "Media", "Lineage", "Certificates", "Audit Log"] as const;
 type Tab = typeof tabs[number];
 
 const auditTypeStyle: Record<string, { bg: string; color: string; dot: string }> = {
@@ -40,6 +43,7 @@ export function BatchDetailPage() {
   const [showEdit, setShowEdit] = useState(false);
   const [showSplit, setShowSplit] = useState(false);
   const [showMerge, setShowMerge] = useState(false);
+  const [showEventModal, setShowEventModal] = useState(false);
 
   const { data: batchData, isLoading, isError } = useBatch(id ?? "");
   const { data: timelineData, isLoading: timelineLoading } = useBatchTimeline(id ?? "");
@@ -61,6 +65,16 @@ export function BatchDetailPage() {
   })();
 
   const statusCfg = statusConfig[statusNorm] ?? { bg: "#F3F4F6", color: "#6B7280" };
+
+  const handleDownloadQr = () => {
+    if (!qrCode?.qrCodeUrl) return;
+    const a = document.createElement("a");
+    a.href = qrCode.qrCodeUrl;
+    a.download = `qrcode-${batch?.batchCode || batch?.id}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
   if (isLoading) {
     return (
@@ -261,7 +275,7 @@ export function BatchDetailPage() {
                     <div className="text-xs text-gray-400 text-center break-all leading-relaxed">{qrCode.qrCodeUrl}</div>
                   )}
                   <div className="flex gap-2 w-full">
-                    <button className="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5">
+                    <button onClick={handleDownloadQr} className="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5">
                       <Download className="w-3.5 h-3.5" /> Download
                     </button>
                     <button className="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5" style={{ background: "#2E7D32" }}>
@@ -302,6 +316,14 @@ export function BatchDetailPage() {
         {/* ── Timeline ── */}
         {activeTab === "Timeline" && (
           <div className="max-w-3xl">
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={() => setShowEventModal(true)}
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> Add Event
+              </button>
+            </div>
             {timelineLoading ? (
               <div className="flex flex-col items-center py-16 gap-3">
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center animate-pulse" style={{ background: "#E8F5E9" }}>
@@ -373,6 +395,16 @@ export function BatchDetailPage() {
               </div>
             )}
           </div>
+        )}
+
+        {/* ── Media ── */}
+        {activeTab === "Media" && batch && (
+          <BatchMediaTab batchId={batch.id} />
+        )}
+
+        {/* ── Lineage ── */}
+        {activeTab === "Lineage" && batch && (
+          <BatchLineageTab batchId={batch.id} />
         )}
 
         {/* ── Certificates ── */}
@@ -485,6 +517,13 @@ export function BatchDetailPage() {
           productId={batch.categoryId}
           onClose={() => setShowMerge(false)}
           onMerged={(mergedId) => navigate(`/app/batches/${mergedId}`)}
+        />
+      )}
+      {showEventModal && batch && (
+        <BatchEventModal
+          batchId={batch.id}
+          batchCode={batch.batchCode ?? batch.id}
+          onClose={() => setShowEventModal(false)}
         />
       )}
     </div>

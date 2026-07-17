@@ -128,9 +128,43 @@ export const handlers: Record<string, MockHandler> = {
     return ok(batch);
   },
 
-  "POST /batches": (config) => ok({ ...config.data, id: "BTH-2024-00" + (batches.length + 1) } as Batch),
+  "POST /batches": (config) => {
+    let data = config.data as Partial<Batch>;
+    if (typeof config.data === "string") {
+      try { data = JSON.parse(config.data); } catch (_) {}
+    }
+    const newBatch: Batch = {
+      product: "",
+      category: "",
+      image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=80&q=60",
+      farm: "",
+      farmer: "",
+      harvestDate: new Date().toISOString().split("T")[0],
+      quantity: 0,
+      weight: "0 kg",
+      status: "Harvested",
+      location: "",
+      gps: "",
+      ...data,
+      id: "BTH-2024-0" + String(batches.length + 1).padStart(2, "0"),
+    };
+    batches.push(newBatch);
+    return ok(newBatch);
+  },
 
-  "PUT /batches/:id": (config) => ok({ ...config.data, id: config.url?.split("/").pop() } as Batch),
+  "PUT /batches/:id": (config) => {
+    const id = config.url?.split("/").pop() ?? "";
+    const index = batches.findIndex(b => b.id === id);
+    let data = config.data as Partial<Batch>;
+    if (typeof config.data === 'string') {
+        try { data = JSON.parse(config.data); } catch (e) {}
+    }
+    if (index !== -1) {
+      batches[index] = { ...batches[index], ...data };
+      return ok(batches[index]);
+    }
+    return ok({ ...data, id } as Batch);
+  },
 
   "DELETE /batches/:id": () => ok(null),
 

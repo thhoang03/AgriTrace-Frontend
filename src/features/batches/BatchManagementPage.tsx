@@ -3,12 +3,15 @@ import { useNavigate } from "react-router";
 import {
   Search, Plus, Download, QrCode, Eye, Edit2, Trash2,
   ChevronLeft, ChevronRight, X, SlidersHorizontal,
-  Package, ChevronUp, ChevronDown, Leaf,
+  Package, ChevronUp, ChevronDown, Leaf, MoreVertical,
+  Scissors, Merge, Power
 } from "lucide-react";
 import { useBatches } from "./batches.queries";
-import type { BatchStatus } from "./batches.types";
+import type { BatchStatus, Batch } from "./batches.types";
 import { BatchDeleteModal } from "./BatchDeleteModal";
 import { BatchEditModal } from "./BatchEditModal";
+import { BatchSplitModal } from "./BatchSplitModal";
+import { BatchMergeModal } from "./BatchMergeModal";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=1400&q=80";
 
@@ -52,8 +55,11 @@ export function BatchManagementPage() {
   const [showQR, setShowQR] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>("harvestDate");
   const [sortAsc, setSortAsc] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; code: string; name: string } | null>(null);
-  const [editTarget, setEditTarget] = useState<any | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; code: string; name: string; isDeleted?: boolean } | null>(null);
+  const [editTarget, setEditTarget] = useState<Batch | null>(null);
+  const [splitTarget, setSplitTarget] = useState<Batch | null>(null);
+  const [mergeTarget, setMergeTarget] = useState<Batch | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const perPage = 8;
 
   const { data: batchesData, isLoading, isError } = useBatches({
@@ -113,6 +119,36 @@ export function BatchManagementPage() {
     status: s,
     count: normalizedBatches.filter((b) => b.status === s).length,
   }));
+
+  const handleExport = () => {
+    const headers = ["Batch ID", "Product", "Category", "Farm", "Farmer", "Harvest Date", "Quantity", "Status", "Location"];
+    const csvContent = [
+      headers.join(","),
+      ...normalizedBatches.map(b => 
+        [
+          b.batchCode ?? b.id,
+          `"${b.productName ?? b.product}"`,
+          `"${b.category}"`,
+          `"${b.farm}"`,
+          `"${b.farmer}"`,
+          b.harvestDate,
+          b.quantity,
+          b.status,
+          `"${b.location}"`
+        ].join(",")
+      )
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "batches_export.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   if (isLoading) {
     return (
@@ -226,7 +262,10 @@ export function BatchManagementPage() {
               )}
             </button>
             <div className="ml-auto flex items-center gap-2">
-              <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+              <button 
+                onClick={handleExport}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
                 <Download className="w-4 h-4" /> Export
               </button>
               <button
@@ -346,6 +385,9 @@ export function BatchManagementPage() {
                         <div className="flex items-center gap-1.5">Status <SortIcon field="status" /></div>
                       </th>
                       <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                        State
+                      </th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                         Actions
                       </th>
                     </tr>
@@ -406,35 +448,77 @@ export function BatchManagementPage() {
                             </span>
                           </td>
                           <td className="px-4 py-3.5">
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`w-2 h-2 rounded-full ${batch.isDeleted ? "bg-orange-500" : "bg-green-500"}`}></span>
+                              <span className={`text-xs font-medium ${batch.isDeleted ? "text-orange-700" : "text-green-700"}`}>
+                                {batch.isDeleted ? "Inactive" : "Active"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center gap-1 relative">
                               <button
-                                onClick={(e) => { e.stopPropagation(); navigate(`/app/batches/${batch.id}`); }}
-                                className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"
-                                title="View"
+                                onClick={() => navigate(`/app/batches/${batch.id}`)}
+                                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-green-600 transition-colors"
+                                title="View details"
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={(e) => { e.stopPropagation(); setEditTarget(batch); }}
-                                className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors"
+                                onClick={() => setEditTarget(batch)}
+                                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-600 transition-colors"
                                 title="Edit"
                               >
                                 <Edit2 className="w-4 h-4" />
                               </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setDeleteTarget({
-                                    id: batch.id,
-                                    code: batch.batchCode ?? batch.id,
-                                    name: batch.productName ?? batch.product,
-                                  });
-                                }}
-                                className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
-                                title="Delete"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              <div className="relative">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuId(openMenuId === batch.id ? null : batch.id);
+                                  }}
+                                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+                                >
+                                  <MoreVertical className="w-4 h-4" />
+                                </button>
+                                {openMenuId === batch.id && (
+                                  <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 z-50 py-1" onClick={(e) => e.stopPropagation()}>
+                                      <button
+                                        onClick={() => { setSplitTarget(batch); setOpenMenuId(null); }}
+                                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                      >
+                                        <Scissors className="w-4 h-4 text-blue-500" /> Split Batch
+                                      </button>
+                                      <button
+                                        onClick={() => { setMergeTarget(batch); setOpenMenuId(null); }}
+                                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                      >
+                                        <Merge className="w-4 h-4 text-purple-500" /> Merge Batches
+                                      </button>
+                                      <div className="border-t border-gray-100 my-1"></div>
+                                      <button
+                                        onClick={() => {
+                                          setDeleteTarget({
+                                            id: batch.id,
+                                            code: batch.batchCode ?? batch.id,
+                                            name: batch.productName ?? batch.product,
+                                            isDeleted: batch.isDeleted
+                                          });
+                                          setOpenMenuId(null);
+                                        }}
+                                        className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
+                                          batch.isDeleted ? "text-green-600 hover:bg-green-50" : "text-orange-600 hover:bg-orange-50"
+                                        }`}
+                                      >
+                                        <Power className="w-4 h-4" /> 
+                                        {batch.isDeleted ? "Set Active" : "Set Inactive"}
+                                      </button>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </td>
                         </tr>
@@ -512,6 +596,7 @@ export function BatchManagementPage() {
           batchId={deleteTarget.id}
           batchCode={deleteTarget.code}
           productName={deleteTarget.name}
+          isDeleted={deleteTarget.isDeleted}
           onClose={() => setDeleteTarget(null)}
         />
       )}
@@ -521,6 +606,26 @@ export function BatchManagementPage() {
         <BatchEditModal
           batch={editTarget}
           onClose={() => setEditTarget(null)}
+        />
+      )}
+      {splitTarget && (
+        <BatchSplitModal
+          batchId={splitTarget.id}
+          batchCode={splitTarget.batchCode ?? splitTarget.id}
+          productName={splitTarget.productName ?? splitTarget.product}
+          totalQuantity={splitTarget.quantity}
+          unit={splitTarget.unit}
+          onClose={() => setSplitTarget(null)}
+        />
+      )}
+      {mergeTarget && (
+        <BatchMergeModal
+          currentBatchId={mergeTarget.id}
+          currentBatchCode={mergeTarget.batchCode ?? mergeTarget.id}
+          productName={mergeTarget.productName ?? mergeTarget.product}
+          productId={mergeTarget.categoryId}
+          onClose={() => setMergeTarget(null)}
+          onMerged={(mergedId) => navigate(`/app/batches/${mergedId}`)}
         />
       )}
     </div>

@@ -95,6 +95,7 @@ export interface CreateBatchRequest {
 
 export interface UpdateBatchRequest extends Partial<CreateBatchRequest> {
   status?: BatchStatus;
+  isDeleted?: boolean;
 }
 
 export interface BatchQrCode {

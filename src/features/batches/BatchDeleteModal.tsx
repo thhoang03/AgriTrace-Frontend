@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Trash2, AlertTriangle, X } from "lucide-react";
-import { useDeleteBatch } from "./batches.queries";
+import { Power, AlertTriangle, X } from "lucide-react";
+import { useUpdateBatch } from "./batches.queries";
 
 interface BatchDeleteModalProps {
   batchId: string;
   batchCode: string;
   productName: string;
+  isDeleted?: boolean;
   onClose: () => void;
   onDeleted?: () => void;
 }
@@ -14,20 +15,21 @@ export function BatchDeleteModal({
   batchId,
   batchCode,
   productName,
+  isDeleted,
   onClose,
   onDeleted,
 }: BatchDeleteModalProps) {
-  const deleteBatch = useDeleteBatch();
+  const updateBatch = useUpdateBatch(batchId);
   const [error, setError] = useState("");
 
-  const handleDelete = async () => {
+  const handleToggle = async () => {
     setError("");
     try {
-      await deleteBatch.mutateAsync(batchId);
+      await updateBatch.mutateAsync({ isDeleted: !isDeleted });
       onDeleted?.();
       onClose();
     } catch {
-      setError("Failed to delete batch. Please try again.");
+      setError(`Failed to ${isDeleted ? "activate" : "deactivate"} batch. Please try again.`);
     }
   };
 
@@ -45,12 +47,13 @@ export function BatchDeleteModal({
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2.5">
             <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center"
-              style={{ background: "#FEE2E2" }}
+              className={`w-8 h-8 rounded-xl flex items-center justify-center ${isDeleted ? "bg-green-100" : "bg-orange-100"}`}
             >
-              <Trash2 className="w-4 h-4" style={{ color: "#DC2626" }} />
+              <Power className={`w-4 h-4 ${isDeleted ? "text-green-600" : "text-orange-600"}`} />
             </div>
-            <span className="font-semibold text-gray-900">Delete Batch</span>
+            <span className="font-semibold text-gray-900">
+              {isDeleted ? "Activate Batch" : "Deactivate Batch"}
+            </span>
           </div>
           <button
             onClick={onClose}
@@ -64,22 +67,23 @@ export function BatchDeleteModal({
         <div className="px-6 py-5">
           <div
             className="flex items-start gap-3 rounded-xl p-4 mb-4"
-            style={{ background: "#FFF7ED", border: "1px solid #FED7AA" }}
+            style={{ background: isDeleted ? "#F0FDF4" : "#FFF7ED", border: `1px solid ${isDeleted ? "#BBF7D0" : "#FED7AA"}` }}
           >
-            <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: "#EA580C" }} />
+            <AlertTriangle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: isDeleted ? "#16A34A" : "#EA580C" }} />
             <div>
-              <div className="font-semibold text-sm" style={{ color: "#9A3412" }}>
-                This action cannot be undone
+              <div className="font-semibold text-sm" style={{ color: isDeleted ? "#15803D" : "#9A3412" }}>
+                {isDeleted ? "Batch will become active" : "Batch will become inactive"}
               </div>
-              <div className="text-sm mt-1" style={{ color: "#C2410C" }}>
-                All timeline events, certificates, and audit logs associated with this batch will
-                be permanently removed from the system.
+              <div className="text-sm mt-1" style={{ color: isDeleted ? "#166534" : "#C2410C" }}>
+                {isDeleted
+                  ? "This batch will be visible to all users and normal operations can resume."
+                  : "This batch will be hidden from public views and new actions will be restricted."}
               </div>
             </div>
           </div>
 
           <p className="text-sm text-gray-600 mb-2">
-            You are about to delete:
+            You are about to {isDeleted ? "activate" : "deactivate"}:
           </p>
           <div
             className="rounded-xl p-3 mb-4"
@@ -102,24 +106,24 @@ export function BatchDeleteModal({
               {error}
             </div>
           )}
-
-          <div className="flex gap-3">
-            <button
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleDelete}
-              disabled={deleteBatch.isPending}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-              style={{ background: "#DC2626" }}
-            >
-              <Trash2 className="w-4 h-4" />
-              {deleteBatch.isPending ? "Deleting..." : "Delete Batch"}
-            </button>
-          </div>
+         {/* Footer */}
+        <div className="flex gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleToggle}
+            disabled={updateBatch.isPending}
+            className={`flex-1 py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50 ${
+              isDeleted ? "bg-green-600" : "bg-orange-500"
+            }`}
+          >
+            {updateBatch.isPending ? "Processing..." : isDeleted ? "Activate" : "Deactivate"}
+          </button>
+        </div>
         </div>
       </div>
     </div>
