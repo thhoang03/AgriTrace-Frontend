@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { batchesApi } from "./batches.api";
+import { splitMergeApi } from "./split-merge.api";
 import type { BatchFilters, CreateBatchRequest, UpdateBatchRequest } from "./batches.types";
+import type { SplitBatchRequest, MergeBatchRequest } from "./split-merge.types";
 
 const QUERY_KEY = "batches";
 
@@ -27,6 +29,14 @@ export function useBatchTimeline(batchId: string) {
   });
 }
 
+export function useBatchQrCode(batchId: string) {
+  return useQuery({
+    queryKey: [QUERY_KEY, batchId, "qr-code"],
+    queryFn: () => batchesApi.getQrCode(batchId),
+    enabled: !!batchId,
+  });
+}
+
 export function useCreateBatch() {
   const qc = useQueryClient();
   return useMutation({
@@ -47,6 +57,22 @@ export function useDeleteBatch() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => batchesApi.delete(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  });
+}
+
+export function useSplitBatch(batchId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: SplitBatchRequest) => splitMergeApi.split(batchId, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  });
+}
+
+export function useMergeBatch() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: MergeBatchRequest) => splitMergeApi.merge(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 }

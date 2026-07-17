@@ -1,4 +1,12 @@
 export type BatchStatus =
+  | "HARVESTED"
+  | "PROCESSING"
+  | "PACKAGING"
+  | "TRANSPORTING"
+  | "DISTRIBUTING"
+  | "RETAIL"
+  | "COMPLETED"
+  | "RECALLED"
   | "Harvested"
   | "Processing"
   | "Packaged"
@@ -9,17 +17,33 @@ export type BatchStatus =
 
 export interface Batch {
   id: string;
+  batchCode?: string;
   product: string;
+  productName?: string;
+  categoryId?: number;
   category: string;
-  image: string;
+  farmId?: number;
   farm: string;
+  farmerId?: number;
   farmer: string;
   harvestDate: string;
   quantity: number;
+  unit?: string;
   weight: string;
+  productionArea?: string;
   status: BatchStatus;
   location: string;
   gps: string;
+  gpsLocation?: string;
+  description?: string;
+  image: string;
+  productImage?: string;
+  qrCodeUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  isDeleted?: boolean;
 }
 
 export interface TimelineEvent {
@@ -50,14 +74,23 @@ export interface BatchFilters {
 
 export interface CreateBatchRequest {
   product: string;
+  productName?: string;
+  categoryId?: number;
   category: string;
+  farmId?: number;
   farm: string;
+  farmerId?: number;
   farmer: string;
   harvestDate: string;
   quantity: number;
+  unit?: string;
   weight: string;
+  productionArea?: string;
   location: string;
   gps: string;
+  gpsLocation?: string;
+  description?: string;
+  productImage?: string;
 }
 
 export interface UpdateBatchRequest extends Partial<CreateBatchRequest> {

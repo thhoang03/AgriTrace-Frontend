@@ -5,6 +5,7 @@ import { LoginPage } from "../features/auth/LoginPage";
 import { DashboardPage } from "../features/dashboard/DashboardPage";
 import { BatchManagementPage } from "../features/batches/BatchManagementPage";
 import { BatchDetailPage } from "../features/batches/BatchDetailPage";
+import { BatchCreatePage } from "../features/batches/BatchCreatePage";
 import { RecallPage } from "../features/recall/RecallPage";
 import { ReportsPage } from "../features/reports/ReportsPage";
 import { UsersListPage } from "../features/users/UsersListPage";
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
       { index: true, Component: DashboardPage },
       { path: "dashboard", Component: DashboardPage },
       { path: "batches", Component: BatchManagementPage },
+      { path: "batches/new", Component: BatchCreatePage },
       { path: "batches/:id", Component: BatchDetailPage },
       { path: "supply-chain", Component: SupplyChainPage },
       { path: "inspection", Component: InspectionPage },
