@@ -431,3 +431,94 @@ export const categories: CategoryMock[] = [
   { categoryId: 6, name: "Gia vị", description: "Tiêu, ớt, muối và các loại gia vị", isActive: true },
   { categoryId: 7, name: "Sữa & Chế phẩm", description: "Sữa tươi, sữa chua, phô mai", isActive: false },
 ];
+
+export interface ProductMock {
+  productId: number;
+  name: string;
+  categoryId: number;
+  categoryName: string;
+  unit: string;
+  organizationId: number;
+  isActive: boolean;
+}
+
+export const products: ProductMock[] = [
+  {
+    productId: 1,
+    name: "Thanh Long Hữu Cơ",
+    categoryId: 1,
+    categoryName: "Trái cây tươi",
+    unit: "kg",
+    organizationId: 1,
+    isActive: true,
+  },
+  {
+    productId: 2,
+    name: "Gạo Hương Nhị",
+    categoryId: 3,
+    categoryName: "Gạo & Ngũ cốc",
+    unit: "kg",
+    organizationId: 2,
+    isActive: true,
+  },
+  {
+    productId: 3,
+    name: "Cà phê Robusta",
+    categoryId: 4,
+    categoryName: "Cà phê & Trà",
+    unit: "kg",
+    organizationId: 3,
+    isActive: true,
+  },
+  {
+    productId: 4,
+    name: "Nhãn Long Hưng",
+    categoryId: 1,
+    categoryName: "Trái cây tươi",
+    unit: "kg",
+    organizationId: 4,
+    isActive: true,
+  },
+  {
+    productId: 5,
+    name: "Khổ Qua",
+    categoryId: 2,
+    categoryName: "Rau củ hữu cơ",
+    unit: "kg",
+    organizationId: 5,
+    isActive: true,
+  },
+  {
+    productId: 6,
+    name: "Sầu Riêng Monthong",
+    categoryId: 1,
+    categoryName: "Trái cây tươi",
+    unit: "kg",
+    organizationId: 6,
+    isActive: false,
+  },
+  {
+    productId: 7,
+    name: "Tiêu Đen Phú Quốc",
+    categoryId: 6,
+    categoryName: "Gia vị",
+    unit: "kg",
+    organizationId: 7,
+    isActive: true,
+  },
+  {
+    productId: 8,
+    name: "Sữa Tươi",
+    categoryId: 7,
+    categoryName: "Sữa & Chế phẩm",
+    unit: "liter",
+    organizationId: 1,
+    isActive: false,
+  },
+];
+
+export const productImages = [
+  { imageId: 1, imageUrl: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=400&q=80", url: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=400&q=80", isPrimary: true, fileName: "dragon-fruit.jpg", uploadedAt: "2024-06-15" },
+  { imageId: 2, imageUrl: "https://images.unsplash.com/photo-1579113800032-c38bd7635818?w=400&q=80", url: "https://images.unsplash.com/photo-1579113800032-c38bd7635818?w=400&q=80", isPrimary: true, fileName: "rice.jpg", uploadedAt: "2024-06-10" },
+  { imageId: 3, imageUrl: "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=400&q=80", url: "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=400&q=80", isPrimary: true, fileName: "coffee.jpg", uploadedAt: "2024-06-01" },
+];

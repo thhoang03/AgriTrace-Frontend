@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Search, Filter, Plus, Eye, Edit2, Trash2, Power,
+  Search, Filter, Plus, Eye, Edit2, Trash2,
   ChevronLeft, ChevronRight, X, SlidersHorizontal, Package,
 } from "lucide-react";
 import { useProductsList, useDeleteProduct, useUpdateProductStatus } from "./products.queries";
@@ -47,17 +47,6 @@ export function ProductManagementPage() {
       setShowDeleteModal(null);
     } catch (error) {
       console.error("Error deleting product:", error);
-    }
-  };
-
-  const handleToggleStatus = async (id: number, currentStatus: boolean) => {
-    try {
-      await updateProductStatus.mutateAsync({
-        id,
-        data: { isActive: !currentStatus },
-      });
-    } catch (error) {
-      console.error("Error toggling status:", error);
     }
   };
 
@@ -201,13 +190,6 @@ export function ProductManagementPage() {
                               title="Edit"
                             >
                               <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleToggleStatus(product.productId, product.isActive)}
-                              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
-                              title={product.isActive ? "Deactivate" : "Activate"}
-                            >
-                              <Power className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => setShowDeleteModal(product.productId)}
