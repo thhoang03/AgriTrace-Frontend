@@ -5,11 +5,12 @@ import type {
   UpdateCategoryRequest,
   UpdateCategoryStatusRequest,
   CategoryFilters,
+  CategoriesListResponse,
 } from "./categories.types";
 
 export const categoriesApi = {
   getAll: (filters?: CategoryFilters) =>
-    getPaginated<Category>("/categories", { params: filters }),
+    getPaginated<Category, CategoriesListResponse>("/categories", { params: filters }),
 
   getById: (id: number | string) =>
     get<Category>(`/categories/${id}`),

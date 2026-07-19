@@ -98,8 +98,8 @@ export function getList<T>(url: string, config?: AxiosRequestConfig) {
   return http.get<ApiResponse<T[]>>(url, config).then((r) => r.data);
 }
 
-export function getPaginated<T>(url: string, config?: AxiosRequestConfig) {
-  return http.get<ApiResponse<PaginatedResponse<T>>>(url, config).then((r) => r.data);
+export function getPaginated<T, R = PaginatedResponse<T>>(url: string, config?: AxiosRequestConfig) {
+  return http.get<ApiResponse<R>>(url, config).then((r) => r.data);
 }
 
 export function post<T>(url: string, data?: unknown, config?: AxiosRequestConfig) {

@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supplyChainApi } from "./supply-chain.api";
+import type { CreateEventRequest } from "./supply-chain.types";
 
 const QUERY_KEY = "supply-chain";
 
@@ -24,5 +25,16 @@ export function useTraceByQR(qrCode: string) {
     queryKey: [QUERY_KEY, "trace", qrCode],
     queryFn: () => supplyChainApi.traceByQR(qrCode),
     enabled: !!qrCode,
+  });
+}
+
+export function useCreateEvent(batchId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: CreateEventRequest) => supplyChainApi.createEvent(batchId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [QUERY_KEY, batchId] });
+      qc.invalidateQueries({ queryKey: ["batches", batchId, "timeline"] });
+    },
   });
 }

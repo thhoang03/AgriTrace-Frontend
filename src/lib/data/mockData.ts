@@ -415,84 +415,102 @@ export const recentActivities = [
   { id: 6, type: "batch_created", user: "Đặng Văn Hùng", action: "created new batch", target: "BTH-2024-007 (Black Pepper)", time: "5 hours ago", icon: "📦" },
 ];
 
-export const categories = [
-  { categoryId: 1, name: "Fruits", description: "Fresh fruits from Vietnamese farms", isActive: true },
-  { categoryId: 2, name: "Vegetables", description: "Organic vegetables", isActive: true },
-  { categoryId: 3, name: "Grains", description: "Rice, corn, and other grains", isActive: true },
-  { categoryId: 4, name: "Beverages", description: "Coffee, tea, and other beverages", isActive: true },
-  { categoryId: 5, name: "Spices", description: "Vietnamese spices and herbs", isActive: true },
-  { categoryId: 6, name: "Dairy", description: "Milk and dairy products", isActive: false },
+export interface CategoryMock {
+  categoryId: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export const categories: CategoryMock[] = [
+  { categoryId: 1, name: "Trái cây tươi", description: "Các loại trái cây tươi thu hoạch trực tiếp từ nông trại", isActive: true },
+  { categoryId: 2, name: "Rau củ hữu cơ", description: "Rau củ trồng theo tiêu chuẩn hữu cơ", isActive: true },
+  { categoryId: 3, name: "Gạo & Ngũ cốc", description: "Gạo, ngô, đậu các loại", isActive: true },
+  { categoryId: 4, name: "Cà phê & Trà", description: "Cà phê nhân, chè các loại", isActive: true },
+  { categoryId: 5, name: "Thủy hải sản", description: "Cá, tôm, hải sản đánh bắt và nuôi trồng", isActive: false },
+  { categoryId: 6, name: "Gia vị", description: "Tiêu, ớt, muối và các loại gia vị", isActive: true },
+  { categoryId: 7, name: "Sữa & Chế phẩm", description: "Sữa tươi, sữa chua, phô mai", isActive: false },
 ];
 
-export const products = [
+export interface ProductMock {
+  productId: number;
+  name: string;
+  categoryId: number;
+  categoryName: string;
+  unit: string;
+  organizationId: number;
+  isActive: boolean;
+}
+
+export const products: ProductMock[] = [
   {
     productId: 1,
-    name: "Organic Dragon Fruit",
+    name: "Thanh Long Hữu Cơ",
     categoryId: 1,
-    categoryName: "Fruits",
+    categoryName: "Trái cây tươi",
     unit: "kg",
     organizationId: 1,
     isActive: true,
   },
   {
     productId: 2,
-    name: "Premium Jasmine Rice",
+    name: "Gạo Hương Nhị",
     categoryId: 3,
-    categoryName: "Grains",
+    categoryName: "Gạo & Ngũ cốc",
     unit: "kg",
     organizationId: 2,
     isActive: true,
   },
   {
     productId: 3,
-    name: "Robusta Coffee",
+    name: "Cà phê Robusta",
     categoryId: 4,
-    categoryName: "Beverages",
+    categoryName: "Cà phê & Trà",
     unit: "kg",
     organizationId: 3,
     isActive: true,
   },
   {
     productId: 4,
-    name: "Longan Fruit",
+    name: "Nhãn Long Hưng",
     categoryId: 1,
-    categoryName: "Fruits",
+    categoryName: "Trái cây tươi",
     unit: "kg",
     organizationId: 4,
     isActive: true,
   },
   {
     productId: 5,
-    name: "Bitter Melon",
+    name: "Khổ Qua",
     categoryId: 2,
-    categoryName: "Vegetables",
+    categoryName: "Rau củ hữu cơ",
     unit: "kg",
     organizationId: 5,
     isActive: true,
   },
   {
     productId: 6,
-    name: "Durian Monthong",
+    name: "Sầu Riêng Monthong",
     categoryId: 1,
-    categoryName: "Fruits",
+    categoryName: "Trái cây tươi",
     unit: "kg",
     organizationId: 6,
     isActive: false,
   },
   {
     productId: 7,
-    name: "Black Pepper",
-    categoryId: 5,
-    categoryName: "Spices",
+    name: "Tiêu Đen Phú Quốc",
+    categoryId: 6,
+    categoryName: "Gia vị",
     unit: "kg",
     organizationId: 7,
     isActive: true,
   },
   {
     productId: 8,
-    name: "Fresh Milk",
-    categoryId: 6,
-    categoryName: "Dairy",
+    name: "Sữa Tươi",
+    categoryId: 7,
+    categoryName: "Sữa & Chế phẩm",
     unit: "liter",
     organizationId: 1,
     isActive: false,

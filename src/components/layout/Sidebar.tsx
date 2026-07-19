@@ -14,6 +14,7 @@ import {
   Shield,
   ShoppingBag,
   Building2,
+  Tags,
 } from "lucide-react";
 import { useAuth } from "../../features/auth/auth.store";
 
@@ -29,6 +30,7 @@ const navItems = [
 
 const adminItems = [
   { to: "/app/organizations", icon: Building2, label: "Organizations", roles: ["ADMIN"] },
+  { to: "/app/categories", icon: Tags, label: "Categories", roles: ["ADMIN"] },
   { to: "/app/users", icon: Users, label: "User Management", roles: ["ADMIN", "MANAGER"] },
   { to: "/app/profile", icon: UserCircle, label: "My Profile", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },
 ];
