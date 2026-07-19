@@ -335,18 +335,31 @@ export const handlers: Record<string, MockHandler> = {
     });
   },
 
-  "POST /products": (config) =>
-    ok({
+  "POST /products": (config) => {
+    const category = categories.find((c) => c.categoryId === config.data.categoryId);
+    const newProduct = {
       productId: products.length + 1,
       ...config.data,
+      categoryName: category?.name || "Unknown",
       isActive: true,
-    }),
+    };
+    products.push(newProduct);
+    return ok(newProduct);
+  },
 
   "PUT /products/:id": (config) => {
     const id = Number(config.url?.split("/").pop());
-    const product = products.find((p) => p.productId === id);
-    if (!product) return { data: null, message: "Not found", status: 404 };
-    return ok({ ...product, ...config.data });
+    const productIndex = products.findIndex((p) => p.productId === id);
+    if (productIndex === -1) return { data: null, message: "Not found", status: 404 };
+    const category = categories.find((c) => c.categoryId === config.data.categoryId);
+    products[productIndex] = {
+      ...products[productIndex],
+      ...config.data,
+      categoryId: Number(config.data.categoryId) || products[productIndex].categoryId,
+      organizationId: Number(config.data.organizationId) || products[productIndex].organizationId,
+      categoryName: category?.name || products[productIndex].categoryName,
+    };
+    return ok(products[productIndex]);
   },
 
   "PATCH /products/:id/status": (config) => {

@@ -9,12 +9,12 @@ export const categoriesQueries = {
     pageSize?: number;
   }) => ({
     queryKey: ["categories", "list", params],
-    queryFn: () => categoriesApi.getCategories(params),
+    queryFn: () => categoriesApi.getAll(params),
   }),
 
   detail: (id: number) => ({
     queryKey: ["categories", "detail", id],
-    queryFn: () => categoriesApi.getCategory(id),
+    queryFn: () => categoriesApi.getById(id),
     enabled: !!id,
   }),
 };
