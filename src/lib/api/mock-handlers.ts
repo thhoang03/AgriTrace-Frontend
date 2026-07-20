@@ -7,6 +7,8 @@ import {
   recentActivities,
   batchStatusData,
   categories,
+  products,
+  productImages,
 } from "../data/mockData";
 import type {
   Batch,
@@ -104,6 +106,30 @@ function filterUsers(list: UserItem[], config: AxiosRequestConfig): UserItem[] {
   return result;
 }
 
+function filterCategories(list: typeof categories, config: AxiosRequestConfig) {
+  const { search, isActive } = config.params || {};
+  let result = [...list];
+  if (isActive !== undefined) result = result.filter((c) => c.isActive === isActive);
+  if (search) {
+    const q = search.toLowerCase();
+    result = result.filter((c) => c.name.toLowerCase().includes(q));
+  }
+  return result;
+}
+
+function filterProducts(list: typeof products, config: AxiosRequestConfig) {
+  const { search, categoryId, isActive, organizationId } = config.params || {};
+  let result = [...list];
+  if (categoryId) result = result.filter((p) => p.categoryId === categoryId);
+  if (isActive !== undefined) result = result.filter((p) => p.isActive === isActive);
+  if (organizationId) result = result.filter((p) => p.organizationId === organizationId);
+  if (search) {
+    const q = search.toLowerCase();
+    result = result.filter((p) => p.name.toLowerCase().includes(q));
+  }
+  return result;
+}
+
 export const handlers: Record<string, MockHandler> = {
   // ── Auth ──
   "POST /auth/login": (config) => {
@@ -163,7 +189,7 @@ export const handlers: Record<string, MockHandler> = {
       batches[index] = { ...batches[index], ...data };
       return ok(batches[index]);
     }
-    return ok({ ...data, id } as Batch);
+    return ok({ ...data, id, status: "Harvested" as BatchStatus } as Batch);
   },
 
   "DELETE /batches/:id": () => ok(null),
@@ -262,22 +288,17 @@ export const handlers: Record<string, MockHandler> = {
 
   // ── Categories ──
   "GET /categories": (config) => {
-    const { search } = config.params || {};
-    let result = [...categories];
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          (c.description ?? "").toLowerCase().includes(q),
-      );
-    }
+    const filtered = filterCategories(categories, config);
+    const page = Number(config.params?.page) || 1;
+    const pageSize = Number(config.params?.pageSize) || 10;
+    const start = (page - 1) * pageSize;
+    const items = filtered.slice(start, start + pageSize);
     return ok({
-      items: result,
-      totalCount: result.length,
-      page: 1,
-      pageSize: 20,
-      totalPages: 1,
+      items,
+      totalCount: filtered.length,
+      page,
+      pageSize,
+      totalPages: Math.ceil(filtered.length / pageSize),
     });
   },
 
@@ -317,6 +338,8 @@ export const handlers: Record<string, MockHandler> = {
     return ok(categories[idx]);
   },
 
+  "DELETE /categories/:id": () => ok(null),
+
   // ── Reports ──
   "GET /reports": () =>
     ok([
@@ -326,6 +349,91 @@ export const handlers: Record<string, MockHandler> = {
 
   "POST /reports/generate": (config) =>
     ok({ id: "RPT-00" + String(Math.floor(Math.random() * 100)), ...config.data, generatedAt: new Date().toISOString(), generatedBy: "Current User", url: "/reports/rpt-new.pdf", size: 0 }),
+
+  // ── Products ──
+  "GET /products": (config) => {
+    const filtered = filterProducts(products, config);
+    const page = Number(config.params?.page) || 1;
+    const pageSize = Number(config.params?.pageSize) || 10;
+    const start = (page - 1) * pageSize;
+    const items = filtered.slice(start, start + pageSize);
+    return ok({
+      items,
+      totalCount: filtered.length,
+      page,
+      pageSize,
+      totalPages: Math.ceil(filtered.length / pageSize),
+    });
+  },
+
+  "GET /products/:id": (config) => {
+    const id = Number(config.url?.split("/").pop());
+    const product = products.find((p) => p.productId === id);
+    if (!product) return { data: null, message: "Not found", status: 404 };
+    const category = categories.find((c) => c.categoryId === product.categoryId);
+    return ok({
+      ...product,
+      category: category ? { id: category.categoryId, name: category.name } : null,
+    });
+  },
+
+  "POST /products": (config) => {
+    const category = categories.find((c) => c.categoryId === config.data.categoryId);
+    const newProduct = {
+      productId: products.length + 1,
+      ...config.data,
+      categoryName: category?.name || "Unknown",
+      isActive: true,
+    };
+    products.push(newProduct);
+    return ok(newProduct);
+  },
+
+  "PUT /products/:id": (config) => {
+    const id = Number(config.url?.split("/").pop());
+    const productIndex = products.findIndex((p) => p.productId === id);
+    if (productIndex === -1) return { data: null, message: "Not found", status: 404 };
+    const category = categories.find((c) => c.categoryId === config.data.categoryId);
+    products[productIndex] = {
+      ...products[productIndex],
+      ...config.data,
+      categoryId: Number(config.data.categoryId) || products[productIndex].categoryId,
+      organizationId: Number(config.data.organizationId) || products[productIndex].organizationId,
+      categoryName: category?.name || products[productIndex].categoryName,
+    };
+    return ok(products[productIndex]);
+  },
+
+  "PATCH /products/:id/status": (config) => {
+    const id = Number(config.url?.split("/").pop());
+    const productIndex = products.findIndex((p) => p.productId === id);
+    if (productIndex === -1) return { data: null, message: "Not found", status: 404 };
+    products[productIndex] = { ...products[productIndex], ...config.data };
+    return ok(products[productIndex]);
+  },
+
+  "DELETE /products/:id": (config) => {
+    const id = Number(config.url?.split("/").pop());
+    const productIndex = products.findIndex((p) => p.productId === id);
+    if (productIndex === -1) return { data: null, message: "Not found", status: 404 };
+    products.splice(productIndex, 1);
+    return ok(null);
+  },
+
+  "GET /products/:id/images": (config) => {
+    const productId = Number(config.url?.split("/")[3]);
+    return ok(productImages.filter((img) => img.imageId === productId));
+  },
+
+  "POST /products/:id/images": (config) =>
+    ok({
+      imageId: productImages.length + 1,
+      imageUrl: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=400&q=80",
+      url: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=400&q=80",
+      isPrimary: false,
+    }),
+
+  "DELETE /products/images/:imageId": () => ok(null),
 };
 
 export function matchHandler(method: string, url: string): MockHandler | undefined {
