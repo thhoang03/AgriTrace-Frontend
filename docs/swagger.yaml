@@ -1,0 +1,3644 @@
+openapi: 3.0.3
+info:
+  title: AgriTrace API — Agricultural Supply Chain Traceability System
+  description: |
+    REST API for the Agricultural Supply Chain Traceability System.
+    All protected endpoints require a JWT Bearer token.
+  version: "1.0"
+  contact:
+    name: AgriTrace Team
+
+servers:
+  - url: https://api.agritrace.vn/api/v1
+    description: Production
+
+tags:
+  - name: Auth
+    description: Authentication & authorization
+  - name: Organizations
+    description: Organization management
+  - name: Users
+    description: User management
+  - name: Categories
+    description: Product category management
+  - name: Products
+    description: Product management
+  - name: Batches
+    description: Batch management
+  - name: Events
+    description: Supply chain event management
+  - name: BatchSplitMerge
+    description: Batch split & merge operations
+  - name: Inspections
+    description: Quality inspection management
+  - name: Certificates
+    description: Certificate management
+  - name: Recalls
+    description: Recall management
+  - name: Notifications
+    description: Notification management
+  - name: Public
+    description: Public traceability endpoints
+  - name: Analytics
+    description: Analytics & reporting
+  - name: Lookup
+    description: Reference data lookups
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ─────────────────────────────────────────────
+  # AUTH
+  # ─────────────────────────────────────────────
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Đăng nhập
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Đăng nhập thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LoginData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/refresh-token:
+    post:
+      tags: [Auth]
+      summary: Làm mới Access Token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token mới
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TokenPair'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Đăng xuất
+      responses:
+        '204':
+          description: Đăng xuất thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Lấy thông tin User hiện tại
+      responses:
+        '200':
+          description: Thông tin user
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserBasic'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/change-password:
+    put:
+      tags: [Auth]
+      summary: Đổi mật khẩu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Quên mật khẩu
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Đặt lại mật khẩu
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # ORGANIZATIONS
+  # ─────────────────────────────────────────────
+  /organizations:
+    get:
+      tags: [Organizations]
+      summary: Lấy danh sách tổ chức
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/SortDir'
+      responses:
+        '200':
+          description: Danh sách tổ chức
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OrganizationPagedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Organizations]
+      summary: Tạo tổ chức mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationRequest'
+      responses:
+        '201':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OrganizationCreatedData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /organizations/{id}:
+    get:
+      tags: [Organizations]
+      summary: Xem chi tiết tổ chức
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Chi tiết tổ chức
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OrganizationDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Organizations]
+      summary: Cập nhật tổ chức
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /organizations/{id}/status:
+    patch:
+      tags: [Organizations]
+      summary: Thay đổi trạng thái tổ chức
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatusRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /organizations/{id}/users:
+    get:
+      tags: [Organizations]
+      summary: Lấy người dùng thuộc tổ chức
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách người dùng
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserPagedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /organizations/{id}/products:
+    get:
+      tags: [Organizations]
+      summary: Lấy sản phẩm của tổ chức
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách sản phẩm
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProductPagedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # USERS
+  # ─────────────────────────────────────────────
+  /users:
+    get:
+      tags: [Users]
+      summary: Lấy danh sách người dùng
+      parameters:
+        - name: organizationId
+          in: query
+          schema:
+            type: integer
+          description: Lọc theo tổ chức
+        - name: role
+          in: query
+          schema:
+            type: string
+          description: Lọc theo quyền
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Tìm kiếm theo tên/email
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách người dùng
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserPagedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Users]
+      summary: Tạo User mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          userId:
+                            type: integer
+                            example: 10
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/profile:
+    get:
+      tags: [Users]
+      summary: Xem hồ sơ cá nhân
+      responses:
+        '200':
+          description: Hồ sơ người dùng
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Users]
+      summary: Cập nhật hồ sơ cá nhân
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/{userId}:
+    get:
+      tags: [Users]
+      summary: Lấy thông tin chi tiết User
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      responses:
+        '200':
+          description: Chi tiết người dùng
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Users]
+      summary: Cập nhật User
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /users/{userId}/status:
+    patch:
+      tags: [Users]
+      summary: Kích hoạt / Vô hiệu hóa tài khoản
+      parameters:
+        - $ref: '#/components/parameters/UserIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserStatusRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # CATEGORIES
+  # ─────────────────────────────────────────────
+  /categories:
+    get:
+      tags: [Categories]
+      summary: Lấy danh sách Category
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Tìm kiếm tên category
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách category
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CategoryPagedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Categories]
+      summary: Tạo Category mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '201':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          categoryId:
+                            type: integer
+                            example: 5
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /categories/{categoryId}:
+    get:
+      tags: [Categories]
+      summary: Chi tiết Category
+      parameters:
+        - $ref: '#/components/parameters/CategoryIdPath'
+      responses:
+        '200':
+          description: Chi tiết category
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CategoryDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Categories]
+      summary: Cập nhật Category
+      parameters:
+        - $ref: '#/components/parameters/CategoryIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Categories]
+      summary: Xóa Category
+      parameters:
+        - $ref: '#/components/parameters/CategoryIdPath'
+      responses:
+        '204':
+          description: Xóa thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Category đang được sử dụng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /categories/{categoryId}/status:
+    patch:
+      tags: [Categories]
+      summary: Thay đổi trạng thái Category
+      parameters:
+        - $ref: '#/components/parameters/CategoryIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActiveStatusRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # PRODUCTS
+  # ─────────────────────────────────────────────
+  /products:
+    get:
+      tags: [Products]
+      summary: Danh sách Product
+      parameters:
+        - name: organizationId
+          in: query
+          schema:
+            type: integer
+          description: Lọc theo tổ chức
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+          description: Lọc theo danh mục
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Tìm theo tên
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách sản phẩm
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProductPagedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Products]
+      summary: Tạo Product mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+      responses:
+        '201':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          productId:
+                            type: integer
+                            example: 10
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /products/{productId}:
+    get:
+      tags: [Products]
+      summary: Chi tiết Product
+      parameters:
+        - $ref: '#/components/parameters/ProductIdPath'
+      responses:
+        '200':
+          description: Chi tiết sản phẩm
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProductDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Products]
+      summary: Cập nhật Product
+      parameters:
+        - $ref: '#/components/parameters/ProductIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Products]
+      summary: Xóa Product
+      parameters:
+        - $ref: '#/components/parameters/ProductIdPath'
+      responses:
+        '204':
+          description: Xóa thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Product đang có Batch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /products/{productId}/status:
+    patch:
+      tags: [Products]
+      summary: Thay đổi trạng thái Product
+      parameters:
+        - $ref: '#/components/parameters/ProductIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActiveStatusRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /products/{productId}/images:
+    get:
+      tags: [Products]
+      summary: Danh sách ảnh sản phẩm
+      parameters:
+        - $ref: '#/components/parameters/ProductIdPath'
+      responses:
+        '200':
+          description: Danh sách ảnh
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ImageListData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Products]
+      summary: Upload ảnh sản phẩm
+      parameters:
+        - $ref: '#/components/parameters/ProductIdPath'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ImageUploadRequest'
+      responses:
+        '201':
+          description: Upload thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ImageCreatedData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /products/images/{imageId}:
+    delete:
+      tags: [Products]
+      summary: Xóa ảnh sản phẩm
+      parameters:
+        - $ref: '#/components/parameters/ImageIdPath'
+      responses:
+        '204':
+          description: Xóa thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # BATCHES
+  # ─────────────────────────────────────────────
+  /batches:
+    get:
+      tags: [Batches]
+      summary: Danh sách Batch
+      parameters:
+        - name: organizationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Lọc theo tổ chức
+        - name: status
+          in: query
+          schema:
+            type: integer
+          description: Lọc theo trạng thái
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Tìm theo BatchCode
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách batch
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/BatchPagedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Batches]
+      summary: Tạo Batch mới
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBatchRequest'
+      responses:
+        '201':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/BatchCreatedData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /batches/merge:
+    post:
+      tags: [BatchSplitMerge]
+      summary: Gộp Batch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MergeBatchRequest'
+      responses:
+        '201':
+          description: Gộp thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/MergeBatchData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /batches/{batchId}:
+    get:
+      tags: [Batches]
+      summary: Chi tiết Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      responses:
+        '200':
+          description: Chi tiết batch
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/BatchDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Batches]
+      summary: Cập nhật Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBatchRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /batches/{batchId}/status:
+    patch:
+      tags: [Batches]
+      summary: Thay đổi trạng thái Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchStatusRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /batches/{batchId}/qr-code:
+    get:
+      tags: [Batches]
+      summary: Lấy QR Code của Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      responses:
+        '200':
+          description: QR Code URL
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/QrCodeData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /batches/{batchId}/images:
+    get:
+      tags: [Batches]
+      summary: Danh sách ảnh Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      responses:
+        '200':
+          description: Danh sách ảnh
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ImageListData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Batches]
+      summary: Upload ảnh Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ImageUploadRequest'
+      responses:
+        '201':
+          description: Upload thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ImageCreatedData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /batches/images/{imageId}:
+    delete:
+      tags: [Batches]
+      summary: Xóa ảnh Batch
+      parameters:
+        - $ref: '#/components/parameters/ImageIdPath'
+      responses:
+        '204':
+          description: Xóa thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # SUPPLY CHAIN EVENTS
+  # ─────────────────────────────────────────────
+  /batches/{batchId}/events:
+    get:
+      tags: [Events]
+      summary: Danh sách Event của Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách event
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/EventPagedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Events]
+      summary: Ghi nhận Supply Chain Event
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEventRequest'
+      responses:
+        '201':
+          description: Ghi nhận thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/EventCreatedData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /batches/{batchId}/events/verify:
+    get:
+      tags: [Events]
+      summary: Kiểm tra Hash Chain của Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      responses:
+        '200':
+          description: Kết quả verify
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          isValid:
+                            type: boolean
+                          totalEvents:
+                            type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /events/{eventId}:
+    get:
+      tags: [Events]
+      summary: Chi tiết Event
+      parameters:
+        - $ref: '#/components/parameters/EventIdPath'
+      responses:
+        '200':
+          description: Chi tiết event
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/EventDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # BATCH SPLIT & MERGE
+  # ─────────────────────────────────────────────
+  /batches/{batchId}/split:
+    post:
+      tags: [BatchSplitMerge]
+      summary: Tách Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitBatchRequest'
+      responses:
+        '201':
+          description: Tách thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SplitBatchData'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # QUALITY INSPECTION
+  # ─────────────────────────────────────────────
+  /batches/{batchId}/inspections:
+    get:
+      tags: [Inspections]
+      summary: Danh sách kiểm định của Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách kiểm định
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/InspectionPagedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Inspections]
+      summary: Tạo kiểm định
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInspectionRequest'
+      responses:
+        '201':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          inspectionId:
+                            type: string
+                            format: uuid
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /inspections/{inspectionId}:
+    get:
+      tags: [Inspections]
+      summary: Chi tiết kiểm định
+      parameters:
+        - $ref: '#/components/parameters/InspectionIdPath'
+      responses:
+        '200':
+          description: Chi tiết kiểm định
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/InspectionDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [Inspections]
+      summary: Cập nhật kiểm định
+      parameters:
+        - $ref: '#/components/parameters/InspectionIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInspectionRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # CERTIFICATES
+  # ─────────────────────────────────────────────
+  /batches/{batchId}/certificates:
+    get:
+      tags: [Certificates]
+      summary: Danh sách chứng nhận của Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      responses:
+        '200':
+          description: Danh sách chứng nhận
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CertificatePagedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Certificates]
+      summary: Cấp chứng nhận
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCertificateRequest'
+      responses:
+        '201':
+          description: Cấp thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          certificateId:
+                            type: string
+                            format: uuid
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /certificates/{certificateId}:
+    get:
+      tags: [Certificates]
+      summary: Chi tiết chứng nhận
+      parameters:
+        - $ref: '#/components/parameters/CertificateIdPath'
+      responses:
+        '200':
+          description: Chi tiết chứng nhận
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/CertificateDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [Certificates]
+      summary: Thu hồi chứng nhận
+      parameters:
+        - $ref: '#/components/parameters/CertificateIdPath'
+      responses:
+        '204':
+          description: Thu hồi thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # RECALLS
+  # ─────────────────────────────────────────────
+  /recalls:
+    get:
+      tags: [Recalls]
+      summary: Danh sách Recall
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách recall
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RecallPagedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [Recalls]
+      summary: Tạo Recall (thu hồi Batch)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecallRequest'
+      responses:
+        '201':
+          description: Tạo thành công
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          recallId:
+                            type: string
+                            format: uuid
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Batch đã Recall
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /recalls/{recallId}:
+    get:
+      tags: [Recalls]
+      summary: Chi tiết Recall
+      parameters:
+        - $ref: '#/components/parameters/RecallIdPath'
+      responses:
+        '200':
+          description: Chi tiết recall
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RecallDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /recalls/{recallId}/resolve:
+    patch:
+      tags: [Recalls]
+      summary: Kết thúc Recall
+      parameters:
+        - $ref: '#/components/parameters/RecallIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveRecallRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # NOTIFICATIONS
+  # ─────────────────────────────────────────────
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Danh sách thông báo
+      parameters:
+        - name: isRead
+          in: query
+          schema:
+            type: boolean
+          description: Lọc theo trạng thái đã đọc
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Danh sách thông báo
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/NotificationPagedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notifications/unread-count:
+    get:
+      tags: [Notifications]
+      summary: Số thông báo chưa đọc
+      responses:
+        '200':
+          description: Số lượng chưa đọc
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          unreadCount:
+                            type: integer
+                            example: 3
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notifications/read-all:
+    patch:
+      tags: [Notifications]
+      summary: Đánh dấu tất cả thông báo đã đọc
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notifications/{notificationId}/read:
+    patch:
+      tags: [Notifications]
+      summary: Đánh dấu thông báo đã đọc
+      parameters:
+        - $ref: '#/components/parameters/NotificationIdPath'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessMessage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # PUBLIC TRACEABILITY
+  # ─────────────────────────────────────────────
+  /public/trace/{batchId}:
+    get:
+      tags: [Public]
+      summary: Tra cứu công khai theo Batch ID
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      responses:
+        '200':
+          description: Thông tin truy xuất nguồn gốc
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PublicTraceData'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /public/trace/{batchId}/lineage:
+    get:
+      tags: [Public]
+      summary: Phả hệ Batch (quan hệ split/merge)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      responses:
+        '200':
+          description: Phả hệ batch
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LineageData'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # ANALYTICS
+  # ─────────────────────────────────────────────
+  /analytics/overview:
+    get:
+      tags: [Analytics]
+      summary: Dashboard tổng quan
+      responses:
+        '200':
+          description: Tổng quan hệ thống
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/OverviewData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /analytics/batch-distribution:
+    get:
+      tags: [Analytics]
+      summary: Thống kê phân bố Batch theo trạng thái
+      parameters:
+        - name: organizationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Lọc theo tổ chức
+        - name: fromDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Từ ngày
+        - name: toDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Đến ngày
+      responses:
+        '200':
+          description: Thống kê batch
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/BatchDistributionData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /analytics/processing-time:
+    get:
+      tags: [Analytics]
+      summary: Thống kê thời gian xử lý
+      parameters:
+        - name: organizationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: eventTypeId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: fromDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: toDate
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Thời gian xử lý
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProcessingTimeData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /analytics/traceback/{batchId}:
+    get:
+      tags: [Analytics]
+      summary: Truy vết ngược từ một Batch
+      parameters:
+        - $ref: '#/components/parameters/BatchIdPath'
+      responses:
+        '200':
+          description: Kết quả truy vết
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/TracebackData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ─────────────────────────────────────────────
+  # LOOKUP
+  # ─────────────────────────────────────────────
+  /roles:
+    get:
+      tags: [Lookup]
+      summary: Danh sách Role
+      responses:
+        '200':
+          description: Danh sách role
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LookupItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /organization-types:
+    get:
+      tags: [Lookup]
+      summary: Danh sách loại tổ chức
+      responses:
+        '200':
+          description: Danh sách loại tổ chức
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LookupItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /event-types:
+    get:
+      tags: [Lookup]
+      summary: Danh sách loại Event
+      responses:
+        '200':
+          description: Danh sách loại event
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LookupItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /units:
+    get:
+      tags: [Lookup]
+      summary: Danh sách đơn vị tính
+      responses:
+        '200':
+          description: Danh sách đơn vị
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LookupItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /inspection-results:
+    get:
+      tags: [Lookup]
+      summary: Danh sách kết quả kiểm định
+      responses:
+        '200':
+          description: Danh sách kết quả
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LookupItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /certificate-types:
+    get:
+      tags: [Lookup]
+      summary: Danh sách loại chứng nhận
+      responses:
+        '200':
+          description: Danh sách loại chứng nhận
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LookupItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /recall-severities:
+    get:
+      tags: [Lookup]
+      summary: Danh sách mức độ Recall
+      responses:
+        '200':
+          description: Danh sách mức độ
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LookupItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # ─────────────────────────────────────────────
+  # PARAMETERS
+  # ─────────────────────────────────────────────
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    UserIdPath:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+    CategoryIdPath:
+      name: categoryId
+      in: path
+      required: true
+      schema:
+        type: integer
+    ProductIdPath:
+      name: productId
+      in: path
+      required: true
+      schema:
+        type: integer
+    BatchIdPath:
+      name: batchId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    EventIdPath:
+      name: eventId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    InspectionIdPath:
+      name: inspectionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    CertificateIdPath:
+      name: certificateId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RecallIdPath:
+      name: recallId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    NotificationIdPath:
+      name: notificationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ImageIdPath:
+      name: imageId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        default: 1
+        minimum: 1
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        default: 20
+        minimum: 1
+        maximum: 100
+    SortBy:
+      name: sortBy
+      in: query
+      schema:
+        type: string
+    SortDir:
+      name: sortDir
+      in: query
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: asc
+
+  # ─────────────────────────────────────────────
+  # RESPONSES
+  # ─────────────────────────────────────────────
+  responses:
+    SuccessMessage:
+      description: Thao tác thành công
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    BadRequest:
+      description: Dữ liệu không hợp lệ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Chưa đăng nhập
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Không đủ quyền
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Không tìm thấy dữ liệu
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Conflict:
+      description: Trùng dữ liệu hoặc xung đột trạng thái
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnprocessableEntity:
+      description: Sai nghiệp vụ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Lỗi server
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  # ─────────────────────────────────────────────
+  # SCHEMAS
+  # ─────────────────────────────────────────────
+  schemas:
+    # --- Common ---
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          nullable: true
+        message:
+          type: string
+          example: Thực hiện thành công
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-07-07T10:00:00Z"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          nullable: true
+          example: null
+        message:
+          type: string
+          example: Validation failed
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldError'
+        timestamp:
+          type: string
+          format: date-time
+
+    FieldError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: email
+        code:
+          type: string
+          example: REQUIRED
+        message:
+          type: string
+          example: Email không được để trống
+
+    PagedMeta:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          example: 100
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        totalPages:
+          type: integer
+          example: 5
+
+    LookupItem:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+
+    # --- Auth ---
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: farmer@gmail.com
+        password:
+          type: string
+          format: password
+          example: "12345678"
+
+    LoginData:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1...
+        refreshToken:
+          type: string
+          example: refresh_token_value
+        user:
+          $ref: '#/components/schemas/UserBasic'
+
+    TokenPair:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+
+    RefreshTokenRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+
+    ChangePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    ResetPasswordRequest:
+      type: object
+      required: [token, newPassword]
+      properties:
+        token:
+          type: string
+        newPassword:
+          type: string
+          format: password
+
+    UserBasic:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Nguyen Van A
+        email:
+          type: string
+          format: email
+          example: farmer@gmail.com
+        role:
+          type: string
+          example: FARMER
+
+    # --- Organizations ---
+    OrganizationRequest:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+          example: Green Farm
+        type:
+          type: string
+          enum: [FARM, PROCESSOR, DISTRIBUTOR, RETAILER, INSPECTOR_ORG]
+          example: FARM
+        address:
+          type: string
+          example: Lam Dong
+
+    OrganizationCreatedData:
+      type: object
+      properties:
+        organizationId:
+          type: integer
+          example: 10
+        name:
+          type: string
+          example: Green Farm
+
+    OrganizationDetail:
+      type: object
+      properties:
+        organizationId:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Farm ABC
+        address:
+          type: string
+          example: Da Lat
+        type:
+          type: string
+          example: FARM
+        status:
+          type: string
+          example: ACTIVE
+
+    OrganizationListItem:
+      type: object
+      properties:
+        organizationId:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+
+    OrganizationPagedResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedMeta'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/OrganizationListItem'
+
+    StatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: INACTIVE
+
+    ActiveStatusRequest:
+      type: object
+      required: [isActive]
+      properties:
+        isActive:
+          type: boolean
+          example: false
+
+    # --- Users ---
+    CreateUserRequest:
+      type: object
+      required: [fullName, email, password, role]
+      properties:
+        organizationId:
+          type: integer
+          nullable: true
+          example: 1
+        fullName:
+          type: string
+          example: Trần Văn B
+        email:
+          type: string
+          format: email
+          example: tranb@gmail.com
+        password:
+          type: string
+          format: password
+          example: "12345678"
+        role:
+          type: string
+          enum: [ADMIN, MANAGER, STAFF, FARMER, INSPECTOR, CONSUMER]
+          example: FARMER
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+          example: Nguyễn Văn C
+        phone:
+          type: string
+          example: "098888888"
+        role:
+          type: string
+          enum: [ADMIN, MANAGER, STAFF, FARMER, INSPECTOR, CONSUMER]
+
+    UserStatusRequest:
+      type: object
+      required: [isActive]
+      properties:
+        isActive:
+          type: boolean
+          example: false
+
+    UserDetail:
+      type: object
+      properties:
+        userId:
+          type: integer
+          example: 1
+        fullName:
+          type: string
+          example: Nguyễn Văn A
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          example: FARMER
+        organizationId:
+          type: integer
+          example: 1
+        phone:
+          type: string
+          example: "090xxxxxxx"
+        isActive:
+          type: boolean
+          example: true
+
+    UserListItem:
+      type: object
+      properties:
+        userId:
+          type: integer
+        fullName:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+        organizationId:
+          type: integer
+        organizationName:
+          type: string
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    UserPagedResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedMeta'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserListItem'
+
+    # --- Categories ---
+    CategoryRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          example: Coffee
+        description:
+          type: string
+          example: Các loại cà phê
+
+    CategoryDetail:
+      type: object
+      properties:
+        categoryId:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Coffee
+        description:
+          type: string
+          example: Sản phẩm cà phê
+        isActive:
+          type: boolean
+          example: true
+
+    CategoryListItem:
+      type: object
+      properties:
+        categoryId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        isActive:
+          type: boolean
+
+    CategoryPagedResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedMeta'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/CategoryListItem'
+
+    # --- Products ---
+    ProductRequest:
+      type: object
+      required: [name, categoryId, unit, organizationId]
+      properties:
+        name:
+          type: string
+          example: Cà phê Arabica
+        categoryId:
+          type: integer
+          example: 5
+        unit:
+          type: string
+          example: kg
+        organizationId:
+          type: integer
+          example: 1
+
+    ProductDetail:
+      type: object
+      properties:
+        productId:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Cà phê Arabica
+        category:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+        unit:
+          type: string
+          example: kg
+        organizationId:
+          type: integer
+        isActive:
+          type: boolean
+
+    ProductListItem:
+      type: object
+      properties:
+        productId:
+          type: integer
+        name:
+          type: string
+        categoryId:
+          type: integer
+        categoryName:
+          type: string
+        unit:
+          type: string
+        organizationId:
+          type: integer
+        isActive:
+          type: boolean
+
+    ProductPagedResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedMeta'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProductListItem'
+
+    # --- Images ---
+    ImageUploadRequest:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+          description: Ảnh (jpg/png, tối đa 5MB)
+        isPrimary:
+          type: boolean
+          example: true
+
+    ImageItem:
+      type: object
+      properties:
+        imageId:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+          example: https://storage.agritrace.vn/batches/uuid/img1.jpg
+        isPrimary:
+          type: boolean
+
+    ImageListData:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageItem'
+
+    ImageCreatedData:
+      type: object
+      properties:
+        imageId:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+
+    # --- Batches ---
+    CreateBatchRequest:
+      type: object
+      required: [productId, quantity, unitId, productionDate]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: number
+          example: 1000
+        unitId:
+          type: string
+          format: uuid
+        productionDate:
+          type: string
+          format: date
+          example: "2026-07-01"
+        expiryDate:
+          type: string
+          format: date
+          example: "2026-07-15"
+          nullable: true
+
+    UpdateBatchRequest:
+      type: object
+      properties:
+        quantity:
+          type: number
+          example: 1200
+        expiryDate:
+          type: string
+          format: date
+          example: "2026-07-20"
+
+    BatchStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: integer
+          example: 2
+
+    BatchCreatedData:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        batchCode:
+          type: string
+          example: TOMATO-2026-001
+        qrCodeUrl:
+          type: string
+          format: uri
+
+    QrCodeData:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        batchCode:
+          type: string
+          example: TOMATO-2026-001
+        qrCodeUrl:
+          type: string
+          format: uri
+        publicTraceUrl:
+          type: string
+          format: uri
+
+    BatchListItem:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        productName:
+          type: string
+        batchCode:
+          type: string
+        quantity:
+          type: number
+        unitId:
+          type: string
+          format: uuid
+        unitCode:
+          type: string
+        status:
+          type: integer
+        statusName:
+          type: string
+        currentOrganizationId:
+          type: string
+          format: uuid
+        qrCodeUrl:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+
+    BatchPagedResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedMeta'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/BatchListItem'
+
+    BatchDetail:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        productName:
+          type: string
+        categoryId:
+          type: string
+          format: uuid
+        categoryName:
+          type: string
+        batchCode:
+          type: string
+        quantity:
+          type: number
+        unitId:
+          type: string
+          format: uuid
+        unitCode:
+          type: string
+        productionDate:
+          type: string
+          format: date
+        expiryDate:
+          type: string
+          format: date
+          nullable: true
+        status:
+          type: integer
+        currentOrganizationId:
+          type: string
+          format: uuid
+        organizationName:
+          type: string
+        qrCodeUrl:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+
+    # --- Events ---
+    CreateEventRequest:
+      type: object
+      required: [eventTypeId]
+      properties:
+        eventTypeId:
+          type: string
+          format: uuid
+        eventData:
+          type: string
+          description: JSON string chứa dữ liệu bổ sung
+          example: '{"temperature":25}'
+        location:
+          type: string
+          example: Da Lat
+
+    EventCreatedData:
+      type: object
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        previousHash:
+          type: string
+          example: abc123
+        currentHash:
+          type: string
+          example: xyz789
+
+    EventDetail:
+      type: object
+      properties:
+        eventId:
+          type: string
+          format: uuid
+        batchId:
+          type: string
+          format: uuid
+        eventTypeId:
+          type: string
+          format: uuid
+        eventTypeCode:
+          type: string
+          example: PROCESSING
+        organizationId:
+          type: string
+          format: uuid
+        performedByUserId:
+          type: string
+          format: uuid
+        eventData:
+          type: string
+          example: '{"machine":"M-01"}'
+        location:
+          type: string
+          example: Processor A
+        previousHash:
+          type: string
+        currentHash:
+          type: string
+        eventTime:
+          type: string
+          format: date-time
+
+    EventListItem:
+      allOf:
+        - $ref: '#/components/schemas/EventDetail'
+
+    EventPagedResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedMeta'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/EventListItem'
+
+    # --- Batch Split & Merge ---
+    SplitBatchRequest:
+      type: object
+      required: [splits]
+      properties:
+        splits:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            required: [quantity, unitId]
+            properties:
+              quantity:
+                type: number
+                example: 400
+              unitId:
+                type: string
+                format: uuid
+
+    SplitBatchData:
+      type: object
+      properties:
+        parentBatchId:
+          type: string
+          format: uuid
+        childBatchIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    MergeBatchRequest:
+      type: object
+      required: [sourceBatchIds, productId, quantity, unitId, productionDate]
+      properties:
+        sourceBatchIds:
+          type: array
+          minItems: 2
+          items:
+            type: string
+            format: uuid
+        productId:
+          type: string
+          format: uuid
+        quantity:
+          type: number
+          example: 1000
+        unitId:
+          type: string
+          format: uuid
+        productionDate:
+          type: string
+          format: date
+          example: "2026-07-01"
+
+    MergeBatchData:
+      type: object
+      properties:
+        newBatchId:
+          type: string
+          format: uuid
+        batchCode:
+          type: string
+          example: MERGED-2026-001
+
+    # --- Inspections ---
+    CreateInspectionRequest:
+      type: object
+      required: [result]
+      properties:
+        result:
+          type: string
+          enum: [PASS, FAIL]
+          example: PASS
+        notes:
+          type: string
+          example: No pesticide residue detected
+
+    UpdateInspectionRequest:
+      type: object
+      required: [result]
+      properties:
+        result:
+          type: string
+          enum: [PASS, FAIL]
+          example: FAIL
+        notes:
+          type: string
+          example: Detected residue above limit
+
+    InspectionDetail:
+      type: object
+      properties:
+        inspectionId:
+          type: string
+          format: uuid
+        batchId:
+          type: string
+          format: uuid
+        batchCode:
+          type: string
+          example: TOMATO-2026-001
+        inspectorId:
+          type: string
+          format: uuid
+        inspectorName:
+          type: string
+          example: Nguyen Van A
+        status:
+          type: integer
+        result:
+          type: string
+          enum: [PASS, FAIL]
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    InspectionPagedResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedMeta'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/InspectionDetail'
+
+    # --- Certificates ---
+    CreateCertificateRequest:
+      type: object
+      required: [inspectionId, certificateType, fileUrl, issuedDate]
+      properties:
+        inspectionId:
+          type: string
+          format: uuid
+        certificateType:
+          type: string
+          example: VietGAP
+        fileUrl:
+          type: string
+          format: uri
+          example: https://storage.agritrace.vn/certs/uuid.pdf
+        issuedDate:
+          type: string
+          format: date
+          example: "2026-07-07"
+
+    CertificateDetail:
+      type: object
+      properties:
+        certificateId:
+          type: string
+          format: uuid
+        batchId:
+          type: string
+          format: uuid
+        batchCode:
+          type: string
+        inspectionId:
+          type: string
+          format: uuid
+        certificateType:
+          type: string
+          example: VietGAP
+        fileUrl:
+          type: string
+          format: uri
+        issuedDate:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+
+    CertificatePagedResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedMeta'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/CertificateDetail'
+
+    # --- Recalls ---
+    CreateRecallRequest:
+      type: object
+      required: [batchId, reason, severity]
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          example: E. coli contamination detected
+        severity:
+          type: integer
+          minimum: 1
+          maximum: 3
+          description: 1=LOW, 2=MEDIUM, 3=HIGH
+          example: 3
+
+    ResolveRecallRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: integer
+          example: 3
+
+    RecallDetail:
+      type: object
+      properties:
+        recallId:
+          type: string
+          format: uuid
+        batchId:
+          type: string
+          format: uuid
+        batchCode:
+          type: string
+        createdBy:
+          type: string
+          format: uuid
+        createdByName:
+          type: string
+        reason:
+          type: string
+        severity:
+          type: integer
+        severityName:
+          type: string
+          example: HIGH
+        status:
+          type: integer
+        statusName:
+          type: string
+          example: PENDING
+        createdAt:
+          type: string
+          format: date-time
+
+    RecallPagedResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedMeta'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/RecallDetail'
+
+    # --- Notifications ---
+    NotificationItem:
+      type: object
+      properties:
+        notificationId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: Recall Alert
+        message:
+          type: string
+          example: Batch TOMATO-2026-001 has been recalled
+        isRead:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+
+    NotificationPagedResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedMeta'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/NotificationItem'
+
+    # --- Public Traceability ---
+    TimelineEvent:
+      type: object
+      properties:
+        eventTypeCode:
+          type: string
+          example: HARVEST
+        organizationName:
+          type: string
+          example: Green Farm
+        eventTime:
+          type: string
+          format: date-time
+        location:
+          type: string
+          example: Da Lat
+
+    PublicInspectionSummary:
+      type: object
+      properties:
+        result:
+          type: string
+          enum: [PASS, FAIL]
+        inspectorName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    PublicCertificateSummary:
+      type: object
+      properties:
+        certificateType:
+          type: string
+          example: VietGAP
+        fileUrl:
+          type: string
+          format: uri
+        issuedDate:
+          type: string
+          format: date
+
+    PublicTraceData:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        batchCode:
+          type: string
+        productName:
+          type: string
+        quantity:
+          type: number
+        unitCode:
+          type: string
+        currentOrganizationName:
+          type: string
+        status:
+          type: integer
+        timeline:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimelineEvent'
+        inspections:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicInspectionSummary'
+        certificates:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicCertificateSummary'
+        recallStatus:
+          nullable: true
+          type: string
+
+    LineageNode:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        batchCode:
+          type: string
+        eventTypeCode:
+          type: string
+          example: SPLIT
+        quantity:
+          type: number
+        parentBatchId:
+          type: string
+          format: uuid
+          nullable: true
+
+    LineageData:
+      type: object
+      properties:
+        rootBatchId:
+          type: string
+          format: uuid
+        lineage:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineageNode'
+
+    # --- Analytics ---
+    OverviewData:
+      type: object
+      properties:
+        totalBatches:
+          type: integer
+          example: 150
+        totalOrganizations:
+          type: integer
+          example: 12
+        totalEvents:
+          type: integer
+          example: 890
+        totalRecalls:
+          type: integer
+          example: 2
+        activeBatches:
+          type: integer
+          example: 120
+        recalledBatches:
+          type: integer
+          example: 2
+
+    BatchStatusDistributionItem:
+      type: object
+      properties:
+        status:
+          type: integer
+        statusName:
+          type: string
+        count:
+          type: integer
+
+    BatchDistributionData:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatchStatusDistributionItem'
+        totalCount:
+          type: integer
+
+    ProcessingTimeByEventType:
+      type: object
+      properties:
+        eventTypeCode:
+          type: string
+          example: PROCESSING
+        averageHours:
+          type: number
+          example: 12.0
+
+    ProcessingTimeData:
+      type: object
+      properties:
+        averageProcessingHours:
+          type: number
+          example: 24.5
+        byEventType:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProcessingTimeByEventType'
+
+    AffectedBatch:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        batchCode:
+          type: string
+        relationship:
+          type: string
+          enum: [SPLIT, MERGE]
+
+    RelatedOrganization:
+      type: object
+      properties:
+        organizationId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          type: string
+
+    TracebackData:
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        batchCode:
+          type: string
+        affectedBatches:
+          type: array
+          items:
+            $ref: '#/components/schemas/AffectedBatch'
+        relatedOrganizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedOrganization'

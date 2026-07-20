@@ -1,19 +1,89 @@
-import { getList, get, post, patch } from "../../lib/api";
-import type { RecallItem, CreateRecallRequest, RecallFilters } from "./recalls.types";
+import { get, post, patch } from "../../lib/api";
+import type {
+  RecallDetail,
+  RecallPagedResponse,
+  CreateRecallRequest as NewCreateRecallRequest,
+  ResolveRecallRequest,
+} from "../../types/mapping";
+
+// Legacy types for backward compatibility
+export interface RecallItem {
+  recallId: string;
+  batchId?: string;
+  batchCode?: string;
+  createdBy?: string;
+  createdByName?: string;
+  reason?: string;
+  severity?: number;
+  severityName?: string;
+  status?: number;
+  statusName?: string;
+  createdAt?: string;
+}
+
+export interface CreateRecallRequest {
+  batchId: string;
+  reason: string;
+  severity: number;
+}
+
+export interface RecallFilters {
+  page?: number;
+  pageSize?: number;
+}
+
+// Adapter functions
+function adaptRecallFromDetail(item: any): RecallItem {
+  return {
+    recallId: item.recallId ?? "",
+    batchId: item.batchId ?? "",
+    batchCode: item.batchCode ?? "",
+    createdBy: item.createdBy ?? "",
+    createdByName: item.createdByName ?? "",
+    reason: item.reason ?? "",
+    severity: item.severity,
+    severityName: item.severityName ?? "",
+    status: item.status,
+    statusName: item.statusName ?? "",
+    createdAt: item.createdAt ?? "",
+  };
+}
 
 export const recallsApi = {
-  getAll: (filters?: RecallFilters) =>
-    getList<RecallItem>("/recalls", { params: filters }),
+  getAll: async (filters?: RecallFilters) => {
+    const response = await get<RecallPagedResponse>("/recalls", {
+      params: {
+        page: filters?.page,
+        pageSize: filters?.pageSize,
+      }
+    });
+    const pagedData = response.data as any;
+    return {
+      data: pagedData.items?.map(adaptRecallFromDetail) ?? [],
+    };
+  },
 
-  getById: (id: string) =>
-    get<RecallItem>(`/recalls/${id}`),
+  getById: async (id: string) => {
+    const response = await get<RecallDetail>(`/recalls/${id}`);
+    return { data: adaptRecallFromDetail(response.data) };
+  },
 
-  create: (data: CreateRecallRequest) =>
-    post<RecallItem>("/recalls", data),
+  create: async (data: CreateRecallRequest) => {
+    const newRequest: NewCreateRecallRequest = {
+      batchId: data.batchId,
+      reason: data.reason,
+      severity: data.severity,
+    };
+    const response = await post<{ recallId: string }>("/recalls", newRequest);
+    const createdData = response.data as any;
+    return { data: { recallId: createdData.recallId ?? "" } as RecallItem };
+  },
 
-  resolve: (id: string) =>
-    patch<RecallItem>(`/recalls/${id}/resolve`),
+  resolve: async (id: string) => {
+    const newRequest: ResolveRecallRequest = { status: 2 };
+    return patch<void>(`/recalls/${id}/resolve`, newRequest);
+  },
 
-  notifyStakeholders: (id: string) =>
+  notifyStakeholders: async (id: string) =>
     post<void>(`/recalls/${id}/notify`),
 };
