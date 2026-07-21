@@ -47,6 +47,9 @@ import {
 import {
   splitMergeHandlers,
 } from "../../mocks/handlers/split-merge.mock";
+import {
+  publicTraceHandlers,
+} from "../../mocks/handlers/public-trace.mock";
 
 type MockHandler = (config: InternalAxiosRequestConfig) => { data: unknown; message: string; status: number };
 
@@ -60,6 +63,7 @@ const ROUTING_TABLE: RouteRule[] = [
   // More specific routes first
   { pattern: /^\/batches\/[^/]+\/split$/, moduleFlag: "splitMerge", handlers: splitMergeHandlers },
   { pattern: /^\/batches\/[^/]+\/merge$/, moduleFlag: "splitMerge", handlers: splitMergeHandlers },
+  { pattern: /^\/public\/trace\//, moduleFlag: "publicTrace", handlers: publicTraceHandlers },
   { pattern: /^\/auth\//, moduleFlag: "auth", handlers: authHandlers },
   { pattern: /^\/organizations\//, moduleFlag: "organizations", handlers: organizationHandlers },
   { pattern: /^\/categories\//, moduleFlag: "categories", handlers: categoryHandlers },

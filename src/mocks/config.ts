@@ -19,4 +19,5 @@ export const mock = {
   certificates: globalMockEnabled && import.meta.env.VITE_MOCK_CERTIFICATES !== "false",
   products: globalMockEnabled && import.meta.env.VITE_MOCK_PRODUCTS !== "false",
   splitMerge: globalMockEnabled && import.meta.env.VITE_MOCK_SPLIT_MERGE !== "false",
+  publicTrace: globalMockEnabled && import.meta.env.VITE_MOCK_PUBLIC_TRACE !== "false",
 };
