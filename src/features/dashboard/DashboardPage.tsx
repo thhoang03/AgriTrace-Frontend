@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../auth/auth.store";
 import { useAnalyticsOverview } from "../analytics/analytics.queries";
-import { monthlyProduction, batchStatusData, inspectionData, recallTrend, recentActivities } from "../../lib/data/mockData";
+import { monthlyProduction, batchStatusData, inspectionData, recallTrend, recentActivities } from "../../mocks/data";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1400&q=80";
 

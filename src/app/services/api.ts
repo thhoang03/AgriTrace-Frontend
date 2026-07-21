@@ -20,9 +20,17 @@ export async function apiFetch<T>(
     },
   });
 
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(errorText || `HTTP ${res.status}`);
+  }
+
   const json = await res.json();
-  if (!res.ok || !json.success) {
+  
+  // New API response structure: { success: boolean, data: T, message?: string, timestamp?: string }
+  if (json.success === false) {
     throw new Error(json.message || "API error");
   }
+  
   return json.data as T;
 }

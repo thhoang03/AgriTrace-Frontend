@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import { Camera, Lock, Bell, Moon, Save, CheckCircle, AlertCircle } from "lucide-react";
 import { useAuth } from "../auth/auth.store";
-import { authService } from "../../app/services/authService";
+import { authApi } from "../auth/auth.api";
+import { usersApi } from "./users.api";
 
 export function ProfilePage() {
   const { user } = useAuth();
@@ -21,7 +22,7 @@ export function ProfilePage() {
     setSaveError("");
     try {
       if (user?.id && nameRef.current?.value) {
-        await authService.updateProfile(Number(user.id), nameRef.current.value);
+        await usersApi.update(user.id, { fullName: nameRef.current.value });
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -34,11 +35,11 @@ export function ProfilePage() {
     setPwdMsg("");
     setPwdError("");
     try {
-      await authService.changePassword(
-        currentPwdRef.current?.value || "",
-        newPwdRef.current?.value || "",
-        confirmPwdRef.current?.value || ""
-      );
+      await authApi.changePassword({
+        currentPassword: currentPwdRef.current?.value || "",
+        newPassword: newPwdRef.current?.value || "",
+        confirmNewPassword: confirmPwdRef.current?.value || "",
+      });
       setPwdMsg("Đổi mật khẩu thành công!");
       if (currentPwdRef.current) currentPwdRef.current.value = "";
       if (newPwdRef.current) newPwdRef.current.value = "";

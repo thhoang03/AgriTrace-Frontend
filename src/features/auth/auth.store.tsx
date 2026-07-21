@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { authApi } from "./auth.api";
 import { setToken, removeToken } from "../../lib/api";
-import type { User } from "./auth.types";
+import type { User, LoginRequest } from "../../types/mapping";
+import { adaptLoginRequestToNew } from "../../types/mapping";
 
 interface AuthContextType {
   user: User | null;
@@ -23,10 +24,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(async (username: string, password: string, role?: string) => {
     setLoading(true);
     try {
-      const res = await authApi.login({ username, password, role });
-      setUser(res.data.user);
-      setToken(res.data.accessToken);
-      sessionStorage.setItem("agritrace_user", JSON.stringify(res.data.user));
+      // Convert legacy login params to new LoginRequest format
+      const loginRequest: LoginRequest = adaptLoginRequestToNew({ username, password, role });
+      const res = await authApi.login(loginRequest);
+      // authApi.login now returns adapted response directly: { user, accessToken, refreshToken }
+      setUser(res.user);
+      setToken(res.accessToken);
+      sessionStorage.setItem("agritrace_user", JSON.stringify(res.user));
     } finally {
       setLoading(false);
     }

@@ -3,7 +3,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import { Download, FileText, Printer, TrendingUp, Package, Leaf, CheckCircle } from "lucide-react";
-import { monthlyProduction, inspectionData, recallTrend } from "../../lib/data/mockData";
+import { monthlyProduction, inspectionData, recallTrend } from "../../mocks/data";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1400&q=80";
 

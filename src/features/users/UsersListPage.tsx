@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search, Plus, Edit2, Trash2, Key, Shield, X, Filter } from "lucide-react";
-import { users } from "../../lib/data/mockData";
+import { users } from "../../mocks/data";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=1400&q=80";
 

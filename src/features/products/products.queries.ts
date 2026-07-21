@@ -69,8 +69,9 @@ export function useUpdateProductStatus() {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateProductStatusRequest }) =>
       productsApi.updateProductStatus(id, data),
-    onSuccess: () => {
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["products", "detail", id] });
     },
   });
 }

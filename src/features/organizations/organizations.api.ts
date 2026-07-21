@@ -1,79 +1,136 @@
-import { getPaginated, get, post, put, patch } from "../../lib/api";
-import type { UserItem } from "../users/users.types";
+import { get, post, put, patch } from "../../lib/api";
 import type {
-  Organization,
-  CreateOrganizationRequest,
-  UpdateOrganizationRequest,
-  UpdateOrganizationStatusRequest,
-  OrganizationFilters,
-} from "./organizations.types";
+  OrganizationListItem,
+  OrganizationPagedResponse,
+  OrganizationDetail,
+  OrganizationCreatedData,
+  OrganizationRequest,
+  StatusRequest,
+} from "../../types/mapping";
 
-export type { Organization };
+// Legacy types for backward compatibility
+export type OrganizationType = "FARM" | "PROCESSOR" | "DISTRIBUTOR" | "INSPECTOR" | "RETAILER";
+export type OrganizationStatus = "ACTIVE" | "INACTIVE";
 
-const USE_MOCK = true;
+export interface Organization {
+  organizationId: number;
+  name: string;
+  type: string;
+  status?: string;
+  address?: string;
+}
 
-const mockOrgs: Organization[] = [
-  { organizationId: 1, name: "Green Farm Đà Lạt", type: "FARM", address: "Đà Lạt, Lâm Đồng", status: "ACTIVE" },
-  { organizationId: 2, name: "Nhà máy chế biến Tây Nguyên", type: "PROCESSOR", address: "Buôn Ma Thuột, Đắk Lắk", status: "ACTIVE" },
-  { organizationId: 3, name: "Công ty phân phối Miền Nam", type: "DISTRIBUTOR", address: "TP. Hồ Chí Minh", status: "ACTIVE" },
-  { organizationId: 4, name: "Siêu thị Xanh", type: "RETAIL", address: "Hà Nội", status: "INACTIVE" },
-  { organizationId: 5, name: "Trung tâm kiểm định MARD", type: "INSPECTOR", address: "Hà Nội", status: "ACTIVE" },
-];
+export interface CreateOrganizationRequest {
+  name: string;
+  type: string;
+  address?: string;
+}
 
-const mockDelay = () => new Promise((r) => setTimeout(r, 500));
+export interface UpdateOrganizationRequest {
+  name?: string;
+  type?: string;
+  address?: string;
+}
+
+export interface UpdateOrganizationStatusRequest {
+  status: string;
+}
+
+export interface OrganizationFilters {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}
+
+// Legacy type exports
+export type { OrganizationDetail, OrganizationPagedResponse, OrganizationRequest };
+
+// Adapter functions
+function mapTypeToNew(oldType: string): OrganizationRequest["type"] {
+  const map: Record<string, OrganizationRequest["type"]> = {
+    FARM: "FARM",
+    PROCESSOR: "PROCESSOR",
+    DISTRIBUTOR: "DISTRIBUTOR",
+    RETAILER: "RETAILER",
+    RETAIL: "RETAILER",
+    INSPECTOR: "INSPECTOR_ORG",
+  };
+  return map[oldType] ?? "FARM";
+}
+
+function adaptOrgFromListItem(item: any): Organization {
+  return {
+    organizationId: item.organizationId ?? 0,
+    name: item.name ?? "",
+    type: item.type ?? "",
+    status: item.status ?? "ACTIVE",
+    address: item.address ?? "",
+  };
+}
+
+function adaptOrgFromDetail(item: any): Organization {
+  return {
+    organizationId: item.organizationId ?? 0,
+    name: item.name ?? "",
+    type: item.type ?? "",
+    status: item.status ?? "ACTIVE",
+    address: item.address ?? "",
+  };
+}
 
 export const organizationsApi = {
   getAll: async (filters?: OrganizationFilters) => {
-    if (USE_MOCK) {
-      await mockDelay();
-      return { data: { items: mockOrgs, totalCount: mockOrgs.length, page: 1, pageSize: 20, totalPages: 1 } };
-    }
-    return getPaginated<Organization>("/organizations", { params: filters });
+    const response = await get<OrganizationPagedResponse>("/organizations", {
+      params: {
+        search: filters?.search,
+        page: filters?.page,
+        pageSize: filters?.pageSize,
+      }
+    });
+    const pagedData = response.data as any;
+    return {
+      data: {
+        items: pagedData.items?.map(adaptOrgFromListItem) ?? [],
+        totalCount: pagedData.totalCount ?? 0,
+      }
+    };
   },
 
   getById: async (id: number | string) => {
-    if (USE_MOCK) {
-      await mockDelay();
-      return { data: mockOrgs.find((o) => o.organizationId === Number(id))! };
-    }
-    return get<Organization>(`/organizations/${id}`);
+    const response = await get<OrganizationDetail>(`/organizations/${id}`);
+    return { data: adaptOrgFromDetail(response.data) };
   },
 
   create: async (data: CreateOrganizationRequest) => {
-    if (USE_MOCK) {
-      await mockDelay();
-      const newOrg: Organization = { organizationId: Date.now(), status: "ACTIVE", ...data };
-      mockOrgs.push(newOrg);
-      return { data: newOrg };
-    }
-    return post<Organization>("/organizations", data);
+    const newRequest: OrganizationRequest = {
+      name: data.name,
+      type: mapTypeToNew(data.type),
+      address: data.address,
+    };
+    const response = await post<OrganizationCreatedData>("/organizations", newRequest);
+    return { data: { organizationId: (response.data as any).organizationId ?? 0 } };
   },
 
   update: async (id: number | string, data: UpdateOrganizationRequest) => {
-    if (USE_MOCK) {
-      await mockDelay();
-      const idx = mockOrgs.findIndex((o) => o.organizationId === Number(id));
-      if (idx !== -1) mockOrgs[idx] = { ...mockOrgs[idx], ...data };
-      return { data: mockOrgs[idx] };
-    }
-    return put<Organization>(`/organizations/${id}`, data);
+    const newRequest: Partial<OrganizationRequest> = {};
+    if (data.name) newRequest.name = data.name;
+    if (data.type) newRequest.type = mapTypeToNew(data.type);
+    if (data.address !== undefined) newRequest.address = data.address;
+    return put<void>(`/organizations/${id}`, newRequest);
   },
 
   updateStatus: async (id: number | string, data: UpdateOrganizationStatusRequest) => {
-    if (USE_MOCK) {
-      await mockDelay();
-      const idx = mockOrgs.findIndex((o) => o.organizationId === Number(id));
-      if (idx !== -1) mockOrgs[idx].status = data.status;
-      return { data: undefined };
-    }
-    return patch<void>(`/organizations/${id}/status`, data);
+    return patch<void>(`/organizations/${id}/status`, { status: data.status } as StatusRequest);
   },
 
   getUsers: async (id: number | string, params?: { page?: number; pageSize?: number }) => {
-    if (USE_MOCK) {
-      await mockDelay();
-      return { data: { items: [] as UserItem[], totalCount: 0, page: 1, pageSize: 20, totalPages: 0 } };
-    }
-    return getPaginated<UserItem>(`/organizations/${id}/users`, { params });
+    const response = await get<any>(`/organizations/${id}/users`, { params });
+    const pagedData = response.data as any;
+    return {
+      data: {
+        items: pagedData.items ?? [],
+        totalCount: pagedData.totalCount ?? 0,
+      }
+    };
   },
 };

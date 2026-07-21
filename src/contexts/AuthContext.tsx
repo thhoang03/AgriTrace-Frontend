@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { authApi } from "../features/auth/auth.api";
 import { setToken, removeToken } from "../lib/api";
-import type { User, LoginRequest } from "../features/auth/auth.types";
+import type { User, LoginRequest } from "../types/mapping";
+import { adaptLoginDataToResponse } from "../types/mapping";
 
 interface AuthContextType {
   user: User | null;
@@ -20,9 +21,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(async (data: LoginRequest) => {
     const response = await authApi.login(data);
-    setToken(response.data.accessToken);
-    setUser(response.data.user);
-    sessionStorage.setItem("agritrace_user", JSON.stringify(response.data.user));
+    // authApi.login now returns adapted response directly: { user, accessToken, refreshToken }
+    setToken(response.accessToken);
+    setUser(response.user);
+    sessionStorage.setItem("agritrace_user", JSON.stringify(response.user));
   }, []);
 
   const logout = useCallback(async () => {

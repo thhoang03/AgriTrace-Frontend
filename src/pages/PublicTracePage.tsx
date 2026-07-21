@@ -4,7 +4,7 @@ import {
   CheckCircle, MapPin, Calendar, QrCode, Download, Share2,
   ArrowLeft, Leaf, Hash, ChevronDown, ChevronUp, Award,
 } from "lucide-react";
-import { batches, timelineEvents } from "../lib/data/mockData";
+import { batches, timelineEvents } from "../mocks/data";
 
 const PRODUCT_IMG = "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=600&q=80";
 

@@ -45,7 +45,10 @@ export function useUpdateCategory() {
   return useMutation({
     mutationFn: ({ id, data }: { id: number | string; data: Parameters<typeof categoriesApi.update>[1] }) =>
       categoriesApi.update(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["categories", "list"] }),
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: ["categories", "list"] });
+      qc.invalidateQueries({ queryKey: ["categories", "detail", Number(id)] });
+    },
   });
 }
 
@@ -54,7 +57,10 @@ export function useUpdateCategoryStatus() {
   return useMutation({
     mutationFn: ({ id, data }: { id: number | string; data: Parameters<typeof categoriesApi.updateStatus>[1] }) =>
       categoriesApi.updateStatus(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["categories", "list"] }),
+    onSuccess: (_, { id }) => {
+      qc.invalidateQueries({ queryKey: ["categories", "list"] });
+      qc.invalidateQueries({ queryKey: ["categories", "detail", Number(id)] });
+    },
   });
 }
 
