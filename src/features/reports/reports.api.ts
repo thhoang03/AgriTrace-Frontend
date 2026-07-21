@@ -1,5 +1,4 @@
 import { get, post } from "../../lib/api";
-import type { ApiResponse } from "../../types/mapping";
 
 // Legacy types for backward compatibility
 export type ReportType = "OVERVIEW" | "BATCH" | "INSPECTION" | "RECALL" | "ANALYTICS";
@@ -24,7 +23,7 @@ export interface ReportMetadata {
 }
 
 // Adapter functions
-function adaptReportFromItem(item: any): ReportMetadata {
+function adaptReportFromItem(item: Record<string, unknown>): ReportMetadata {
   return {
     id: item.id ?? item.reportId ?? "",
     type: item.type ?? "OVERVIEW",
@@ -43,9 +42,9 @@ export const reportsApi = {
   },
 
   list: async () => {
-    const response = await get<any>("/reports");
-    const data = response.data as any;
-    const items = Array.isArray(data) ? data : data?.items ?? [];
+    const response = await get<unknown>("/reports");
+    const data = response.data as Record<string, unknown>;
+    const items = Array.isArray(data) ? data : (data?.items as Record<string, unknown>[] ?? []);
     return { data: items.map(adaptReportFromItem) as ReportMetadata[] };
   },
 };

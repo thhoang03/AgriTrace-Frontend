@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { useCategoriesList } from "../categories/categories.queries";
+import type { Category } from "../categories/categories.types";
 import { useCreateProduct, useUpdateProduct } from "./products.queries";
 import type { CreateProductRequest, UpdateProductRequest } from "./products.types";
 
@@ -122,7 +123,7 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400 bg-white"
             >
               <option value={0}>Select a category</option>
-              {categories.map((cat: any) => (
+              {categories.map((cat: Category) => (
                 <option key={cat.categoryId} value={cat.categoryId}>
                   {cat.name}
                 </option>

@@ -1,19 +1,10 @@
-import { useState, useEffect } from "react";
-import { Outlet, useNavigate } from "react-router";
+import { useState } from "react";
+import { Outlet } from "react-router";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
-import { useAuth } from "../../features/auth/auth.store";
 
 export function AppLayout() {
-  const { isLoggedIn } = useAuth();
-  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  useEffect(() => {
-    if (!isLoggedIn) navigate("/login");
-  }, [isLoggedIn, navigate]);
-
-  if (!isLoggedIn) return null;
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: "#F5F7FA" }}>

@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { useCreateBatch } from "./batches.queries";
 import type { CreateBatchRequest } from "./batches.types";
-import { useAuth } from "../auth/auth.store";
+import { useAuth } from "../auth/auth.hooks";
 import { useCategoriesList } from "../categories/categories.queries";
 
 const initialForm: CreateBatchRequest = {

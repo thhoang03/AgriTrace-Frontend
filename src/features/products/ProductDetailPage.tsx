@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { ArrowLeft, Edit2, Trash2, Image as ImageIcon, Package, Tag, MapPin } from "lucide-react";
+import type { ProductImage } from "./products.types";
 import { useProductDetail, useProductImages, useDeleteProduct } from "./products.queries";
 import { ProductFormModal } from "./ProductFormModal";
 
@@ -148,7 +149,7 @@ export function ProductDetailPage() {
                   <div className="text-center py-8 text-gray-400 text-sm">No images uploaded</div>
                 ) : (
                   <div className="grid grid-cols-2 gap-2">
-                    {images.slice(0, 4).map((image: any) => (
+                    {images.slice(0, 4).map((image: ProductImage) => (
                       <div
                         key={image.imageId}
                         className="aspect-square rounded-lg overflow-hidden bg-gray-100"

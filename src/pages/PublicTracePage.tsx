@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
-  CheckCircle, MapPin, Calendar, QrCode, Download, Share2,
+  CheckCircle, MapPin, QrCode, Download, Share2,
   ArrowLeft, Leaf, Hash, ChevronDown, ChevronUp, Award,
 } from "lucide-react";
 import { batches, timelineEvents } from "../mocks/data";

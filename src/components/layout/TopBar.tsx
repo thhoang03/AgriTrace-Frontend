@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { Search, Bell, ChevronDown, Menu, X, Settings, LogOut, User, Home } from "lucide-react";
-import { useAuth } from "../../features/auth/auth.store";
+import { Search, Bell, ChevronDown, Menu, X, LogOut, User, Home, Lock } from "lucide-react";
+import { useAuth } from "../../features/auth/auth.hooks";
 
 interface TopBarProps {
   onToggleSidebar?: () => void;
@@ -19,7 +19,7 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
   // Breadcrumb generation
   const getBreadcrumbs = () => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
-    const breadcrumbs: Array<{ label: string; path: string; icon?: any }> = [
+    const breadcrumbs: Array<{ label: string; path: string; icon?: React.ElementType }> = [
       { label: 'Dashboard', path: '/app/dashboard', icon: Home }
     ];
 
@@ -35,6 +35,7 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
           'reports': 'Reports',
           'users': 'User Management',
           'profile': 'My Profile',
+          'change-password': 'Change Password',
         };
         breadcrumbs.push({
           label: pageLabels[pageName] || pageName.charAt(0).toUpperCase() + pageName.slice(1),
@@ -145,9 +146,10 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
                 <User className="w-4 h-4" /> My Profile
               </button>
               <button
+                onClick={() => { navigate("/app/change-password"); setShowUser(false); }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
               >
-                <Settings className="w-4 h-4" /> Settings
+                <Lock className="w-4 h-4" /> Change Password
               </button>
               <div className="border-t border-gray-100" />
               <button

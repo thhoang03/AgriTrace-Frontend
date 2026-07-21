@@ -12,8 +12,6 @@ import { BatchMergeModal } from "./BatchMergeModal";
 import { BatchEventModal } from "./BatchEventModal";
 import { BatchMediaTab } from "./BatchMediaTab";
 import { BatchLineageTab } from "./BatchLineageTab";
-import { batches, timelineEvents } from "../../mocks/data";
-
 const PRODUCT_IMG = "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=800&q=80";
 
 const statusConfig: Record<string, { bg: string; color: string }> = {

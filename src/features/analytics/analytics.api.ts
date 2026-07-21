@@ -43,27 +43,22 @@ export interface RecallTrendData {
   recalls: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface BatchDistribution {
-  // Legacy - content varies by use
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ProcessingTime {
-  // Legacy - content varies by use
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
-// Adapter functions
-function adaptOverviewFromData(data: any): AnalyticsOverview {
+function adaptOverviewFromData(data: Record<string, unknown>): AnalyticsOverview {
   return {
-    totalProducts: data.totalBatches ?? 0,
-    todayHarvest: data.activeBatches ?? 0,
+    totalProducts: Number(data.totalBatches ?? 0),
+    todayHarvest: Number(data.activeBatches ?? 0),
     inProcessing: 0,
     inTransport: 0,
     atRetail: 0,
-    recallAlerts: data.totalRecalls ?? 0,
+    recallAlerts: Number(data.totalRecalls ?? 0),
     monthlyProduction: [],
     batchStatus: [],
     inspectionResults: [],
@@ -84,7 +79,7 @@ export const analyticsApi = {
     endDate?: string;
   }) => {
     const response = await get<BatchDistributionData>("/analytics/batch-distribution", { params });
-    return { data: (response.data as any) as BatchDistribution };
+    return { data: response.data as unknown as BatchDistribution };
   },
 
   getProcessingTime: async (params?: {
@@ -93,11 +88,11 @@ export const analyticsApi = {
     endDate?: string;
   }) => {
     const response = await get<ProcessingTimeData>("/analytics/processing-time", { params });
-    return { data: (response.data as any) as ProcessingTime };
+    return { data: response.data as unknown as ProcessingTime };
   },
 
   getTraceback: async (batchId: string) => {
     const response = await get<TracebackData>(`/analytics/traceback/${batchId}`);
-    return { data: response.data as any };
+    return { data: response.data as unknown as TracebackData };
   },
 };

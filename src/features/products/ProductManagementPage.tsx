@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Search, Filter, Plus, Eye, Edit2, Trash2,
+  Search, Plus, Eye, Edit2, Trash2,
   ChevronLeft, ChevronRight, X, SlidersHorizontal, Package,
 } from "lucide-react";
-import { useProductsList, useDeleteProduct, useUpdateProductStatus } from "./products.queries";
-import { useCategoriesList } from "../categories/categories.queries";
+import { useProductsList, useDeleteProduct } from "./products.queries";
+import type { ProductListItem } from "./products.types";
 import { ProductFormModal } from "./ProductFormModal";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1400&q=80";
@@ -22,7 +22,6 @@ export function ProductManagementPage() {
   const perPage = 10;
 
   const deleteProduct = useDeleteProduct();
-  const updateProductStatus = useUpdateProductStatus();
 
   const { data: productsData, isLoading, isError } = useProductsList({
     search: search || undefined,
@@ -30,13 +29,13 @@ export function ProductManagementPage() {
     pageSize: perPage,
   });
 
-  const { data: categoriesData } = useCategoriesList();
+
 
   const products = productsData?.data?.items || [];
   const totalCount = productsData?.data?.totalCount || 0;
   const totalPages = Math.ceil(totalCount / perPage);
 
-  const filteredProducts = products.filter((p: any) => {
+  const filteredProducts = products.filter((p: ProductListItem) => {
     if (statusFilter === "All") return true;
     return statusFilter === "Active" ? p.isActive : !p.isActive;
   });
@@ -150,7 +149,7 @@ export function ProductManagementPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredProducts.map((product: any) => (
+                    {filteredProducts.map((product: ProductListItem) => (
                       <tr key={product.productId} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 text-sm font-medium text-gray-900">#{product.productId}</td>
                         <td className="px-6 py-4">
@@ -273,7 +272,7 @@ export function ProductManagementPage() {
         isOpen={showEditModal !== null}
         onClose={() => setShowEditModal(null)}
         productId={showEditModal}
-        initialData={showEditModal ? filteredProducts.find((p: any) => p.productId === showEditModal) : undefined}
+        initialData={showEditModal ? filteredProducts.find((p: ProductListItem) => p.productId === showEditModal) : undefined}
       />
     </div>
   );

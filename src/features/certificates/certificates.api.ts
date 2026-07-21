@@ -27,7 +27,7 @@ export interface CreateCertificateRequest {
 }
 
 // Adapter functions
-function adaptCertificateFromDetail(item: any): Certificate {
+function adaptCertificateFromDetail(item: Record<string, unknown>): Certificate {
   return {
     certificateId: item.certificateId ?? "",
     batchId: item.batchId ?? "",
@@ -43,9 +43,9 @@ function adaptCertificateFromDetail(item: any): Certificate {
 export const certificatesApi = {
   getByBatchId: async (batchId: string) => {
     const response = await get<CertificatePagedResponse>(`/batches/${batchId}/certificates`);
-    const pagedData = response.data as any;
+    const pagedData = response.data as unknown as Record<string, unknown>;
     return {
-      data: pagedData.items?.map(adaptCertificateFromDetail) ?? [],
+      data: ((pagedData.items ?? []) as Record<string, unknown>[]).map(adaptCertificateFromDetail) ?? [],
     };
   },
 
@@ -66,8 +66,7 @@ export const certificatesApi = {
         `/batches/${batchId}/certificates`, formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-      const createdData = response.data as any;
-      return { data: { certificateId: createdData.certificateId ?? "" } as Certificate };
+      return { data: { certificateId: String((response.data as unknown as Record<string, unknown>).certificateId ?? "") } as Certificate };
     }
     const newRequest: NewCreateCertificateRequest = {
       inspectionId: data.certificateNumber ?? "",
@@ -76,8 +75,7 @@ export const certificatesApi = {
       issuedDate: data.issuedAt ?? new Date().toISOString().split("T")[0],
     };
     const response = await post<{ certificateId: string }>(`/batches/${batchId}/certificates`, newRequest);
-    const createdData = response.data as any;
-    return { data: { certificateId: createdData.certificateId ?? "" } as Certificate };
+    return { data: { certificateId: String((response.data as unknown as Record<string, unknown>).certificateId ?? "") } as Certificate };
   },
 
   revoke: async (id: number | string) => del(`/certificates/${id}`),

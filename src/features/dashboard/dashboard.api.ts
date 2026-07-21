@@ -14,6 +14,6 @@ export interface DashboardOverview {
 export const dashboardApi = {
   getOverview: async () => {
     const response = await get<OverviewData>("/dashboard/overview");
-    return { data: (response.data as any) as DashboardOverview };
+    return { data: response.data as unknown as DashboardOverview };
   },
 };

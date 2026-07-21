@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router";
+import { ProtectedRoute } from "../features/auth/ProtectedRoute";
 import { AppLayout } from "../components/layout/AppLayout";
 import { HomePage } from "../pages/HomePage";
 import { LoginPage } from "../features/auth/LoginPage";
@@ -17,6 +18,7 @@ import { ProductManagementPage } from "../features/products/ProductManagementPag
 import { ProductDetailPage } from "../features/products/ProductDetailPage";
 import { OrganizationsPage } from "../features/organizations/OrganizationsPage";
 import { CategoriesPage } from "../features/categories/CategoriesPage";
+import { ChangePasswordPage } from "../pages/ChangePasswordPage";
 
 export const router = createBrowserRouter([
   { path: "/", Component: HomePage },
@@ -24,23 +26,29 @@ export const router = createBrowserRouter([
   { path: "/trace/:id", Component: PublicTracePage },
   {
     path: "/app",
-    Component: AppLayout,
+    Component: ProtectedRoute,
     children: [
-      { index: true, Component: DashboardPage },
-      { path: "dashboard", Component: DashboardPage },
-      { path: "batches", Component: BatchManagementPage },
-      { path: "batches/new", Component: BatchCreatePage },
-      { path: "batches/:id", Component: BatchDetailPage },
-      { path: "supply-chain", Component: SupplyChainPage },
-      { path: "inspection", Component: InspectionPage },
-      { path: "recall", Component: RecallPage },
-      { path: "reports", Component: ReportsPage },
-      { path: "users", Component: UsersListPage },
-      { path: "profile", Component: ProfilePage },
-      { path: "products", Component: ProductManagementPage },
-      { path: "products/:id", Component: ProductDetailPage },
-      { path: "organizations", Component: OrganizationsPage },
-      { path: "categories", Component: CategoriesPage },
+      {
+        Component: AppLayout,
+        children: [
+          { index: true, Component: DashboardPage },
+          { path: "dashboard", Component: DashboardPage },
+          { path: "batches", Component: BatchManagementPage },
+          { path: "batches/new", Component: BatchCreatePage },
+          { path: "batches/:id", Component: BatchDetailPage },
+          { path: "supply-chain", Component: SupplyChainPage },
+          { path: "inspection", Component: InspectionPage },
+          { path: "recall", Component: RecallPage },
+          { path: "reports", Component: ReportsPage },
+          { path: "users", Component: UsersListPage },
+          { path: "profile", Component: ProfilePage },
+          { path: "change-password", Component: ChangePasswordPage },
+          { path: "products", Component: ProductManagementPage },
+          { path: "products/:id", Component: ProductDetailPage },
+          { path: "organizations", Component: OrganizationsPage },
+          { path: "categories", Component: CategoriesPage },
+        ],
+      },
     ],
   },
 ]);

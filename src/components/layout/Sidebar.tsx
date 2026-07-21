@@ -16,7 +16,7 @@ import {
   Building2,
   Tags,
 } from "lucide-react";
-import { useAuth } from "../../features/auth/auth.store";
+import { useAuth } from "../../features/auth/auth.hooks";
 
 const navItems = [
   { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },

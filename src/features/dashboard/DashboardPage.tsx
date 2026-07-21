@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router";
 import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area,
+  BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import {
   Package, Leaf, Cog, Truck, ShoppingCart, AlertTriangle,
   Plus, QrCode, FlaskConical, FileText, Bell, TrendingUp, TrendingDown,
 } from "lucide-react";
-import { useAuth } from "../auth/auth.store";
+import { useAuth } from "../auth/auth.hooks";
 import { useAnalyticsOverview } from "../analytics/analytics.queries";
 import { monthlyProduction, batchStatusData, inspectionData, recallTrend, recentActivities } from "../../mocks/data";
 
@@ -35,7 +35,7 @@ const quickActions = [
 export function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { data: analyticsData, isLoading, isError } = useAnalyticsOverview();
+  const { data: analyticsData } = useAnalyticsOverview();
 
   const now = new Date();
   const timeGreeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 17 ? "Good afternoon" : "Good evening";

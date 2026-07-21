@@ -1,6 +1,5 @@
 import { get, post, put, patch } from "../../lib/api";
 import type {
-  OrganizationListItem,
   OrganizationPagedResponse,
   OrganizationDetail,
   OrganizationCreatedData,
@@ -58,7 +57,7 @@ function mapTypeToNew(oldType: string): OrganizationRequest["type"] {
   return map[oldType] ?? "FARM";
 }
 
-function adaptOrgFromListItem(item: any): Organization {
+function adaptOrgFromListItem(item: Record<string, unknown>): Organization {
   return {
     organizationId: item.organizationId ?? 0,
     name: item.name ?? "",
@@ -68,7 +67,7 @@ function adaptOrgFromListItem(item: any): Organization {
   };
 }
 
-function adaptOrgFromDetail(item: any): Organization {
+function adaptOrgFromDetail(item: Record<string, unknown>): Organization {
   return {
     organizationId: item.organizationId ?? 0,
     name: item.name ?? "",
@@ -87,18 +86,17 @@ export const organizationsApi = {
         pageSize: filters?.pageSize,
       }
     });
-    const pagedData = response.data as any;
     return {
       data: {
-        items: pagedData.items?.map(adaptOrgFromListItem) ?? [],
-        totalCount: pagedData.totalCount ?? 0,
+        items: (response.data.items ?? []).map(adaptOrgFromListItem) ?? [],
+        totalCount: response.data.totalCount ?? 0,
       }
     };
   },
 
   getById: async (id: number | string) => {
     const response = await get<OrganizationDetail>(`/organizations/${id}`);
-    return { data: adaptOrgFromDetail(response.data) };
+    return { data: adaptOrgFromDetail(response.data as unknown as Record<string, unknown>) };
   },
 
   create: async (data: CreateOrganizationRequest) => {
@@ -108,7 +106,7 @@ export const organizationsApi = {
       address: data.address,
     };
     const response = await post<OrganizationCreatedData>("/organizations", newRequest);
-    return { data: { organizationId: (response.data as any).organizationId ?? 0 } };
+    return { data: { organizationId: Number((response.data as unknown as Record<string, unknown>).organizationId ?? 0) } };
   },
 
   update: async (id: number | string, data: UpdateOrganizationRequest) => {
@@ -124,12 +122,12 @@ export const organizationsApi = {
   },
 
   getUsers: async (id: number | string, params?: { page?: number; pageSize?: number }) => {
-    const response = await get<any>(`/organizations/${id}/users`, { params });
-    const pagedData = response.data as any;
+    const response = await get<unknown>(`/organizations/${id}/users`, { params });
+    const pagedData = response.data as Record<string, unknown>;
     return {
       data: {
-        items: pagedData.items ?? [],
-        totalCount: pagedData.totalCount ?? 0,
+        items: (pagedData.items ?? []) as unknown[],
+        totalCount: Number(pagedData.totalCount ?? 0),
       }
     };
   },

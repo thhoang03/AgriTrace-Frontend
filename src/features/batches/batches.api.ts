@@ -1,16 +1,13 @@
 import { get, post, put, del } from "../../lib/api";
 import type {
   BatchDetail,
-  BatchListItem,
   BatchPagedResponse,
   BatchCreatedData,
   QrCodeData,
   ImageListData,
   ImageCreatedData,
-  ImageItem,
   CreateBatchRequest as NewCreateBatchRequest,
   UpdateBatchRequest as NewUpdateBatchRequest,
-  BatchStatusRequest,
 } from "../../types/mapping";
 
 // Legacy types for backward compatibility
@@ -128,93 +125,93 @@ export interface BatchImage {
 }
 
 // Adapter functions
-function adaptBatchFromListItem(item: any): Batch {
+function adaptBatchFromListItem(item: Record<string, unknown>): Batch {
   return {
-    id: item.batchId ?? item.id ?? "",
-    batchCode: item.batchCode ?? "",
-    product: item.productName ?? "",
-    productName: item.productName ?? "",
+    id: String(item.batchId ?? item.id ?? ""),
+    batchCode: String(item.batchCode ?? ""),
+    product: String(item.productName ?? ""),
+    productName: String(item.productName ?? ""),
     categoryId: item.categoryId ? Number(item.categoryId) : undefined,
-    category: item.categoryName ?? "",
+    category: String(item.categoryName ?? ""),
     farmId: undefined,
-    farm: item.organizationName ?? "",
+    farm: String(item.organizationName ?? ""),
     farmerId: undefined,
     farmer: "",
-    harvestDate: item.createdAt?.split("T")[0] ?? "",
-    quantity: item.quantity ?? 0,
-    unit: item.unitCode ?? "",
+    harvestDate: String(item.createdAt?.toString().split("T")[0] ?? ""),
+    quantity: Number(item.quantity ?? 0),
+    unit: String(item.unitCode ?? ""),
     weight: String(item.quantity ?? ""),
     productionArea: "",
-    status: (item.statusName ?? item.status) as BatchStatus,
+    status: String(item.statusName ?? item.status ?? "") as BatchStatus,
     location: "",
     gps: "",
     gpsLocation: "",
     description: "",
-    image: item.qrCodeUrl ?? "",
-    productImage: item.qrCodeUrl ?? "",
-    qrCodeUrl: item.qrCodeUrl ?? "",
-    createdAt: item.createdAt ?? "",
-    updatedAt: item.updatedAt ?? "",
+    image: String(item.qrCodeUrl ?? ""),
+    productImage: String(item.qrCodeUrl ?? ""),
+    qrCodeUrl: String(item.qrCodeUrl ?? ""),
+    createdAt: String(item.createdAt ?? ""),
+    updatedAt: String(item.updatedAt ?? ""),
     isDeleted: false,
   };
 }
 
-function adaptBatchFromDetail(item: any): Batch {
+function adaptBatchFromDetail(item: Record<string, unknown>): Batch {
   return {
-    id: item.batchId ?? item.id ?? "",
-    batchCode: item.batchCode ?? "",
-    product: item.productName ?? "",
-    productName: item.productName ?? "",
+    id: String(item.batchId ?? item.id ?? ""),
+    batchCode: String(item.batchCode ?? ""),
+    product: String(item.productName ?? ""),
+    productName: String(item.productName ?? ""),
     categoryId: item.categoryId ? Number(item.categoryId) : undefined,
-    category: item.categoryName ?? "",
+    category: String(item.categoryName ?? ""),
     farmId: undefined,
-    farm: item.organizationName ?? "",
+    farm: String(item.organizationName ?? ""),
     farmerId: undefined,
     farmer: "",
-    harvestDate: item.productionDate ?? item.createdAt?.split("T")[0] ?? "",
-    quantity: item.quantity ?? 0,
-    unit: item.unitCode ?? "",
+    harvestDate: String(item.productionDate ?? item.createdAt?.toString().split("T")[0] ?? ""),
+    quantity: Number(item.quantity ?? 0),
+    unit: String(item.unitCode ?? ""),
     weight: String(item.quantity ?? ""),
     productionArea: "",
-    status: (item.statusName ?? String(item.status ?? "")) as BatchStatus,
-    location: item.location ?? "",
+    status: String(item.statusName ?? item.status ?? "") as BatchStatus,
+    location: String(item.location ?? ""),
     gps: "",
     gpsLocation: "",
     description: "",
-    image: item.qrCodeUrl ?? "",
-    productImage: item.qrCodeUrl ?? "",
-    qrCodeUrl: item.qrCodeUrl ?? "",
-    createdAt: item.createdAt ?? "",
-    updatedAt: item.updatedAt ?? "",
+    image: String(item.qrCodeUrl ?? ""),
+    productImage: String(item.qrCodeUrl ?? ""),
+    qrCodeUrl: String(item.qrCodeUrl ?? ""),
+    createdAt: String(item.createdAt ?? ""),
+    updatedAt: String(item.updatedAt ?? ""),
     isDeleted: false,
   };
 }
 
-function adaptEventFromItem(item: any): TimelineEvent {
+function adaptEventFromItem(item: Record<string, unknown>): TimelineEvent {
   return {
-    id: item.eventId ?? item.id ?? "",
-    stage: item.eventTypeCode ?? item.stage ?? "",
+    id: String(item.eventId ?? item.id ?? ""),
+    stage: String(item.eventTypeCode ?? item.stage ?? ""),
     icon: "",
-    date: item.eventTime?.split("T")[0] ?? "",
-    time: item.eventTime?.split("T")[1]?.split(".")[0] ?? "",
-    organization: item.organizationName ?? "",
-    location: item.location ?? "",
-    employee: item.performedByUserId ?? "",
-    description: item.eventData ?? "",
+    date: String(item.eventTime?.toString().split("T")[0] ?? ""),
+    time: String(item.eventTime?.toString().split("T")[1]?.toString().split(".")[0] ?? ""),
+    organization: String(item.organizationName ?? ""),
+    location: String(item.location ?? ""),
+    employee: String(item.performedByUserId ?? ""),
+    description: String(item.eventData ?? ""),
     temp: "",
     humidity: "",
-    hash: item.currentHash ?? "",
-    prevHash: item.previousHash ?? "",
+    hash: String(item.currentHash ?? ""),
+    prevHash: String(item.previousHash ?? ""),
     verified: !!item.currentHash,
   };
 }
 
-function adaptImageFromItem(item: any): BatchImage {
+function adaptImageFromItem(item: Record<string, unknown>): BatchImage {
   return {
     imageId: Number(item.imageId ?? 0),
-    url: item.url ?? "",
-    fileName: item.fileName ?? "",
-    uploadedAt: item.uploadedAt ?? "",
+    url: String(item.url ?? ""),
+    fileName: String(item.fileName ?? ""),
+    uploadedAt: String(item.uploadedAt ?? ""),
   };
 }
 
@@ -245,22 +242,20 @@ export const batchesApi = {
         pageSize: filters?.limit,
       }
     });
-    const pagedData = response.data as any;
     return {
-      data: pagedData.items?.map(adaptBatchFromListItem) ?? [],
+      data: (response.data.items ?? []).map(adaptBatchFromListItem),
     };
   },
 
   getById: async (id: string) => {
     const response = await get<BatchDetail>(`/batches/${id}`);
-    return { data: adaptBatchFromDetail(response.data) };
+    return { data: adaptBatchFromDetail(response.data as unknown as Record<string, unknown>) };
   },
 
   create: async (data: CreateBatchRequest) => {
     const newRequest = adaptCreateToNew(data);
     const response = await post<BatchCreatedData>("/batches", newRequest);
-    const createdData = response.data as any;
-    return { data: { id: createdData.batchId ?? "" } };
+    return { data: { id: String((response.data as unknown as Record<string, unknown>).batchId ?? "") } };
   },
 
   update: async (id: string, data: UpdateBatchRequest) => {
@@ -271,29 +266,29 @@ export const batchesApi = {
   delete: async (id: string) => del(`/batches/${id}`),
 
   getTimeline: async (batchId: string) => {
-    const response = await get<any>(`/batches/${batchId}/timeline`);
-    const data = response.data as any;
-    const items = Array.isArray(data) ? data : data?.items ?? [];
-    return { data: items.map(adaptEventFromItem) as TimelineEvent[] };
+    const response = await get<unknown>(`/batches/${batchId}/timeline`);
+    const data = response.data as Record<string, unknown>;
+    const raw = Array.isArray(data) ? data : (data?.items as Record<string, unknown>[] ?? []);
+    return { data: raw.map(adaptEventFromItem) as TimelineEvent[] };
   },
 
   getQrCode: async (batchId: string) => {
     const response = await get<QrCodeData>(`/batches/${batchId}/qr-code`);
-    const qrData = response.data as any;
+    const qrData = response.data as unknown as Record<string, unknown>;
     return {
       data: {
         batchId: Number(qrData.batchId ?? 0),
-        batchCode: qrData.batchCode ?? "",
-        qrCodeUrl: qrData.qrCodeUrl ?? "",
+        batchCode: String(qrData.batchCode ?? ""),
+        qrCodeUrl: String(qrData.qrCodeUrl ?? ""),
       } as BatchQrCode
     };
   },
 
   getImages: async (batchId: string) => {
     const response = await get<ImageListData>(`/batches/${batchId}/images`);
-    const imageData = response.data as any;
+    const imageData = response.data as unknown as Record<string, unknown>;
     return {
-      data: (imageData.items ?? []).map(adaptImageFromItem) as BatchImage[]
+      data: ((imageData.items ?? []) as Record<string, unknown>[]).map(adaptImageFromItem) as BatchImage[]
     };
   },
 
@@ -303,8 +298,8 @@ export const batchesApi = {
     const response = await post<ImageCreatedData>(`/batches/${batchId}/images`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    const imgData = response.data as any;
-    return { data: { imageId: Number(imgData.imageId ?? 0), url: imgData.url ?? "" } as BatchImage };
+    const imgData = response.data as unknown as Record<string, unknown>;
+    return { data: { imageId: Number(imgData.imageId ?? 0), url: String(imgData.url ?? "") } as BatchImage };
   },
 
   deleteImage: async (imageId: number | string) => del(`/batches/images/${imageId}`),

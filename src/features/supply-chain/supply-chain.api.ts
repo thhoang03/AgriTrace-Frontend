@@ -38,7 +38,7 @@ export interface CreateEventRequest {
   eventType: string;
   location?: string;
   description?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface HashChainVerifyResult {
@@ -47,7 +47,7 @@ export interface HashChainVerifyResult {
 }
 
 // Adapter functions for SupplyChainNode (used by BatchLineageTab)
-function adaptToNode(item: any): SupplyChainNode {
+function adaptToNode(item: Record<string, unknown>): SupplyChainNode {
   return {
     id: item.eventId ?? item.id ?? "",
     name: item.eventTypeCode ?? item.name ?? "",
@@ -57,7 +57,7 @@ function adaptToNode(item: any): SupplyChainNode {
   };
 }
 
-function adaptEventFromDetail(item: any): SupplyChainEvent {
+function adaptEventFromDetail(item: Record<string, unknown>): SupplyChainEvent {
   return {
     eventId: item.eventId ?? "",
     batchId: item.batchId ?? "",
@@ -75,23 +75,23 @@ function adaptEventFromDetail(item: any): SupplyChainEvent {
 
 export const supplyChainApi = {
   getChain: async (batchId: string) => {
-    const response = await get<any>(`/supply-chain/${batchId}`, {
+    const response = await get<unknown>(`/supply-chain/${batchId}`, {
       params: { batchId }
     });
-    const data = response.data as any;
-    const items = Array.isArray(data) ? data : data?.items ?? [];
+    const data = response.data as Record<string, unknown>;
+    const items = Array.isArray(data) ? data : (data?.items as Record<string, unknown>[] ?? []);
     return { data: items.map(adaptToNode) as SupplyChainNode[] };
   },
 
   getNode: async (nodeId: string) => {
-    const response = await get<any>(`/supply-chain/node/${nodeId}`);
-    return { data: adaptToNode(response.data) };
+    const response = await get<unknown>(`/supply-chain/node/${nodeId}`);
+    return { data: adaptToNode(response.data as Record<string, unknown>) };
   },
 
   traceByQR: async (qrCode: string) => {
-    const response = await get<any>("/supply-chain/trace", { params: { qrCode } });
-    const data = response.data as any;
-    const items = Array.isArray(data) ? data : data?.items ?? [];
+    const response = await get<unknown>("/supply-chain/trace", { params: { qrCode } });
+    const data = response.data as Record<string, unknown>;
+    const items = Array.isArray(data) ? data : (data?.items as Record<string, unknown>[] ?? []);
     return { data: items.map(adaptToNode) as SupplyChainNode[] };
   },
 
@@ -102,9 +102,8 @@ export const supplyChainApi = {
         pageSize: filters?.pageSize,
       }
     });
-    const pagedData = response.data as any;
     return {
-      data: (pagedData.items ?? []).map(adaptEventFromDetail) as SupplyChainEvent[],
+      data: (response.data.items ?? []).map(adaptEventFromDetail) as SupplyChainEvent[],
     };
   },
 
@@ -125,19 +124,17 @@ export const supplyChainApi = {
       location: data.location,
     };
     const response = await post<EventCreatedData>(`/batches/${batchId}/events`, newRequest);
-    const createdData = response.data as any;
-    return { data: { eventId: createdData.eventId ?? "" } as SupplyChainEvent };
+    return { data: { eventId: String((response.data as unknown as Record<string, unknown>).eventId ?? "") } as SupplyChainEvent };
   },
 
   verifyHashChain: async (batchId: string) => {
     const response = await get<{ isValid: boolean; totalEvents: number }>(
       `/batches/${batchId}/events/verify`
     );
-    const verifyData = response.data as any;
     return {
       data: {
-        isValid: verifyData.isValid ?? false,
-        totalEvents: verifyData.totalEvents ?? 0,
+        isValid: response.data.isValid ?? false,
+        totalEvents: response.data.totalEvents ?? 0,
       } as HashChainVerifyResult
     };
   },

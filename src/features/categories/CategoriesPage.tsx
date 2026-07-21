@@ -65,8 +65,8 @@ export function CategoriesPage() {
         showAlert("success", `Đã thêm "${form.name}" thành công`);
       }
       setShowModal(false);
-    } catch (e: any) {
-      setError(e?.message || "Có lỗi xảy ra");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Có lỗi xảy ra");
     }
   };
 
@@ -80,8 +80,8 @@ export function CategoriesPage() {
         "success",
         `"${cat.name}" đã được ${newStatus ? "kích hoạt" : "vô hiệu hóa"}`
       );
-    } catch (e: any) {
-      showAlert("error", e?.message || "Cập nhật trạng thái thất bại");
+    } catch (e: unknown) {
+      showAlert("error", e instanceof Error ? e.message : "Cập nhật trạng thái thất bại");
     }
   };
 

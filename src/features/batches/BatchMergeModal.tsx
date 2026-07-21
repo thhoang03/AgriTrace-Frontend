@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Merge, X, Plus, Trash2, AlertCircle, Search } from "lucide-react";
+import { Merge, X, AlertCircle, Search } from "lucide-react";
 import { useMergeBatch, useBatches } from "./batches.queries";
 
 interface BatchMergeModalProps {

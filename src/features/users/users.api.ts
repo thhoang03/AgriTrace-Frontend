@@ -1,10 +1,8 @@
 import { get, post, put, del } from "../../lib/api";
-import type { 
-  UserListItem, 
-  UserPagedResponse, 
+import type {
+  UserPagedResponse,
   CreateUserRequest as NewCreateUserRequest,
   UpdateUserRequest as NewUpdateUserRequest,
-  UserStatusRequest 
 } from "../../types/mapping";
 
 // Legacy types for backward compatibility
@@ -43,7 +41,7 @@ export interface UserFilters {
 }
 
 // Adapter functions
-function adaptUserListItem(item: any): UserItem {
+function adaptUserListItem(item: Record<string, unknown>): UserItem {
   return {
     id: String(item.userId ?? item.id ?? ""),
     avatar: item.avatar ?? "",
@@ -62,7 +60,7 @@ function adaptCreateUserRequest(legacy: CreateUserRequest): NewCreateUserRequest
     fullName: legacy.fullName,
     email: legacy.email,
     password: legacy.password,
-    role: legacy.role as any, // Role enum may need mapping
+    role: legacy.role as string,
     organizationId: null, // Legacy uses organization name, new uses ID
   };
 }
@@ -71,7 +69,7 @@ function adaptUpdateUserRequest(legacy: UpdateUserRequest): NewUpdateUserRequest
   return {
     fullName: legacy.fullName,
     phone: legacy.phone,
-    role: legacy.role as any,
+    role: legacy.role as string,
   };
 }
 
@@ -85,19 +83,17 @@ export const usersApi = {
         pageSize: filters?.limit,
       }
     });
-    // get() returns ApiResponse<T>, so response.data is the UserPagedResponse
-    const pagedData = response.data as any; // Use any to bypass type checking for now
     return {
       data: {
-        items: pagedData.items?.map(adaptUserListItem) ?? [],
-        totalCount: pagedData.totalCount ?? 0,
+        items: (response.data.items ?? []).map(adaptUserListItem) ?? [],
+        totalCount: response.data.totalCount ?? 0,
       }
     };
   },
 
   getById: async (id: string) => {
-    const response = await get<any>(`/users/${id}`);
-    return adaptUserListItem(response.data);
+    const response = await get<unknown>(`/users/${id}`);
+    return adaptUserListItem(response.data as Record<string, unknown>);
   },
 
   create: async (data: CreateUserRequest) => {
@@ -108,8 +104,8 @@ export const usersApi = {
 
   update: async (id: string, data: UpdateUserRequest) => {
     const newRequest = adaptUpdateUserRequest(data);
-    const response = await put<any>(`/users/${id}`, newRequest);
-    return { data: adaptUserListItem(response.data) };
+    const response = await put<unknown>(`/users/${id}`, newRequest);
+    return { data: adaptUserListItem(response.data as Record<string, unknown>) };
   },
 
   delete: (id: string) =>

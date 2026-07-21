@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, Upload, Trash2, Star } from "lucide-react";
+import type { ProductImage } from "./products.types";
 import { useProductImages, useUploadProductImage, useDeleteProductImage } from "./products.queries";
 
 interface ProductImageModalProps {
@@ -111,7 +112,7 @@ export function ProductImageModal({ isOpen, onClose, productId }: ProductImageMo
             <div className="text-center py-8 text-gray-400 text-sm">No images uploaded yet</div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {images.map((image: any) => (
+              {images.map((image: ProductImage) => (
                 <div key={image.imageId} className="relative group">
                   <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
                     <img

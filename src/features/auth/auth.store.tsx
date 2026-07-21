@@ -1,18 +1,9 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { authApi } from "./auth.api";
 import { setToken, removeToken } from "../../lib/api";
 import type { User, LoginRequest } from "../../types/mapping";
 import { adaptLoginRequestToNew } from "../../types/mapping";
-
-interface AuthContextType {
-  user: User | null;
-  isLoggedIn: boolean;
-  login: (username: string, password: string, role?: string) => Promise<void>;
-  logout: () => void;
-  loading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | null>(null);
+import { AuthContext } from "./auth-context";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
@@ -50,8 +41,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be inside AuthProvider");
-  return ctx;
-}
+

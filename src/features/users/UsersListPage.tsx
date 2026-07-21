@@ -49,7 +49,6 @@ export function UsersListPage() {
           </div>
           <div className="flex items-center gap-4">
             {["Active", "Inactive", "Pending"].map((s) => {
-              const cfg = statusConfig[s];
               return (
                 <div key={s} className="text-center">
                   <div className="font-bold text-white" style={{ fontSize: 20 }}>{users.filter((u) => u.status === s).length}</div>

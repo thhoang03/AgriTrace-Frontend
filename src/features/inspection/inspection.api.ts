@@ -36,9 +36,8 @@ export const inspectionApi = {
         pageSize: filters?.limit,
       }
     });
-    const pagedData = response.data as any;
     return {
-      data: pagedData.items?.map(adaptInspectionFromDetail) ?? [],
+      data: (response.data.items ?? []).map(adaptInspectionFromDetail),
     };
   },
 
@@ -46,9 +45,8 @@ export const inspectionApi = {
     const response = await get<InspectionPagedResponse>(`/batches/${batchId}/inspections`, {
       params: { pageSize: 100 }
     });
-    const pagedData = response.data as any;
     return {
-      data: pagedData.items?.map(adaptInspectionFromDetail) ?? [],
+      data: (response.data.items ?? []).map(adaptInspectionFromDetail),
     };
   },
 
@@ -63,8 +61,7 @@ export const inspectionApi = {
       notes: data.notes,
     };
     const response = await post<{ inspectionId: string }>(`/batches/${batchId}/inspections`, newRequest);
-    const createdData = response.data as any;
-    return { data: { inspectionId: createdData.inspectionId ?? "" } };
+    return { data: { inspectionId: response.data.inspectionId ?? "" } };
   },
 
   update: async (id: string, data: Partial<CreateInspectionRequest> & { status?: number; score?: number; notes?: string }) => {

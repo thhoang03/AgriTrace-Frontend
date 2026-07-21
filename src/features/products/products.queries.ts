@@ -1,13 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { productsApi } from "./products.api";
 import type {
-  Product,
-  ProductListItem,
-  ProductImage,
   CreateProductRequest,
   UpdateProductRequest,
   UpdateProductStatusRequest,
-  ProductsListResponse,
   ProductFilters,
 } from "./products.types";
 

@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { authApi } from "../features/auth/auth.api";
 import type { ChangePasswordRequest } from "../features/auth/auth.types";
 
-const ChangePasswordPage: React.FC = () => {
+export function ChangePasswordPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -19,8 +19,8 @@ const ChangePasswordPage: React.FC = () => {
       await authApi.changePassword(data);
       setSuccess(true);
       reset();
-    } catch (err: any) {
-      setError(err.response?.data?.message || "An unexpected error occurred.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
@@ -149,4 +149,4 @@ const ChangePasswordPage: React.FC = () => {
   );
 };
 
-export default ChangePasswordPage;
+

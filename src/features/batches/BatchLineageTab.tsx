@@ -34,7 +34,7 @@ export function BatchLineageTab({ batchId }: BatchLineageTabProps) {
   }
 
   // Very simplified recursive renderer for lineage tree nodes
-  const renderNode = (node: SupplyChainNode, isRoot = false) => {
+  const renderNode = (node: SupplyChainNode, _isRoot = false) => {
     return (
       <div key={node.id} className="flex flex-col items-center">
         <div 

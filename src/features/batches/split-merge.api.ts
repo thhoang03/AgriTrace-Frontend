@@ -45,7 +45,7 @@ function adaptSplitToNew(legacy: SplitBatchRequest): NewSplitBatchRequest {
   };
 }
 
-function adaptSplitFromNew(data: any): SplitBatchResponse {
+function adaptSplitFromNew(data: Record<string, unknown>): SplitBatchResponse {
   return {
     parentBatchId: Number(data.parentBatchId ?? 0),
     childBatchIds: (data.childBatchIds ?? []).map(Number),
@@ -62,7 +62,7 @@ function adaptMergeToNew(legacy: MergeBatchRequest): NewMergeBatchRequest {
   };
 }
 
-function adaptMergeFromNew(data: any): MergeBatchResponse {
+function adaptMergeFromNew(data: Record<string, unknown>): MergeBatchResponse {
   return {
     mergedBatchId: Number(data.newBatchId ?? 0),
     batchCode: data.batchCode ?? "",

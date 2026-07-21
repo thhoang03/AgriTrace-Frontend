@@ -41,7 +41,6 @@ export function BatchEditModal({ batch, onClose, onSaved }: BatchEditModalProps)
     productionArea: batch.productionArea ?? "",
   });
 
-  // keep form in sync if parent batch prop changes
   useEffect(() => {
     setForm({
       status: batch.status as BatchStatus,
@@ -51,7 +50,7 @@ export function BatchEditModal({ batch, onClose, onSaved }: BatchEditModalProps)
       description: batch.description ?? "",
       productionArea: batch.productionArea ?? "",
     });
-  }, [batch.id]);
+  }, [batch.id, batch.status, batch.quantity, batch.weight, batch.location, batch.description, batch.productionArea]);
 
   const set = (field: keyof UpdateBatchRequest, value: string | number) =>
     setForm((prev) => ({ ...prev, [field]: value }));

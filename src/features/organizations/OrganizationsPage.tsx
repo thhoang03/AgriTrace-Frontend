@@ -78,8 +78,8 @@ export function OrganizationsPage() {
         showAlert("success", `Đã thêm "${form.name}" thành công`);
       }
       setShowModal(false);
-    } catch (e: any) {
-      setError(e.message || "Có lỗi xảy ra");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Có lỗi xảy ra");
     } finally {
       setSaving(false);
     }
@@ -95,8 +95,8 @@ export function OrganizationsPage() {
         newStatus === "ACTIVE" ? "success" : "error",
         `"${org.name}" đã được ${newStatus === "ACTIVE" ? "kích hoạt" : "vô hiệu hóa"}`
       );
-    } catch (e: any) {
-      showAlert("error", e.message || "Cập nhật trạng thái thất bại");
+    } catch (e: unknown) {
+      showAlert("error", e instanceof Error ? e.message : "Cập nhật trạng thái thất bại");
     }
   };
 

@@ -1,6 +1,5 @@
 import { get, patch } from "../../lib/api";
 import type {
-  NotificationItem,
   NotificationPagedResponse,
 } from "../../types/mapping";
 
@@ -25,7 +24,7 @@ export interface UnreadCount {
 }
 
 // Adapter functions
-function adaptNotificationFromItem(item: any): Notification {
+function adaptNotificationFromItem(item: Record<string, unknown>): Notification {
   return {
     notificationId: item.notificationId ?? "",
     userId: item.userId ?? "",
@@ -45,14 +44,14 @@ export const notificationsApi = {
         pageSize: filters?.pageSize,
       }
     });
-    const pagedData = response.data as any;
+    const pagedData = response.data as unknown as Record<string, unknown>;
     return {
       data: {
-        items: pagedData.items?.map(adaptNotificationFromItem) ?? [],
-        totalCount: pagedData.totalCount ?? 0,
-        page: pagedData.page ?? 1,
-        pageSize: pagedData.pageSize ?? 20,
-        totalPages: pagedData.totalPages ?? 1,
+        items: ((pagedData.items ?? []) as Record<string, unknown>[]).map(adaptNotificationFromItem) ?? [],
+        totalCount: Number(pagedData.totalCount ?? 0),
+        page: Number(pagedData.page ?? 1),
+        pageSize: Number(pagedData.pageSize ?? 20),
+        totalPages: Number(pagedData.totalPages ?? 1),
       }
     };
   },
@@ -65,6 +64,6 @@ export const notificationsApi = {
 
   getUnreadCount: async () => {
     const response = await get<{ unreadCount: number }>("/notifications/unread-count");
-    return { data: { unreadCount: (response.data as any).unreadCount ?? 0 } as UnreadCount };
+    return { data: { unreadCount: response.data.unreadCount ?? 0 } as UnreadCount };
   },
 };

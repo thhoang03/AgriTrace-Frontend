@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload, MapPin, Hash, CheckCircle, Camera, FileText } from "lucide-react";
+import { MapPin, Hash, CheckCircle, Camera, FileText } from "lucide-react";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1587293852726-70cdb56c2866?w=1400&q=80";
 

@@ -33,7 +33,7 @@ export interface RecallFilters {
 }
 
 // Adapter functions
-function adaptRecallFromDetail(item: any): RecallItem {
+function adaptRecallFromDetail(item: Record<string, unknown>): RecallItem {
   return {
     recallId: item.recallId ?? "",
     batchId: item.batchId ?? "",
@@ -57,9 +57,8 @@ export const recallsApi = {
         pageSize: filters?.pageSize,
       }
     });
-    const pagedData = response.data as any;
     return {
-      data: pagedData.items?.map(adaptRecallFromDetail) ?? [],
+      data: (response.data.items ?? []).map(adaptRecallFromDetail) ?? [],
     };
   },
 
@@ -75,8 +74,7 @@ export const recallsApi = {
       severity: data.severity,
     };
     const response = await post<{ recallId: string }>("/recalls", newRequest);
-    const createdData = response.data as any;
-    return { data: { recallId: createdData.recallId ?? "" } as RecallItem };
+    return { data: { recallId: response.data.recallId ?? "" } as RecallItem };
   },
 
   resolve: async (id: string) => {

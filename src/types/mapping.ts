@@ -6,7 +6,7 @@
 import type { components } from "./api";
 
 // Re-export generated types with simpler names
-export type ApiResponse<T = unknown> = components["schemas"]["ApiResponse"];
+export type ApiResponse = components["schemas"]["ApiResponse"];
 export type PagedMeta = components["schemas"]["PagedMeta"];
 export type LookupItem = components["schemas"]["LookupItem"];
 export type LoginRequest = components["schemas"]["LoginRequest"];

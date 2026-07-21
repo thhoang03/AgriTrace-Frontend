@@ -2,13 +2,6 @@ import { post, get, put } from "../../lib/api";
 import type { LoginRequest, ChangePasswordRequest, LoginData, UserBasic } from "../../types/mapping";
 import { adaptLoginDataToResponse } from "../../types/mapping";
 
-// Legacy LoginResponse for backward compatibility
-interface LoginResponse {
-  user: any;
-  accessToken: string;
-  refreshToken: string;
-}
-
 export const authApi = {
   login: async (data: LoginRequest) => {
     const response = await post<LoginData>("/auth/login", data);

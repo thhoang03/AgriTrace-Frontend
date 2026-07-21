@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Upload, X, Image as ImageIcon, Trash2, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, Image as ImageIcon, Trash2, AlertCircle } from "lucide-react";
 import { useUploadBatchImage, useDeleteBatchImage, useBatchImages } from "./batches.queries";
 
 interface BatchMediaTabProps {

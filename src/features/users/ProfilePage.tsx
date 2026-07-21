@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Camera, Lock, Bell, Moon, Save, CheckCircle, AlertCircle } from "lucide-react";
-import { useAuth } from "../auth/auth.store";
+import { useAuth } from "../auth/auth.hooks";
 import { authApi } from "../auth/auth.api";
 import { usersApi } from "./users.api";
 
@@ -26,8 +26,8 @@ export function ProfilePage() {
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (e: any) {
-      setSaveError(e.message || "Lưu thất bại");
+    } catch (e: unknown) {
+      setSaveError(e instanceof Error ? e.message : "Lưu thất bại");
     }
   };
 
@@ -44,8 +44,8 @@ export function ProfilePage() {
       if (currentPwdRef.current) currentPwdRef.current.value = "";
       if (newPwdRef.current) newPwdRef.current.value = "";
       if (confirmPwdRef.current) confirmPwdRef.current.value = "";
-    } catch (e: any) {
-      setPwdError(e.message || "Đổi mật khẩu thất bại");
+    } catch (e: unknown) {
+      setPwdError(e instanceof Error ? e.message : "Đổi mật khẩu thất bại");
     }
   };
 
@@ -92,7 +92,7 @@ export function ProfilePage() {
                   { label: "Username", value: user?.username, type: "text", ref: undefined },
                   { label: "Email Address", value: user?.email, type: "email", ref: undefined },
                   { label: "Phone Number", value: user?.phone, type: "tel", ref: undefined },
-                ].map(({ label, value, type, ref }: any) => (
+                ].map(({ label, value, type, ref }: { label: string; value?: string; type: string; ref?: React.RefObject<HTMLInputElement | null> }) => (
                   <div key={label}>
                     <label className="text-sm font-medium text-gray-600 mb-1.5 block">{label}</label>
                     <input

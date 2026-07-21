@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Leaf, Eye, EyeOff, Shield, Lock, User, ArrowLeft } from "lucide-react";
-import { useAuth } from "./auth.store";
+import { useAuth } from "./auth.hooks";
 
 const BG_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1200&q=80";
 
@@ -22,8 +22,8 @@ export function LoginPage() {
     try {
       await login(form.username, form.password);
       navigate("/app/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Đăng nhập thất bại");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
     } finally {
       setLoading(false);
     }

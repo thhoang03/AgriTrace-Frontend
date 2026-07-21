@@ -4,7 +4,6 @@ import type {
   ProductDetail,
   ProductPagedResponse,
   ProductRequest,
-  ImageItem,
   ImageListData,
   ImageCreatedData,
   ActiveStatusRequest,
@@ -80,7 +79,7 @@ export interface ProductFilters {
 }
 
 // Adapter functions
-function adaptProductFromListItem(item: any): ProductListItem {
+function adaptProductFromListItem(item: Record<string, unknown>): ProductListItem {
   return {
     productId: item.productId ?? 0,
     name: item.name ?? "",
@@ -92,7 +91,7 @@ function adaptProductFromListItem(item: any): ProductListItem {
   };
 }
 
-function adaptProductFromDetail(item: any): Product {
+function adaptProductFromDetail(item: Record<string, unknown>): Product {
   return {
     productId: item.productId ?? 0,
     name: item.name ?? "",
@@ -105,7 +104,7 @@ function adaptProductFromDetail(item: any): Product {
   };
 }
 
-function adaptImageFromItem(item: any): ProductImage {
+function adaptImageFromItem(item: Record<string, unknown>): ProductImage {
   return {
     imageId: Number(item.imageId ?? 0),
     imageUrl: item.url ?? "",
@@ -144,14 +143,13 @@ export const productsApi = {
         pageSize: filters?.pageSize,
       }
     });
-    const pagedData = response.data as any;
     return {
       data: {
-        items: pagedData.items?.map(adaptProductFromListItem) ?? [],
-        totalCount: pagedData.totalCount ?? 0,
-        page: pagedData.page ?? 1,
-        pageSize: pagedData.pageSize ?? 20,
-        totalPages: pagedData.totalPages ?? 1,
+        items: (response.data.items ?? []).map(adaptProductFromListItem) ?? [],
+        totalCount: response.data.totalCount ?? 0,
+        page: response.data.page ?? 1,
+        pageSize: response.data.pageSize ?? 20,
+        totalPages: response.data.totalPages ?? 1,
       }
     };
   },
@@ -164,7 +162,7 @@ export const productsApi = {
   createProduct: async (data: CreateProductRequest) => {
     const newRequest = adaptCreateToRequest(data);
     const response = await post<{ productId: number }>("/products", newRequest);
-    return { data: { productId: (response.data as any).productId ?? 0 } };
+    return { data: { productId: response.data.productId ?? 0 } };
   },
 
   updateProduct: async (id: number, data: UpdateProductRequest) => {
@@ -180,15 +178,15 @@ export const productsApi = {
 
   getProductImages: async (productId: number) => {
     const response = await get<ImageListData>(`/products/${productId}/images`);
-    const imageData = response.data as any;
-    return { data: (imageData.items ?? []).map(adaptImageFromItem) as ProductImage[] };
+    const imageData = response.data as unknown as Record<string, unknown>;
+    return { data: ((imageData.items ?? []) as Record<string, unknown>[]).map(adaptImageFromItem) as ProductImage[] };
   },
 
   uploadProductImage: async (productId: number, formData: FormData) => {
     const response = await post<ImageCreatedData>(`/products/${productId}/images`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return { data: { imageId: Number((response.data as any).imageId ?? 0) } };
+    return { data: { imageId: Number((response.data as unknown as Record<string, unknown>).imageId ?? 0) } };
   },
 
   deleteProductImage: async (imageId: number) => del(`/products/images/${imageId}`),
@@ -226,12 +224,12 @@ export const productsApi = {
     const response = await post<ImageCreatedData>(`/products/${id}/images`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    const imgData = response.data as any;
+    const imgData = response.data as unknown as Record<string, unknown>;
     return {
       data: {
         imageId: Number(imgData.imageId ?? 0),
-        imageUrl: imgData.url ?? "",
-        url: imgData.url ?? "",
+        imageUrl: String(imgData.url ?? ""),
+        url: String(imgData.url ?? ""),
         isPrimary: false,
       } as ProductImage
     };

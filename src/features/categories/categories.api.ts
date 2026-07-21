@@ -1,6 +1,5 @@
 import { get, post, put, patch, del } from "../../lib/api";
 import type {
-  CategoryListItem,
   CategoryDetail,
   CategoryPagedResponse,
   CategoryRequest,
@@ -43,7 +42,7 @@ export interface CategoryFilters {
 }
 
 // Adapter functions
-function adaptCategoryFromListItem(item: any): Category {
+function adaptCategoryFromListItem(item: Record<string, unknown>): Category {
   return {
     categoryId: item.categoryId ?? 0,
     name: item.name ?? "",
@@ -52,7 +51,7 @@ function adaptCategoryFromListItem(item: any): Category {
   };
 }
 
-function adaptCategoryFromDetail(item: any): Category {
+function adaptCategoryFromDetail(item: Record<string, unknown>): Category {
   return {
     categoryId: item.categoryId ?? 0,
     name: item.name ?? "",
@@ -70,14 +69,14 @@ export const categoriesApi = {
         pageSize: filters?.pageSize,
       }
     });
-    const pagedData = response.data as any;
+    const pagedData = response.data as unknown as Record<string, unknown>;
     return {
       data: {
-        items: pagedData.items?.map(adaptCategoryFromListItem) ?? [],
-        totalCount: pagedData.totalCount ?? 0,
-        page: pagedData.page ?? 1,
-        pageSize: pagedData.pageSize ?? 20,
-        totalPages: pagedData.totalPages ?? 1,
+        items: ((pagedData.items ?? []) as Record<string, unknown>[]).map(adaptCategoryFromListItem) ?? [],
+        totalCount: Number(pagedData.totalCount ?? 0),
+        page: Number(pagedData.page ?? 1),
+        pageSize: Number(pagedData.pageSize ?? 20),
+        totalPages: Number(pagedData.totalPages ?? 1),
       }
     };
   },

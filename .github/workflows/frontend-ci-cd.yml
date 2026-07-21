@@ -18,13 +18,16 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v5
       with:
-        node-version: '24'           
+        node-version: '22'           
 
     - name: Install dependencies
       run: npm install
 
-    - name: Run Lint/Tests
-      run: npm run test 
+    - name: Run Lint
+      run: npm run lint
+
+    - name: Run Tests
+      run: npm test
 
     - name: Build Frontend
       run: npm run build

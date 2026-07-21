@@ -38,10 +38,10 @@ export function InspectionPage() {
   const createMutation = useCreateInspection();
   const updateMutation = useUpdateInspection();
 
-  const allInspections = inspectionsData?.data ?? [];
+  const allInspections = useMemo(() => inspectionsData?.data ?? [], [inspectionsData?.data]);
 
   const filtered = useMemo(() => {
-    return allInspections.filter((ins) => {
+    return allInspections.filter((ins: InspectionItem) => {
       const matchesSearch =
         ins.product.toLowerCase().includes(search.toLowerCase()) ||
         ins.batchCode.toLowerCase().includes(search.toLowerCase()) ||
@@ -55,11 +55,11 @@ export function InspectionPage() {
 
   const paginated = filtered.slice((page - 1) * perPage, page * perPage);
   const totalPages = Math.ceil(filtered.length / perPage);
-  const selected = selectedId ? allInspections.find((ins) => ins.id === selectedId) ?? null : null;
+  const selected = selectedId ? allInspections.find((ins: InspectionItem) => ins.id === selectedId) ?? null : null;
 
-  const passedCount = allInspections.filter((i) => i.result === "Pass").length;
-  const failedCount = allInspections.filter((i) => i.result === "Fail").length;
-  const pendingCount = allInspections.filter((i) => i.result === "Pending").length;
+  const passedCount = allInspections.filter((i: InspectionItem) => i.result === "Pass").length;
+  const failedCount = allInspections.filter((i: InspectionItem) => i.result === "Fail").length;
+  const pendingCount = allInspections.filter((i: InspectionItem) => i.result === "Pending").length;
 
   const handleCreate = (data: { batchId: string; category: InspectionCategory; inspector: string; result: InspectionResult; notes: string }) => {
     createMutation.mutate(data, {
@@ -96,7 +96,7 @@ export function InspectionPage() {
     const headers = ["ID", "Batch Code", "Product", "Inspector", "Date", "Category", "Result", "Score"];
     const csvContent = [
       headers.join(","),
-      ...filtered.map((ins) =>
+      ...filtered.map((ins: InspectionItem) =>
         [
           ins.id,
           ins.batchCode,
@@ -190,7 +190,7 @@ export function InspectionPage() {
       <div className="px-6 -mt-4 relative z-10 mb-4">
         <div className="bg-white rounded-2xl p-3 flex flex-wrap gap-2" style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.07)" }}>
           {(Object.keys(resultConfig) as InspectionResult[]).map((result) => {
-            const count = allInspections.filter((i) => i.result === result).length;
+            const count = allInspections.filter((i: InspectionItem) => i.result === result).length;
             const cfg = resultConfig[result];
             const Icon = cfg.icon;
             return (
@@ -345,7 +345,7 @@ export function InspectionPage() {
                   <span className="font-semibold text-gray-800">{filtered.length}</span> inspections
                 </span>
               </div>
-              {paginated.map((ins) => {
+              {paginated.map((ins: InspectionItem) => {
                 const cfg = resultConfig[ins.result];
                 const Icon = cfg.icon;
                 const isSelected = selected?.id === ins.id;
@@ -420,7 +420,7 @@ export function InspectionPage() {
               <div className="lg:col-span-2 space-y-5">
                 {/* Header */}
                 {(() => {
-                  const cfg = resultConfig[selected.result];
+                  const cfg = resultConfig[selected.result as InspectionResult];
                   const Icon = cfg.icon;
                   return (
                     <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
@@ -499,7 +499,7 @@ export function InspectionPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">
-                        {selected.tests.map((test) => (
+                        {selected.tests.map((test: LabTest) => (
                           <tr key={test.name} className="hover:bg-gray-50/50 transition-colors">
                             <td className="px-5 py-3 text-sm font-medium text-gray-800">{test.name}</td>
                             <td className="px-5 py-3">
