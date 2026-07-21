@@ -5,42 +5,26 @@ import type {
   CreateInspectionRequest as NewCreateInspectionRequest,
   UpdateInspectionRequest as NewUpdateInspectionRequest,
 } from "../../types/mapping";
+import type { InspectionItem, CreateInspectionRequest, InspectionFilters } from "./inspection.types";
 
-// Legacy types for backward compatibility
-export interface InspectionItem {
-  inspectionId: string;
-  batchId: string;
-  batchCode?: string;
-  inspectorId?: string;
-  inspectorName?: string;
-  status?: number;
-  result: string;
-  notes?: string;
-  createdAt?: string;
-}
-
-export interface CreateInspectionRequest {
-  result: string;
-  notes?: string;
-}
-
-export interface InspectionFilters {
-  page?: number;
-  pageSize?: number;
-}
-
-// Adapter functions
-function adaptInspectionFromDetail(item: any): InspectionItem {
+function adaptInspectionFromDetail(item: InspectionDetail & Record<string, unknown>): InspectionItem {
   return {
-    inspectionId: item.inspectionId ?? "",
+    id: item.inspectionId ?? "",
     batchId: item.batchId ?? "",
     batchCode: item.batchCode ?? "",
+    product: (item.product as string) ?? "",
+    productImage: item.productImage as string | undefined,
+    result: (item.result === "PASS" ? "Pass" : item.result === "FAIL" ? "Fail" : "Pending") as InspectionItem["result"],
+    inspector: item.inspectorName ?? "",
     inspectorId: item.inspectorId ?? "",
-    inspectorName: item.inspectorName ?? "",
-    status: item.status,
-    result: item.result ?? "",
+    organization: (item.organization as string) ?? "",
+    date: item.createdAt?.split("T")[0] ?? "",
+    category: (item.category as InspectionItem["category"]) ?? "Quality",
+    score: typeof item.score === "number" ? item.score : 0,
     notes: item.notes ?? "",
-    createdAt: item.createdAt ?? "",
+    certificate: item.certificate as string | null,
+    tests: (item.tests as InspectionItem["tests"]) ?? [],
+    status: typeof item.status === "number" ? item.status : undefined,
   };
 }
 
@@ -49,7 +33,7 @@ export const inspectionApi = {
     const response = await get<InspectionPagedResponse>("/inspections", {
       params: {
         page: filters?.page,
-        pageSize: filters?.pageSize,
+        pageSize: filters?.limit,
       }
     });
     const pagedData = response.data as any;
@@ -75,7 +59,7 @@ export const inspectionApi = {
 
   create: async (batchId: string, data: CreateInspectionRequest) => {
     const newRequest: NewCreateInspectionRequest = {
-      result: data.result as "PASS" | "FAIL",
+      result: data.result === "Pass" ? "PASS" : data.result === "Fail" ? "FAIL" : "FAIL",
       notes: data.notes,
     };
     const response = await post<{ inspectionId: string }>(`/batches/${batchId}/inspections`, newRequest);
@@ -85,8 +69,8 @@ export const inspectionApi = {
 
   update: async (id: string, data: Partial<CreateInspectionRequest> & { status?: number; score?: number; notes?: string }) => {
     const newRequest: NewUpdateInspectionRequest = {
-      result: (data as any).result as "PASS" | "FAIL",
-      notes: (data as any).notes,
+      result: data.result === "Pass" ? "PASS" : data.result === "Fail" ? "FAIL" : "FAIL",
+      notes: data.notes,
     };
     return put<void>(`/inspections/${id}`, newRequest);
   },
