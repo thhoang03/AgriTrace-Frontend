@@ -1,6 +1,7 @@
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import { mock } from "../../mocks/config";
 import { mockDelay } from "../../mocks/utils";
+import { env } from "../../config/env";
 import {
   authHandlers,
 } from "../../mocks/handlers/auth.mock";
@@ -57,22 +58,22 @@ interface RouteRule {
 
 const ROUTING_TABLE: RouteRule[] = [
   // More specific routes first
-  { pattern: /^\/api\/batches\/[^/]+\/split$/, moduleFlag: "splitMerge", handlers: splitMergeHandlers },
-  { pattern: /^\/api\/batches\/[^/]+\/merge$/, moduleFlag: "splitMerge", handlers: splitMergeHandlers },
-  { pattern: /^\/api\/auth/, moduleFlag: "auth", handlers: authHandlers },
-  { pattern: /^\/api\/organizations/, moduleFlag: "organizations", handlers: organizationHandlers },
-  { pattern: /^\/api\/categories/, moduleFlag: "categories", handlers: categoryHandlers },
-  { pattern: /^\/api\/batches/, moduleFlag: "batches", handlers: batchHandlers },
-  { pattern: /^\/api\/recalls/, moduleFlag: "recalls", handlers: recallHandlers },
-  { pattern: /^\/api\/users/, moduleFlag: "users", handlers: userHandlers },
-  { pattern: /^\/api\/inspections/, moduleFlag: "inspections", handlers: inspectionHandlers },
-  { pattern: /^\/api\/supply-chain/, moduleFlag: "supplyChain", handlers: supplyChainHandlers },
-  { pattern: /^\/api\/reports/, moduleFlag: "reports", handlers: reportHandlers },
-  { pattern: /^\/api\/analytics/, moduleFlag: "analytics", handlers: analyticsHandlers },
-  { pattern: /^\/api\/dashboard/, moduleFlag: "dashboard", handlers: dashboardHandlers },
-  { pattern: /^\/api\/notifications/, moduleFlag: "notifications", handlers: notificationHandlers },
-  { pattern: /^\/api\/certificates/, moduleFlag: "certificates", handlers: certificateHandlers },
-  { pattern: /^\/api\/products/, moduleFlag: "products", handlers: productHandlers },
+  { pattern: /^\/batches\/[^/]+\/split$/, moduleFlag: "splitMerge", handlers: splitMergeHandlers },
+  { pattern: /^\/batches\/[^/]+\/merge$/, moduleFlag: "splitMerge", handlers: splitMergeHandlers },
+  { pattern: /^\/auth\//, moduleFlag: "auth", handlers: authHandlers },
+  { pattern: /^\/organizations\//, moduleFlag: "organizations", handlers: organizationHandlers },
+  { pattern: /^\/categories\//, moduleFlag: "categories", handlers: categoryHandlers },
+  { pattern: /^\/batches\//, moduleFlag: "batches", handlers: batchHandlers },
+  { pattern: /^\/recalls\//, moduleFlag: "recalls", handlers: recallHandlers },
+  { pattern: /^\/users\//, moduleFlag: "users", handlers: userHandlers },
+  { pattern: /^\/inspections\//, moduleFlag: "inspections", handlers: inspectionHandlers },
+  { pattern: /^\/supply-chain\//, moduleFlag: "supplyChain", handlers: supplyChainHandlers },
+  { pattern: /^\/reports\//, moduleFlag: "reports", handlers: reportHandlers },
+  { pattern: /^\/analytics\//, moduleFlag: "analytics", handlers: analyticsHandlers },
+  { pattern: /^\/dashboard\//, moduleFlag: "dashboard", handlers: dashboardHandlers },
+  { pattern: /^\/notifications\//, moduleFlag: "notifications", handlers: notificationHandlers },
+  { pattern: /^\/certificates\//, moduleFlag: "certificates", handlers: certificateHandlers },
+  { pattern: /^\/products\//, moduleFlag: "products", handlers: productHandlers },
 ];
 
 function matchHandler(method: string, url: string): MockHandler | undefined {
@@ -81,7 +82,13 @@ function matchHandler(method: string, url: string): MockHandler | undefined {
     const parsed = new URL(normalizedUrl);
     normalizedUrl = parsed.pathname;
   }
-  normalizedUrl = normalizedUrl.replace(/^\/api/, "") || "/";
+
+  const basePath = new URL(env.apiBaseUrl).pathname.replace(/\/$/, "");
+  if (basePath && normalizedUrl.startsWith(basePath)) {
+    normalizedUrl = normalizedUrl.slice(basePath.length) || "/";
+  } else {
+    normalizedUrl = normalizedUrl.replace(/^\/api/, "") || "/";
+  }
 
   // Find the first matching route
   for (const rule of ROUTING_TABLE) {

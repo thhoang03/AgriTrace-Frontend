@@ -27,19 +27,19 @@ export function useBatchInspections(batchId: string) {
   });
 }
 
-export function useCreateInspection(batchId: string) {
+export function useCreateInspection() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateInspectionRequest) => inspectionApi.create(batchId, data),
+    mutationFn: (data: CreateInspectionRequest) => inspectionApi.create(data.batchId, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 }
 
-export function useUpdateInspection(id: string) {
+export function useUpdateInspection() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<CreateInspectionRequest> & { status?: InspectionItem["status"]; score?: number; notes?: string }) =>
-      inspectionApi.update(id, data),
+    mutationFn: (data: { id: string } & Partial<CreateInspectionRequest> & { status?: InspectionItem["status"]; score?: number; notes?: string }) =>
+      inspectionApi.update(data.id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 }
