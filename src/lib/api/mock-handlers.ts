@@ -131,7 +131,7 @@ export const handlers: Record<string, MockHandler> = {
   "POST /batches": (config) => {
     let data = config.data as Partial<Batch>;
     if (typeof config.data === "string") {
-      try { data = JSON.parse(config.data); } catch (_) {}
+      try { data = JSON.parse(config.data); } catch (_) { }
     }
     const newBatch: Batch = {
       product: "",
@@ -157,7 +157,7 @@ export const handlers: Record<string, MockHandler> = {
     const index = batches.findIndex(b => b.id === id);
     let data = config.data as Partial<Batch>;
     if (typeof config.data === 'string') {
-        try { data = JSON.parse(config.data); } catch (e) {}
+      try { data = JSON.parse(config.data); } catch (e) { }
     }
     if (index !== -1) {
       batches[index] = { ...batches[index], ...data };
