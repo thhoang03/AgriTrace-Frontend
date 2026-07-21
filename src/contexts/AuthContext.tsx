@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { authApi } from "../api/authApi";
-import { tokenUtils } from "../utils/tokenUtils";
-import type { UserInfo, LoginRequest } from "../types/auth.types";
+import { authApi } from "../features/auth/auth.api";
+import { setToken, removeToken } from "../lib/api";
+import type { User, LoginRequest } from "../types/mapping";
+import { adaptLoginDataToResponse } from "../types/mapping";
 
 interface AuthContextType {
-  user: UserInfo | null;
+  user: User | null;
   isAuthenticated: boolean;
   login: (data: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
@@ -13,18 +14,23 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserInfo | null>(tokenUtils.getUser());
+  const [user, setUser] = useState<User | null>(() => {
+    const stored = sessionStorage.getItem("agritrace_user");
+    return stored ? JSON.parse(stored) : null;
+  });
 
   const login = useCallback(async (data: LoginRequest) => {
     const response = await authApi.login(data);
-    tokenUtils.setTokens(response.accessToken, response.refreshToken);
-    tokenUtils.setUser(response.user);
+    // authApi.login now returns adapted response directly: { user, accessToken, refreshToken }
+    setToken(response.accessToken);
     setUser(response.user);
+    sessionStorage.setItem("agritrace_user", JSON.stringify(response.user));
   }, []);
 
   const logout = useCallback(async () => {
     try { await authApi.logout(); } catch {}
-    tokenUtils.clearTokens();
+    removeToken();
+    sessionStorage.removeItem("agritrace_user");
     setUser(null);
   }, []);
 

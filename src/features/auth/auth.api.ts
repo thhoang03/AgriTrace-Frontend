@@ -1,12 +1,30 @@
-import { post, get } from "../../lib/api";
-import type { LoginRequest, LoginResponse, User } from "./auth.types";
+import { post, get, put } from "../../lib/api";
+import type { LoginRequest, ChangePasswordRequest, LoginData, UserBasic } from "../../types/mapping";
+import { adaptLoginDataToResponse } from "../../types/mapping";
+
+// Legacy LoginResponse for backward compatibility
+interface LoginResponse {
+  user: any;
+  accessToken: string;
+  refreshToken: string;
+}
 
 export const authApi = {
-  login: (data: LoginRequest) => post<LoginResponse>("/auth/login", data),
+  login: async (data: LoginRequest) => {
+    const response = await post<LoginData>("/auth/login", data);
+    // Adapt new LoginData to legacy LoginResponse
+    return adaptLoginDataToResponse(response.data);
+  },
 
   logout: () => post<void>("/auth/logout"),
 
-  getProfile: () => get<User>("/auth/profile"),
+  getProfile: () => get<UserBasic>("/auth/profile"),
 
-  refreshToken: () => post<{ accessToken: string }>("/auth/refresh"),
+  refreshToken: () => post<{ accessToken: string }>("/auth/refresh-token"),
+
+  changePassword: (data: ChangePasswordRequest) =>
+    put<void>("/auth/change-password", {
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
+    }),
 };

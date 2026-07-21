@@ -1,8 +1,14 @@
+ feature/an-branch
 import { useMemo, useState } from "react";
 import { Search, Plus, Edit2, Trash2, Key, Shield, X, Filter, Loader2 } from "lucide-react";
 import { useCreateUser, useDeleteUser, useResetPassword, useUpdateUser, useUsers } from "./users.queries";
 import { filterUsers, getRoleOptions, getStatusOptions, getStatusSummary } from "./users.utils";
 import type { CreateUserRequest, UserItem, UserRole, UserStatus } from "./users.types";
+
+import { useState } from "react";
+import { Search, Plus, Edit2, Trash2, Key, Shield, X, Filter } from "lucide-react";
+import { users } from "../../mocks/data";
+ main
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=1400&q=80";
 
