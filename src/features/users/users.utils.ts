@@ -1,16 +1,25 @@
 import type { UserFilters, UserItem, UserStatus } from "./users.types";
 
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "d");
+}
+
 export function filterUsers(users: UserItem[], filters?: UserFilters) {
-  const search = filters?.search?.trim().toLowerCase() ?? "";
+  const search = normalizeText(filters?.search?.trim() ?? "");
   const role = filters?.role;
   const status = filters?.status;
 
   return users.filter((user) => {
     const matchesSearch =
       !search ||
-      user.fullName.toLowerCase().includes(search) ||
-      user.username.toLowerCase().includes(search) ||
-      user.email.toLowerCase().includes(search);
+      normalizeText(user.fullName).includes(search) ||
+      normalizeText(user.username).includes(search) ||
+      normalizeText(user.email).includes(search);
 
     const matchesRole = !role || role === "All" || user.role === role;
     const matchesStatus = !status || status === "All" || user.status === status;
