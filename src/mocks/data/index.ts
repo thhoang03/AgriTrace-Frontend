@@ -423,13 +423,13 @@ export const recentActivities = [
 ];
 
 export const categories: CategoryMock[] = [
-  { categoryId: 1, name: "Trái cây tươi", description: "Các loại trái cây tươi thu hoạch trực tiếp từ nông trại", isActive: true },
-  { categoryId: 2, name: "Rau củ hữu cơ", description: "Rau củ trồng theo tiêu chuẩn hữu cơ", isActive: true },
-  { categoryId: 3, name: "Gạo & Ngũ cốc", description: "Gạo, ngô, đậu các loại", isActive: true },
-  { categoryId: 4, name: "Cà phê & Trà", description: "Cà phê nhân, chè các loại", isActive: true },
-  { categoryId: 5, name: "Thủy hải sản", description: "Cá, tôm, hải sản đánh bắt và nuôi trồng", isActive: false },
-  { categoryId: 6, name: "Gia vị", description: "Tiêu, ớt, muối và các loại gia vị", isActive: true },
-  { categoryId: 7, name: "Sữa & Chế phẩm", description: "Sữa tươi, sữa chua, phô mai", isActive: false },
+  { categoryId: 1, name: "Trái cây tươi", description: "Các loại trái cây tươi thu hoạch trực tiếp từ nông trại", isActive: true, createdAt: "2024-06-20T00:00:00Z" },
+  { categoryId: 2, name: "Rau củ hữu cơ", description: "Rau củ trồng theo tiêu chuẩn hữu cơ", isActive: true, createdAt: "2024-06-21T00:00:00Z" },
+  { categoryId: 3, name: "Gạo & Ngũ cốc", description: "Gạo, ngô, đậu các loại", isActive: true, createdAt: "2024-06-22T00:00:00Z" },
+  { categoryId: 4, name: "Cà phê & Trà", description: "Cà phê nhân, chè các loại", isActive: true, createdAt: "2024-06-23T00:00:00Z" },
+  { categoryId: 5, name: "Thủy hải sản", description: "Cá, tôm, hải sản đánh bắt và nuôi trồng", isActive: false, createdAt: "2024-06-24T00:00:00Z" },
+  { categoryId: 6, name: "Gia vị", description: "Tiêu, ớt, muối và các loại gia vị", isActive: true, createdAt: "2024-06-25T00:00:00Z" },
+  { categoryId: 7, name: "Sữa & Chế phẩm", description: "Sữa tươi, sữa chua, phô mai", isActive: false, createdAt: "2024-06-26T00:00:00Z" },
 ];
 
 export interface ProductMock {

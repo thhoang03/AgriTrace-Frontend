@@ -17,3 +17,7 @@ export function ok<T>(data: T, message = "OK"): MockResponse<T> {
 export function notFound(message = "Not found"): MockResponse<null> {
   return { data: null, message, status: 404 };
 }
+
+export function conflict(message = "Conflict"): MockResponse<null> {
+  return { data: null, message, status: 409 };
+}

@@ -49,6 +49,7 @@ function adaptCategoryFromListItem(item: any): Category {
     name: item.name ?? "",
     description: item.description ?? "",
     isActive: item.isActive ?? true,
+    createdAt: item.createdAt,
   };
 }
 
@@ -58,6 +59,7 @@ function adaptCategoryFromDetail(item: any): Category {
     name: item.name ?? "",
     description: item.description ?? "",
     isActive: item.isActive ?? true,
+    createdAt: item.createdAt,
   };
 }
 
@@ -88,8 +90,8 @@ export const categoriesApi = {
   },
 
   create: async (data: CreateCategoryRequest) => {
-    const response = await post<{ categoryId: number }>("/categories", data as CategoryRequest);
-    return { data: { categoryId: response.data.categoryId, ...data, isActive: true } as Category };
+    const response = await post<{ categoryId: number; createdAt?: string }>("/categories", data as CategoryRequest);
+    return { data: { categoryId: response.data.categoryId, ...data, isActive: true, createdAt: response.data.createdAt } as Category };
   },
 
   update: async (id: number | string, data: UpdateCategoryRequest) => {
