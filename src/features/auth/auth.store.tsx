@@ -1,36 +1,81 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { authApi } from "./auth.api";
 import { setToken, removeToken } from "../../lib/api";
-import type { User, LoginRequest } from "../../types/mapping";
-import { adaptLoginRequestToNew } from "../../types/mapping";
+import type { User, LoginRequest } from "./auth.types";
+import type { OrganizationType } from "./permissions";
+import { adaptApiRoleToCanonical, inferOrganizationTypeFromApiRole } from "../../types/mapping";
+import { canAccessRoute, canCreateEvent } from "./permissions";
 
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
-  login: (username: string, password: string, role?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
+  canAccessRoute: typeof canAccessRoute;
+  canCreateEvent: typeof canCreateEvent;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+function normalizeUser(legacyUser: any): User {
+  const canonicalRole = adaptApiRoleToCanonical(legacyUser?.role || "STAFF");
+
+  let orgType: OrganizationType | undefined;
+  orgType = inferOrganizationTypeFromApiRole(
+    legacyUser?.role || "",
+    typeof window !== "undefined" ? localStorage.getItem("agritrace_token") : null,
+    legacyUser?.organizationType
+  );
+
+  if (!orgType) {
+    try {
+      const profile = authApi.getProfile();
+      const profileData = profile as any;
+      orgType = inferOrganizationTypeFromApiRole(
+        legacyUser?.role || "",
+        null,
+        profileData?.organizationType
+      );
+    } catch {
+      // Ignore profile fetch errors
+    }
+  }
+
+  return {
+    id: String(legacyUser?.id ?? ""),
+    name: legacyUser?.name ?? "",
+    email: legacyUser?.email ?? "",
+    phone: legacyUser?.phone ?? "",
+    role: canonicalRole,
+    organizationType: orgType,
+    organizationName: legacyUser?.organizationName ?? legacyUser?.organization ?? "",
+    avatar: legacyUser?.avatar ?? "",
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     const stored = sessionStorage.getItem("agritrace_user");
-    return stored ? JSON.parse(stored) : null;
+    if (!stored) return null;
+    try {
+      const parsed = JSON.parse(stored);
+      return normalizeUser(parsed);
+    } catch {
+      return null;
+    }
   });
   const [loading, setLoading] = useState(false);
 
-  const login = useCallback(async (username: string, password: string, role?: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
     try {
-      // Convert legacy login params to new LoginRequest format
-      const loginRequest: LoginRequest = adaptLoginRequestToNew({ username, password, role });
+      const loginRequest: LoginRequest = { email, password };
       const res = await authApi.login(loginRequest);
-      // authApi.login now returns adapted response directly: { user, accessToken, refreshToken }
-      setUser(res.user);
+      const normalized = normalizeUser(res.user);
+      setUser(normalized);
       setToken(res.accessToken);
-      sessionStorage.setItem("agritrace_user", JSON.stringify(res.user));
+      sessionStorage.setItem("agritrace_user", JSON.stringify(normalized));
     } finally {
       setLoading(false);
     }
@@ -44,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn: !!user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, isLoggedIn: !!user, login, logout, loading, canAccessRoute, canCreateEvent }}>
       {children}
     </AuthContext.Provider>
   );

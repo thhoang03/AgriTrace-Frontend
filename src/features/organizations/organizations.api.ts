@@ -7,45 +7,11 @@ import type {
   OrganizationRequest,
   StatusRequest,
 } from "../../types/mapping";
+import type { OrganizationType, Organization } from "./organizations.types";
 
-// Legacy types for backward compatibility
-export type OrganizationType = "FARM" | "PROCESSOR" | "DISTRIBUTOR" | "INSPECTOR" | "RETAILER";
-export type OrganizationStatus = "ACTIVE" | "INACTIVE";
-
-export interface Organization {
-  organizationId: number;
-  name: string;
-  type: string;
-  status?: string;
-  address?: string;
-}
-
-export interface CreateOrganizationRequest {
-  name: string;
-  type: string;
-  address?: string;
-}
-
-export interface UpdateOrganizationRequest {
-  name?: string;
-  type?: string;
-  address?: string;
-}
-
-export interface UpdateOrganizationStatusRequest {
-  status: string;
-}
-
-export interface OrganizationFilters {
-  page?: number;
-  pageSize?: number;
-  search?: string;
-}
-
-// Legacy type exports
+export type { OrganizationType } from "./organizations.types";
 export type { OrganizationDetail, OrganizationPagedResponse, OrganizationRequest };
 
-// Adapter functions
 function mapTypeToNew(oldType: string): OrganizationRequest["type"] {
   const map: Record<string, OrganizationRequest["type"]> = {
     FARM: "FARM",
@@ -53,7 +19,7 @@ function mapTypeToNew(oldType: string): OrganizationRequest["type"] {
     DISTRIBUTOR: "DISTRIBUTOR",
     RETAILER: "RETAILER",
     RETAIL: "RETAILER",
-    INSPECTOR: "INSPECTOR_ORG",
+    INSPECTION: "INSPECTOR_ORG",
   };
   return map[oldType] ?? "FARM";
 }
@@ -79,7 +45,7 @@ function adaptOrgFromDetail(item: any): Organization {
 }
 
 export const organizationsApi = {
-  getAll: async (filters?: OrganizationFilters) => {
+  getAll: async (filters?: { page?: number; pageSize?: number; search?: string }) => {
     const response = await get<OrganizationPagedResponse>("/organizations", {
       params: {
         search: filters?.search,
@@ -101,7 +67,7 @@ export const organizationsApi = {
     return { data: adaptOrgFromDetail(response.data) };
   },
 
-  create: async (data: CreateOrganizationRequest) => {
+  create: async (data: { name: string; type: string; address?: string }) => {
     const newRequest: OrganizationRequest = {
       name: data.name,
       type: mapTypeToNew(data.type),
@@ -111,7 +77,7 @@ export const organizationsApi = {
     return { data: { organizationId: (response.data as any).organizationId ?? 0 } };
   },
 
-  update: async (id: number | string, data: UpdateOrganizationRequest) => {
+  update: async (id: number | string, data: { name?: string; type?: string; address?: string }) => {
     const newRequest: Partial<OrganizationRequest> = {};
     if (data.name) newRequest.name = data.name;
     if (data.type) newRequest.type = mapTypeToNew(data.type);
@@ -119,7 +85,7 @@ export const organizationsApi = {
     return put<void>(`/organizations/${id}`, newRequest);
   },
 
-  updateStatus: async (id: number | string, data: UpdateOrganizationStatusRequest) => {
+  updateStatus: async (id: number | string, data: { status: string }) => {
     return patch<void>(`/organizations/${id}/status`, { status: data.status } as StatusRequest);
   },
 

@@ -16,7 +16,6 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
   const [showNotif, setShowNotif] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Breadcrumb generation
   const getBreadcrumbs = () => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const breadcrumbs: Array<{ label: string; path: string; icon?: any }> = [
@@ -53,6 +52,12 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
     { id: 2, text: "Inspection passed: BTH-2024-001", type: "pass", time: "2h ago" },
     { id: 3, text: "New batch created: BTH-2024-008", type: "info", time: "3h ago" },
   ];
+
+  const roleDisplay = user?.role === "STAFF" && user.organizationType
+    ? `${user.role} — ${user.organizationType}`
+    : user?.role;
+
+  const emailDisplay = user?.email;
 
   return (
     <header className="h-16 bg-white border-b border-gray-100 flex items-center px-6 gap-4 relative z-30" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
@@ -128,7 +133,7 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
             <img src={user?.avatar} alt={user?.name} className="w-7 h-7 rounded-full object-cover" />
             <div className="hidden md:block text-left">
               <div className="text-sm font-medium text-gray-800">{user?.name}</div>
-              <div className="text-xs text-gray-400">{user?.role}</div>
+              <div className="text-xs text-gray-400">{roleDisplay}</div>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
           </button>
@@ -136,7 +141,7 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
             <div className="absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
               <div className="px-4 py-3 border-b border-gray-100">
                 <div className="font-semibold text-gray-800">{user?.name}</div>
-                <div className="text-xs text-gray-500">{user?.email}</div>
+                <div className="text-xs text-gray-500">{emailDisplay}</div>
               </div>
               <button
                 onClick={() => { navigate("/app/profile"); setShowUser(false); }}

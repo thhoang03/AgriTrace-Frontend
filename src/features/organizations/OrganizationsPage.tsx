@@ -8,10 +8,10 @@ const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
   PROCESSOR:   { bg: "#E3F2FD", color: "#1565C0" },
   DISTRIBUTOR: { bg: "#F3E5F5", color: "#6A1B9A" },
   RETAILER:    { bg: "#E0F2F1", color: "#004D40" },
-  INSPECTOR:   { bg: "#FFF9C4", color: "#F57F17" },
+  INSPECTION:  { bg: "#FFF9C4", color: "#F57F17" },
 };
 
-const ORG_TYPES = ["FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTOR"];
+const ORG_TYPES = ["FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION"];
 const EMPTY_FORM = { name: "", type: "FARM", address: "" };
 
 interface Alert { type: "success" | "error"; message: string; }

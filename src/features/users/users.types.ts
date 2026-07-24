@@ -1,10 +1,9 @@
 export type UserStatus = "Active" | "Inactive" | "Pending";
-export type UserRole = "Administrator" | "Farmer" | "Processor" | "Distributor" | "Retailer" | "Inspector";
+export type UserRole = "ADMIN" | "MANAGER" | "STAFF";
 
 export interface UserItem {
   id: string;
   avatar: string;
-  username: string;
   fullName: string;
   organization: string;
   role: UserRole;
@@ -15,7 +14,6 @@ export interface UserItem {
 
 export interface CreateUserRequest {
   fullName: string;
-  username: string;
   email: string;
   password: string;
   phone: string;

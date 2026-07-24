@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { Plus, Hash, CheckCircle, Camera, FileText, MapPin, Thermometer, Droplets, ChevronDown, ChevronUp, X, AlertCircle } from "lucide-react";
 import { supplyChainApi, SupplyChainEvent } from "./supply-chain.api";
+import { useAuth } from "../auth/auth.store";
+import { canCreateEvent, getAllowedEventTypes } from "../auth/permissions";
+import type { EventType } from "../auth/permissions";
+
 const batches = [
   { id: "BTH-2024-001", product: "Organic Dragon Fruit", farm: "Binh Thuan Dragon Fruit Farm", farmer: "Trần Văn Bình", status: "At Retail", weight: "2,400 kg" },
   { id: "BTH-2024-002", product: "Premium Jasmine Rice", farm: "Mekong Delta Rice Cooperative", farmer: "Nguyễn Thị Mai", status: "Distributed", weight: "5,000 kg" },
@@ -9,20 +13,23 @@ const batches = [
   { id: "BTH-2024-005", product: "Bitter Melon", farm: "Da Lat Vegetable Farm", farmer: "Đặng Văn Hùng", status: "Packaged", weight: "600 kg" },
 ];
 
-const EVENT_TYPES = [
-  { value: "HARVEST",      label: "Harvest",      emoji: "🌾", color: "#2E7D32" },
-  { value: "PROCESSING",   label: "Processing",   emoji: "⚙️", color: "#1565C0" },
-  { value: "PACKAGING",    label: "Packaging",    emoji: "📦", color: "#6A1B9A" },
-  { value: "TRANSPORT",    label: "Transport",    emoji: "🚚", color: "#E65100" },
+const ALL_EVENT_TYPES: { value: EventType; label: string; emoji: string; color: string }[] = [
+  { value: "HARVEST", label: "Harvest", emoji: "🌾", color: "#2E7D32" },
+  { value: "RECEIVE", label: "Receive", emoji: "📥", color: "#1565C0" },
+  { value: "PROCESSING", label: "Processing", emoji: "⚙️", color: "#1565C0" },
+  { value: "PACKAGING", label: "Packaging", emoji: "📦", color: "#6A1B9A" },
+  { value: "TRANSPORT", label: "Transport", emoji: "🚚", color: "#E65100" },
   { value: "DISTRIBUTION", label: "Distribution", emoji: "🏭", color: "#004D40" },
-  { value: "RETAIL",       label: "Retail",       emoji: "🏪", color: "#F57F17" },
-  { value: "STORAGE",      label: "Cold Storage", emoji: "❄️", color: "#0277BD" },
-  { value: "QUALITY_CHECK",label: "Quality Check",emoji: "✅", color: "#558B2F" },
+  { value: "RETAIL", label: "Retail", emoji: "🏪", color: "#F57F17" },
+  { value: "INSPECTION", label: "Inspection", emoji: "✅", color: "#558B2F" },
+  { value: "RECALL", label: "Recall", emoji: "⚠️", color: "#C62828" },
+  { value: "SPLIT", label: "Split", emoji: "✂️", color: "#6A1B9A" },
+  { value: "MERGE", label: "Merge", emoji: "🔗", color: "#004D40" },
 ];
 
 const EMPTY_FORM = {
   batchId: "BTH-2024-001",
-  eventType: "HARVEST",
+  eventType: "HARVEST" as EventType,
   organization: "",
   location: "",
   gps: "",
@@ -31,9 +38,12 @@ const EMPTY_FORM = {
   temperature: "",
   humidity: "",
   date: new Date().toISOString().split("T")[0],
+  splitQuantities: "",
+  mergeSourceBatches: "",
 };
 
 export function SupplyChainPage() {
+  const { user } = useAuth();
   const [events, setEvents] = useState<SupplyChainEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBatch, setSelectedBatch] = useState("BTH-2024-001");
@@ -43,6 +53,11 @@ export function SupplyChainPage() {
   const [error, setError] = useState("");
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [successEvent, setSuccessEvent] = useState<SupplyChainEvent | null>(null);
+
+  const orgType = user?.organizationType;
+  const allowedEventTypes = getAllowedEventTypes(orgType);
+  const eventTypes = ALL_EVENT_TYPES.filter((et) => allowedEventTypes.includes(et.value));
+  const canSubmit = canCreateEvent(orgType, form.eventType);
 
   const loadEvents = async (batchId: string) => {
     setLoading(true);
@@ -64,6 +79,10 @@ export function SupplyChainPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canSubmit) {
+      setError("Tổ chức của bạn không có quyền tạo sự kiện này");
+      return;
+    }
     if (!form.organization.trim() || !form.location.trim() || !form.employee.trim() || !form.description.trim()) {
       setError("Vui lòng điền đầy đủ thông tin bắt buộc");
       return;
@@ -83,7 +102,7 @@ export function SupplyChainPage() {
     }
   };
 
-  const getEventConfig = (type: string) => EVENT_TYPES.find((e) => e.value === type) || { emoji: "📋", label: type, color: "#666" };
+  const getEventConfig = (type: string) => ALL_EVENT_TYPES.find((e) => e.value === type) || { emoji: "📋", label: type, color: "#666" };
 
   return (
     <div className="pb-8">
@@ -275,7 +294,7 @@ export function SupplyChainPage() {
             <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>Event Types</h4>
               <div className="space-y-2">
-                {EVENT_TYPES.map(({ value, label, emoji, color }) => {
+                {eventTypes.map(({ value, label, emoji, color }) => {
                   const count = events.filter((e) => e.eventType === value).length;
                   return (
                     <div key={value} className="flex items-center justify-between">
@@ -307,7 +326,7 @@ export function SupplyChainPage() {
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">Event Type</label>
                 <div className="flex flex-wrap gap-2">
-                  {EVENT_TYPES.map(({ value, label, emoji, color }) => (
+                  {eventTypes.map(({ value, label, emoji, color }) => (
                     <button
                       key={value}
                       type="button"
@@ -319,6 +338,9 @@ export function SupplyChainPage() {
                     </button>
                   ))}
                 </div>
+                {!canSubmit && (
+                  <p className="text-xs text-red-500 mt-2">Tổ chức của bạn không có quyền tạo sự kiện này</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -352,6 +374,21 @@ export function SupplyChainPage() {
                   <label className="text-sm font-medium text-gray-700 mb-1.5 block"><Droplets className="w-3.5 h-3.5 inline mr-1" />Humidity (%)</label>
                   <input type="number" value={form.humidity} onChange={(e) => setForm({ ...form, humidity: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="e.g. 75" />
                 </div>
+
+                {form.eventType === "SPLIT" && (
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium text-gray-700 mb-1.5 block">Nhập số lượng tách cho từng lô con</label>
+                    <input value={form.splitQuantities} onChange={(e) => setForm({ ...form, splitQuantities: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="e.g. 500kg, 300kg, 200kg" />
+                  </div>
+                )}
+
+                {form.eventType === "MERGE" && (
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium text-gray-700 mb-1.5 block">Chọn các lô nguồn để gộp</label>
+                    <input value={form.mergeSourceBatches} onChange={(e) => setForm({ ...form, mergeSourceBatches: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="e.g. BTH-2024-001, BTH-2024-003" />
+                  </div>
+                )}
+
                 <div className="md:col-span-2">
                   <label className="text-sm font-medium text-gray-700 mb-1.5 block">Description <span className="text-red-400">*</span></label>
                   <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="Describe what happened at this stage..." />
@@ -376,7 +413,7 @@ export function SupplyChainPage() {
 
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2" style={{ background: "#2E7D32" }}>
+                <button type="submit" disabled={saving || !canSubmit} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2" style={{ background: "#2E7D32" }}>
                   {saving ? "Saving..." : <><Hash className="w-4 h-4" /> Save to Blockchain</>}
                 </button>
               </div>

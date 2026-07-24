@@ -34,12 +34,9 @@ const BANNER_IMG =
   "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=1400&q=80";
 
 const roleColors: Record<string, { bg: string; color: string }> = {
-  Administrator: { bg: "#E8F5E9", color: "#1B5E20" },
-  Farmer: { bg: "#FFF3E0", color: "#E65100" },
-  Processor: { bg: "#E3F2FD", color: "#1565C0" },
-  Distributor: { bg: "#F3E5F5", color: "#6A1B9A" },
-  Retailer: { bg: "#E0F2F1", color: "#004D40" },
-  Inspector: { bg: "#FFF9C4", color: "#F57F17" },
+  ADMIN: { bg: "#E8F5E9", color: "#1B5E20" },
+  MANAGER: { bg: "#E3F2FD", color: "#1565C0" },
+  STAFF: { bg: "#FFF3E0", color: "#E65100" },
 };
 
 const statusConfig: Record<
@@ -53,11 +50,10 @@ const statusConfig: Record<
 
 const emptyUserForm: CreateUserRequest = {
   fullName: "",
-  username: "",
   email: "",
   password: "",
   phone: "",
-  role: "Farmer",
+  role: "STAFF",
   organization: "",
 };
 
@@ -90,7 +86,7 @@ export function UsersListPage() {
   const summary = useMemo(() => getStatusSummary(users), [users]);
 
   const handleCreateUser = async () => {
-    if (!form.fullName || !form.username || !form.email || !form.password)
+    if (!form.fullName || !form.email || !form.password)
       return;
     await createUser.mutateAsync(form);
     setForm(emptyUserForm);
@@ -280,7 +276,7 @@ export function UsersListPage() {
                                 {user.fullName}
                               </div>
                               <div className="text-xs text-gray-400">
-                                @{user.username}
+                                {user.email}
                               </div>
                             </div>
                           </div>
@@ -402,33 +398,19 @@ export function UsersListPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                    Username
+                    Email
                   </label>
                   <input
-                    value={form.username}
+                    type="email"
+                    value={form.email}
                     onChange={(e) =>
-                      setForm({ ...form, username: e.target.value })
+                      setForm({ ...form, email: e.target.value })
                     }
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
                     style={{ background: "#F8FAF8" }}
-                    placeholder="user_name"
+                    placeholder="email@org.vn"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) =>
-                    setForm({ ...form, email: e.target.value })
-                  }
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                  style={{ background: "#F8FAF8" }}
-                  placeholder="email@org.vn"
-                />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
@@ -460,15 +442,8 @@ export function UsersListPage() {
                     }
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
                   >
-                    {[
-                      "Farmer",
-                      "Processor",
-                      "Distributor",
-                      "Retailer",
-                      "Inspector",
-                      "Administrator",
-                    ].map((r) => (
-                      <option key={r}>{r}</option>
+                    {["ADMIN", "MANAGER", "STAFF"].map((r) => (
+                      <option key={r} value={r}>{r}</option>
                     ))}
                   </select>
                 </div>
@@ -569,15 +544,8 @@ export function UsersListPage() {
                     }
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
                   >
-                    {[
-                      "Farmer",
-                      "Processor",
-                      "Distributor",
-                      "Retailer",
-                      "Inspector",
-                      "Administrator",
-                    ].map((r) => (
-                      <option key={r}>{r}</option>
+                    {["ADMIN", "MANAGER", "STAFF"].map((r) => (
+                      <option key={r} value={r}>{r}</option>
                     ))}
                   </select>
                 </div>

@@ -4,6 +4,7 @@
  */
 
 import type { components } from "./api";
+import type { UserRole } from "../features/auth/auth.types";
 
 // Re-export generated types with simpler names
 export type ApiResponse<T = unknown> = components["schemas"]["ApiResponse"];
@@ -104,10 +105,6 @@ export type TracebackData = components["schemas"]["TracebackData"];
 export type PublicTraceData = components["schemas"]["PublicTraceData"];
 export type LineageData = components["schemas"]["LineageData"];
 
-// Auth types - adapted from generated types
-// Keep legacy User type for backward compatibility during migration
-export type User = LegacyUser;
-
 // Legacy type compatibility - will be removed after full migration
 export type LegacyUser = {
   id: string;
@@ -126,7 +123,6 @@ export type LegacyLoginRequest = {
   role?: string;
 };
 
-// Adapter functions to convert between old and new types
 export function adaptUserBasicToUser(basic: UserBasic): LegacyUser {
   return {
     id: String(basic.id ?? ""),
@@ -141,9 +137,8 @@ export function adaptUserBasicToUser(basic: UserBasic): LegacyUser {
 }
 
 export function adaptLoginRequestToNew(legacy: LegacyLoginRequest): LoginRequest {
-  // Old API uses username, new API uses email
   return {
-    email: legacy.username, // Map username to email
+    email: legacy.username,
     password: legacy.password,
   };
 }
@@ -154,4 +149,66 @@ export function adaptLoginDataToResponse(data: LoginData) {
     accessToken: data.accessToken ?? "",
     refreshToken: data.refreshToken ?? "",
   };
+}
+
+const ADMIN_ROLES = new Set(["ADMIN", "Administrator", "ADMINISTRATOR"]);
+const MANAGER_ROLES = new Set(["MANAGER", "Manager"]);
+const STAFF_ROLES = new Set([
+  "STAFF", "Staff",
+  "FARMER", "Farmer",
+  "PROCESSOR", "Processor",
+  "DISTRIBUTOR", "Distributor",
+  "RETAILER", "Retailer",
+  "INSPECTOR", "Inspector",
+  "CONSUMER", "Consumer",
+]);
+
+export function adaptApiRoleToCanonical(apiRole: string): UserRole {
+  if (ADMIN_ROLES.has(apiRole)) return "ADMIN";
+  if (MANAGER_ROLES.has(apiRole)) return "MANAGER";
+  if (STAFF_ROLES.has(apiRole)) return "STAFF";
+
+  const upper = apiRole.toUpperCase();
+  if (ADMIN_ROLES.has(upper)) return "ADMIN";
+  if (MANAGER_ROLES.has(upper)) return "MANAGER";
+  if (STAFF_ROLES.has(upper)) return "STAFF";
+
+  return "STAFF";
+}
+
+const ROLE_TO_ORG_TYPE: Record<string, import("./permissions").OrganizationType> = {
+  FARMER: "FARM",
+  Processor: "PROCESSOR",
+  Distributor: "DISTRIBUTOR",
+  RETAILER: "RETAILER",
+  INSPECTOR: "INSPECTION",
+};
+
+export function inferOrganizationTypeFromApiRole(
+  apiRole: string,
+  jwtClaim?: string | null,
+  profileOrgType?: string | null
+): import("./permissions").OrganizationType | undefined {
+  const fromRole = ROLE_TO_ORG_TYPE[apiRole] ?? ROLE_TO_ORG_TYPE[apiRole.toUpperCase()];
+  if (fromRole) return fromRole;
+
+  if (jwtClaim) {
+    const normalized = jwtClaim.toUpperCase();
+    const orgTypes: import("./permissions").OrganizationType[] = [
+      "FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"
+    ];
+    const match = orgTypes.find((t) => normalized.includes(t));
+    if (match) return match;
+  }
+
+  if (profileOrgType) {
+    const normalized = profileOrgType.toUpperCase();
+    const orgTypes: import("./permissions").OrganizationType[] = [
+      "FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"
+    ];
+    const match = orgTypes.find((t) => normalized.includes(t));
+    if (match) return match;
+  }
+
+  return undefined;
 }

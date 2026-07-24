@@ -49,6 +49,10 @@ export function ProfilePage() {
     }
   };
 
+  const roleDisplay = user?.role === "STAFF" && user.organizationType
+    ? `${user.role} — ${user.organizationType}`
+    : user?.role;
+
   return (
     <div className="pb-8">
       <div className="relative h-44 overflow-hidden" style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #66BB6A 100%)" }}>
@@ -66,8 +70,8 @@ export function ProfilePage() {
           <div className="pb-2">
             <h1 className="text-gray-900" style={{ fontSize: 22, fontWeight: 700 }}>{user?.name}</h1>
             <div className="flex items-center gap-2 mt-1">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold" style={{ background: "#E8F5E9", color: "#2E7D32" }}>{user?.role}</span>
-              <span className="text-gray-400 text-sm">{user?.organization}</span>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold" style={{ background: "#E8F5E9", color: "#2E7D32" }}>{roleDisplay}</span>
+              <span className="text-gray-400 text-sm">{user?.organizationName}</span>
             </div>
           </div>
           <div className="ml-auto pb-2 flex flex-col items-end gap-1">
@@ -89,7 +93,6 @@ export function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
                   { label: "Full Name", value: user?.name, type: "text", ref: nameRef },
-                  { label: "Username", value: user?.username, type: "text", ref: undefined },
                   { label: "Email Address", value: user?.email, type: "email", ref: undefined },
                   { label: "Phone Number", value: user?.phone, type: "tel", ref: undefined },
                 ].map(({ label, value, type, ref }: any) => (
@@ -106,7 +109,7 @@ export function ProfilePage() {
                 ))}
                 <div className="md:col-span-2">
                   <label className="text-sm font-medium text-gray-600 mb-1.5 block">Organization</label>
-                  <input defaultValue={user?.organization || ""} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400" style={{ background: "#F8FAF8" }} />
+                  <input defaultValue={user?.organizationName || ""} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400" style={{ background: "#F8FAF8" }} />
                 </div>
                 <div className="md:col-span-2">
                   <label className="text-sm font-medium text-gray-600 mb-1.5 block">Bio</label>
@@ -155,7 +158,7 @@ export function ProfilePage() {
             <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>Account Details</h4>
               {[
-                { label: "Role", value: user?.role },
+                { label: "Role", value: roleDisplay },
                 { label: "User ID", value: user?.id },
                 { label: "Member Since", value: "Jan 2024" },
                 { label: "Last Login", value: "Today, 09:24 AM" },

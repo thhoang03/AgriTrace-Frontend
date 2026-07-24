@@ -17,22 +17,24 @@ import {
   Tags,
 } from "lucide-react";
 import { useAuth } from "../../features/auth/auth.store";
+import { canAccessRoute } from "../../features/auth/permissions";
 
 const navItems = [
-  { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },
-  { to: "/app/products", icon: ShoppingBag, label: "Products", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },
-  { to: "/app/batches", icon: Package, label: "Batch Management", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR"] },
-  { to: "/app/supply-chain", icon: Truck, label: "Supply Chain", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR"] },
-  { to: "/app/inspection", icon: FlaskConical, label: "Quality Inspection", roles: ["ADMIN", "MANAGER", "INSPECTOR"] },
-  { to: "/app/recall", icon: AlertTriangle, label: "Recall Management", roles: ["ADMIN", "INSPECTOR"] },
-  { to: "/app/reports", icon: BarChart3, label: "Reports", roles: ["ADMIN", "MANAGER"] },
+  { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/app/products", icon: ShoppingBag, label: "Products" },
+  { to: "/app/batches", icon: Package, label: "Batch Management" },
+  { to: "/app/batches/new", icon: Package, label: "New Batch" },
+  { to: "/app/supply-chain", icon: Truck, label: "Supply Chain" },
+  { to: "/app/inspection", icon: FlaskConical, label: "Quality Inspection" },
+  { to: "/app/recall", icon: AlertTriangle, label: "Recall Management" },
+  { to: "/app/reports", icon: BarChart3, label: "Reports" },
 ];
 
 const adminItems = [
-  { to: "/app/organizations", icon: Building2, label: "Organizations", roles: ["ADMIN"] },
-  { to: "/app/categories", icon: Tags, label: "Categories", roles: ["ADMIN"] },
-  { to: "/app/users", icon: Users, label: "User Management", roles: ["ADMIN", "MANAGER"] },
-  { to: "/app/profile", icon: UserCircle, label: "My Profile", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },
+  { to: "/app/organizations", icon: Building2, label: "Organizations" },
+  { to: "/app/categories", icon: Tags, label: "Categories" },
+  { to: "/app/users", icon: Users, label: "User Management" },
+  { to: "/app/profile", icon: UserCircle, label: "My Profile" },
 ];
 
 export function Sidebar() {
@@ -44,19 +46,13 @@ export function Sidebar() {
     navigate("/login");
   };
 
-  const roleMap: Record<string, string> = {
-    Administrator: "ADMIN",
-    Farmer: "FARMER",
-    Processor: "PROCESSOR",
-    Distributor: "DISTRIBUTOR",
-    Retailer: "RETAILER",
-    Inspector: "INSPECTOR",
-    Manager: "MANAGER",
-  };
-  const userRole = roleMap[user?.role || ""] || user?.role?.toUpperCase() || "CUSTOMER";
+  const role = user?.role;
+  const roleDisplay = role === "STAFF" && user?.organizationType
+    ? `${role} — ${user.organizationType}`
+    : role;
 
-  const filteredNavItems = navItems.filter((item) => item.roles.includes(userRole));
-  const filteredAdminItems = adminItems.filter((item) => item.roles.includes(userRole));
+  const filteredNavItems = navItems.filter((item) => canAccessRoute(role, item.to));
+  const filteredAdminItems = adminItems.filter((item) => canAccessRoute(role, item.to));
 
   return (
     <aside className="flex flex-col h-full" style={{ background: "linear-gradient(180deg, #1B5E20 0%, #2E7D32 60%, #388E3C 100%)" }}>
@@ -138,7 +134,7 @@ export function Sidebar() {
           />
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-white truncate">{user?.name}</div>
-            <div className="text-xs text-green-200 truncate">{user?.role}</div>
+            <div className="text-xs text-green-200 truncate">{roleDisplay}</div>
           </div>
           <button
             onClick={handleLogout}
