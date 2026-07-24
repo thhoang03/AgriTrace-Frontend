@@ -14,9 +14,21 @@ export interface Product {
   isActive: boolean;
 }
 
+export interface ProductListItem {
+  productId: number;
+  name: string;
+  categoryId: number;
+  categoryName: string;
+  unit: string;
+  organizationId: number;
+  isActive: boolean;
+}
+
 export interface ProductImage {
   imageId: number;
+  imageUrl: string;
   url: string;
+  isPrimary: boolean;
   fileName?: string;
   uploadedAt?: string;
 }
@@ -36,6 +48,14 @@ export interface UpdateProductRequest {
 
 export interface UpdateProductStatusRequest {
   isActive: boolean;
+}
+
+export interface ProductsListResponse {
+  items: ProductListItem[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface ProductFilters {

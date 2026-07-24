@@ -62,6 +62,13 @@ export interface UserItem {
   email: string;
 }
 
+export interface CategoryMock {
+  categoryId: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+}
+
 export const batches: Batch[] = [
   {
     id: "BTH-2024-001",
@@ -413,4 +420,105 @@ export const recentActivities = [
   { id: 4, type: "qr_scanned", user: "Consumer", action: "QR code scanned for", target: "BTH-2024-002 (Jasmine Rice)", time: "2 hours ago", icon: "📱" },
   { id: 5, type: "supply_event", user: "Phạm Văn Đức", action: "added transport event for", target: "BTH-2024-004 (Longan)", time: "3 hours ago", icon: "🚚" },
   { id: 6, type: "batch_created", user: "Đặng Văn Hùng", action: "created new batch", target: "BTH-2024-007 (Black Pepper)", time: "5 hours ago", icon: "📦" },
+];
+
+export const categories: CategoryMock[] = [
+  { categoryId: 1, name: "Trái cây tươi", description: "Các loại trái cây tươi thu hoạch trực tiếp từ nông trại", isActive: true, createdAt: "2024-06-20T00:00:00Z" },
+  { categoryId: 2, name: "Rau củ hữu cơ", description: "Rau củ trồng theo tiêu chuẩn hữu cơ", isActive: true, createdAt: "2024-06-21T00:00:00Z" },
+  { categoryId: 3, name: "Gạo & Ngũ cốc", description: "Gạo, ngô, đậu các loại", isActive: true, createdAt: "2024-06-22T00:00:00Z" },
+  { categoryId: 4, name: "Cà phê & Trà", description: "Cà phê nhân, chè các loại", isActive: true, createdAt: "2024-06-23T00:00:00Z" },
+  { categoryId: 5, name: "Thủy hải sản", description: "Cá, tôm, hải sản đánh bắt và nuôi trồng", isActive: false, createdAt: "2024-06-24T00:00:00Z" },
+  { categoryId: 6, name: "Gia vị", description: "Tiêu, ớt, muối và các loại gia vị", isActive: true, createdAt: "2024-06-25T00:00:00Z" },
+  { categoryId: 7, name: "Sữa & Chế phẩm", description: "Sữa tươi, sữa chua, phô mai", isActive: false, createdAt: "2024-06-26T00:00:00Z" },
+];
+
+export interface ProductMock {
+  productId: number;
+  name: string;
+  categoryId: number;
+  categoryName: string;
+  unit: string;
+  organizationId: number;
+  isActive: boolean;
+}
+
+export const products: ProductMock[] = [
+  {
+    productId: 1,
+    name: "Thanh Long Hữu Cơ",
+    categoryId: 1,
+    categoryName: "Trái cây tươi",
+    unit: "kg",
+    organizationId: 1,
+    isActive: true,
+  },
+  {
+    productId: 2,
+    name: "Gạo Hương Nhị",
+    categoryId: 3,
+    categoryName: "Gạo & Ngũ cốc",
+    unit: "kg",
+    organizationId: 2,
+    isActive: true,
+  },
+  {
+    productId: 3,
+    name: "Cà phê Robusta",
+    categoryId: 4,
+    categoryName: "Cà phê & Trà",
+    unit: "kg",
+    organizationId: 3,
+    isActive: true,
+  },
+  {
+    productId: 4,
+    name: "Nhãn Long Hưng",
+    categoryId: 1,
+    categoryName: "Trái cây tươi",
+    unit: "kg",
+    organizationId: 4,
+    isActive: true,
+  },
+  {
+    productId: 5,
+    name: "Khổ Qua",
+    categoryId: 2,
+    categoryName: "Rau củ hữu cơ",
+    unit: "kg",
+    organizationId: 5,
+    isActive: true,
+  },
+  {
+    productId: 6,
+    name: "Sầu Riêng Monthong",
+    categoryId: 1,
+    categoryName: "Trái cây tươi",
+    unit: "kg",
+    organizationId: 6,
+    isActive: false,
+  },
+  {
+    productId: 7,
+    name: "Tiêu Đen Phú Quốc",
+    categoryId: 6,
+    categoryName: "Gia vị",
+    unit: "kg",
+    organizationId: 7,
+    isActive: true,
+  },
+  {
+    productId: 8,
+    name: "Sữa Tươi",
+    categoryId: 7,
+    categoryName: "Sữa & Chế phẩm",
+    unit: "liter",
+    organizationId: 1,
+    isActive: false,
+  },
+];
+
+export const productImages = [
+  { imageId: 1, imageUrl: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=400&q=80", url: "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=400&q=80", isPrimary: true, fileName: "dragon-fruit.jpg", uploadedAt: "2024-06-15" },
+  { imageId: 2, imageUrl: "https://images.unsplash.com/photo-1579113800032-c38bd7635818?w=400&q=80", url: "https://images.unsplash.com/photo-1579113800032-c38bd7635818?w=400&q=80", isPrimary: true, fileName: "rice.jpg", uploadedAt: "2024-06-10" },
+  { imageId: 3, imageUrl: "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=400&q=80", url: "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=400&q=80", isPrimary: true, fileName: "coffee.jpg", uploadedAt: "2024-06-01" },
 ];

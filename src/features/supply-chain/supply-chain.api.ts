@@ -1,33 +1,65 @@
 import { get, post } from "../../lib/api";
+import type {
+  EventDetail,
+  EventPagedResponse,
+  EventCreatedData,
+  CreateEventRequest as NewCreateEventRequest,
+} from "../../types/mapping";
+
+// Legacy types for backward compatibility
+export interface SupplyChainNode {
+  id: string;
+  name: string;
+  role: string;
+  date: string;
+  children?: SupplyChainNode[];
+}
+
+export interface SupplyChainFilters {
+  page?: number;
+  pageSize?: number;
+}
 
 export interface SupplyChainEvent {
   eventId: string;
   batchId: string;
-  eventType: string;
-  organization: string;
-  location: string;
-  employee: string;
-  description: string;
+  eventTypeId?: string;
+  eventTypeCode?: string;
+  organizationId?: string;
+  performedByUserId?: string;
+  eventData?: string;
+  location?: string;
+  previousHash?: string;
+  currentHash?: string;
+  eventTime?: string;
+  // UI display fields (mock only)
+  eventType?: string;
+  organization?: string;
+  employee?: string;
+  description?: string;
   temperature?: string;
   humidity?: string;
-  date: string;
-  time: string;
-  currentHash: string;
-  previousHash: string;
-  verified: boolean;
+  date?: string;
+  time?: string;
+  verified?: boolean;
 }
 
 export interface CreateEventRequest {
-  batchId: string;
   eventType: string;
-  organization: string;
-  location: string;
-  gps?: string;
-  employee: string;
-  description: string;
+  location?: string;
+  description?: string;
+  organization?: string;
+  employee?: string;
   temperature?: string;
   humidity?: string;
-  date: string;
+  date?: string;
+  gps?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface HashChainVerifyResult {
+  isValid: boolean;
+  totalEvents: number;
 }
 
 const USE_MOCK = true;
@@ -42,14 +74,67 @@ const mockEvents: SupplyChainEvent[] = [
 
 const mockDelay = () => new Promise((r) => setTimeout(r, 500));
 
+function adaptToNode(item: any): SupplyChainNode {
+  return {
+    id: item.eventId ?? item.id ?? "",
+    name: item.eventTypeCode ?? item.name ?? "",
+    role: item.eventTypeCode ?? item.role ?? "",
+    date: item.eventTime ?? item.date ?? "",
+    children: item.children?.map(adaptToNode),
+  };
+}
+
+function adaptEventFromDetail(item: any): SupplyChainEvent {
+  return {
+    eventId: item.eventId ?? "",
+    batchId: item.batchId ?? "",
+    eventTypeId: item.eventTypeId ?? "",
+    eventTypeCode: item.eventTypeCode ?? "",
+    organizationId: item.organizationId ?? "",
+    performedByUserId: item.performedByUserId ?? "",
+    eventData: item.eventData ?? "",
+    location: item.location ?? "",
+    previousHash: item.previousHash ?? "",
+    currentHash: item.currentHash ?? "",
+    eventTime: item.eventTime ?? "",
+  };
+}
+
 export const supplyChainApi = {
-  getEvents: async (batchId: string): Promise<SupplyChainEvent[]> => {
+  getChain: async (batchId: string) => {
+    const response = await get<any>(`/supply-chain/${batchId}`, { params: { batchId } });
+    const data = response.data as any;
+    const items = Array.isArray(data) ? data : data?.items ?? [];
+    return { data: items.map(adaptToNode) as SupplyChainNode[] };
+  },
+
+  getNode: async (nodeId: string) => {
+    const response = await get<any>(`/supply-chain/node/${nodeId}`);
+    return { data: adaptToNode(response.data) };
+  },
+
+  traceByQR: async (qrCode: string) => {
+    const response = await get<any>("/supply-chain/trace", { params: { qrCode } });
+    const data = response.data as any;
+    const items = Array.isArray(data) ? data : data?.items ?? [];
+    return { data: items.map(adaptToNode) as SupplyChainNode[] };
+  },
+
+  getEvents: async (batchId: string, filters?: SupplyChainFilters): Promise<SupplyChainEvent[]> => {
     if (USE_MOCK) {
       await mockDelay();
       return mockEvents.filter((e) => e.batchId === batchId);
     }
-    const res = await get<SupplyChainEvent[]>(`/batches/${batchId}/events`);
-    return res.data;
+    const response = await get<EventPagedResponse>(`/batches/${batchId}/events`, {
+      params: { page: filters?.page, pageSize: filters?.pageSize },
+    });
+    const pagedData = response.data as any;
+    return (pagedData.items ?? []).map(adaptEventFromDetail) as SupplyChainEvent[];
+  },
+
+  getEventById: async (eventId: number | string) => {
+    const response = await get<EventDetail>(`/events/${eventId}`);
+    return { data: adaptEventFromDetail(response.data) };
   },
 
   createEvent: async (batchId: string, data: CreateEventRequest): Promise<SupplyChainEvent> => {
@@ -65,7 +150,7 @@ export const supplyChainApi = {
         description: data.description,
         temperature: data.temperature,
         humidity: data.humidity,
-        date: new Date(data.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+        date: new Date(data.date ?? "").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
         time: new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }),
         currentHash: "0x" + Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join(""),
         previousHash: mockEvents.filter((e) => e.batchId === batchId).at(-1)?.currentHash || "0x0000000000000000000000000000000000000000",
@@ -74,7 +159,31 @@ export const supplyChainApi = {
       mockEvents.push(newEvent);
       return newEvent;
     }
-    const res = await post<SupplyChainEvent>(`/batches/${batchId}/events`, data);
-    return res.data;
+    const newRequest: NewCreateEventRequest = {
+      eventTypeId: data.eventType,
+      eventData: (() => {
+        const ed: Record<string, unknown> = {};
+        if (data.description) ed.description = data.description;
+        if (data.metadata) Object.assign(ed, data.metadata);
+        return Object.keys(ed).length > 0 ? JSON.stringify(ed) : undefined;
+      })(),
+      location: data.location,
+    };
+    const response = await post<EventCreatedData>(`/batches/${batchId}/events`, newRequest);
+    const createdData = response.data as any;
+    return { eventId: createdData.eventId ?? "", batchId } as SupplyChainEvent;
+  },
+
+  verifyHashChain: async (batchId: string) => {
+    const response = await get<{ isValid: boolean; totalEvents: number }>(
+      `/batches/${batchId}/events/verify`
+    );
+    const verifyData = response.data as any;
+    return {
+      data: {
+        isValid: verifyData.isValid ?? false,
+        totalEvents: verifyData.totalEvents ?? 0,
+      } as HashChainVerifyResult,
+    };
   },
 };

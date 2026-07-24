@@ -3,6 +3,15 @@ export interface Category {
   name: string;
   description?: string;
   isActive: boolean;
+  createdAt?: string;
+}
+
+export interface CategoriesListResponse {
+  items: Category[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface CreateCategoryRequest {

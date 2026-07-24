@@ -6,7 +6,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "generate-types": "openapi-typescript ./docs/swagger.yaml -o src/types/api.ts"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -76,6 +77,7 @@
     "@types/node": "^26.1.0",
     "@vitejs/plugin-react": "^6.0.3",
     "jsdom": "^29.1.1",
+    "openapi-typescript": "^7.13.0",
     "tailwindcss": "^4.3.2",
     "vite": "^8.1.1",
     "vitest": "^4.1.10"

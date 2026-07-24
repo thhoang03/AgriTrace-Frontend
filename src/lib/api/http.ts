@@ -1,5 +1,6 @@
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { env } from "../../config/env";
+import { mock } from "../../mocks/config";
 import { getToken, setToken, removeToken } from "./token-storage";
 import { enableMockAdapter } from "./mock-adapter";
 
@@ -63,7 +64,7 @@ http.interceptors.response.use(
 
       try {
         const { data } = await axios.post<{ accessToken: string }>(
-          `${env.apiBaseUrl}/auth/refresh`,
+          `${env.apiBaseUrl}/auth/refresh-token`,
           {},
           { withCredentials: true },
         );
@@ -86,7 +87,7 @@ http.interceptors.response.use(
   },
 );
 
-if (env.enableMocks) {
+if (mock.global) {
   enableMockAdapter(http);
 }
 
@@ -98,8 +99,8 @@ export function getList<T>(url: string, config?: AxiosRequestConfig) {
   return http.get<ApiResponse<T[]>>(url, config).then((r) => r.data);
 }
 
-export function getPaginated<T>(url: string, config?: AxiosRequestConfig) {
-  return http.get<ApiResponse<PaginatedResponse<T>>>(url, config).then((r) => r.data);
+export function getPaginated<T, R = PaginatedResponse<T>>(url: string, config?: AxiosRequestConfig) {
+  return http.get<ApiResponse<R>>(url, config).then((r) => r.data);
 }
 
 export function post<T>(url: string, data?: unknown, config?: AxiosRequestConfig) {

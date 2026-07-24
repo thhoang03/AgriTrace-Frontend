@@ -7,7 +7,7 @@ export interface UserItem {
   username: string;
   fullName: string;
   organization: string;
-  role: string;
+  role: UserRole;
   status: UserStatus;
   phone: string;
   email: string;
