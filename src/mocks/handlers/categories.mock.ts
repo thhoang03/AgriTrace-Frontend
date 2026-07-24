@@ -1,20 +1,29 @@
 import type { AxiosRequestConfig } from "axios";
 import { categories } from "../data";
 import type { MockResponse } from "../utils";
-import { ok } from "../utils";
+import { ok, conflict } from "../utils";
 
 type MockHandler = (config: AxiosRequestConfig) => MockResponse<unknown>;
+
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "d");
+}
 
 export const categoryHandlers: Record<string, MockHandler> = {
   "GET /categories": (config) => {
     const { search } = config.params || {};
     let result = [...categories];
     if (search) {
-      const q = search.toLowerCase();
+      const q = normalizeText(search);
       result = result.filter(
         (c) =>
-          c.name.toLowerCase().includes(q) ||
-          (c.description ?? "").toLowerCase().includes(q),
+          normalizeText(c.name).includes(q) ||
+          normalizeText(c.description ?? "").includes(q),
       );
     }
     return ok({
@@ -34,9 +43,16 @@ export const categoryHandlers: Record<string, MockHandler> = {
   },
 
   "POST /categories": (config) => {
+    const body = config.data as { name?: string };
+    const name = (body?.name ?? "").trim().toLowerCase();
+    const exists = categories.some(
+      (c) => c.name.trim().toLowerCase() === name,
+    );
+    if (exists) return conflict("Category name already exists");
     const newCat = {
       categoryId: Math.max(...categories.map((c) => c.categoryId)) + 1,
       isActive: true,
+      createdAt: new Date().toISOString(),
       ...(config.data as object),
     } as (typeof categories)[number];
     categories.push(newCat);
