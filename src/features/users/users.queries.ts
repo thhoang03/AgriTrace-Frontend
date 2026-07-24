@@ -27,10 +27,11 @@ export function useCreateUser() {
   });
 }
 
-export function useUpdateUser(id: string) {
+export function useUpdateUser() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: UpdateUserRequest) => usersApi.update(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateUserRequest }) =>
+      usersApi.update(id, data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 }
