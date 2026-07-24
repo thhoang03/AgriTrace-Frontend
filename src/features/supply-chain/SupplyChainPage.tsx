@@ -1,217 +1,383 @@
-import { useState } from "react";
-import { Upload, MapPin, Hash, CheckCircle, Camera, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Hash, CheckCircle, Camera, FileText, MapPin, Thermometer, Droplets, ChevronDown, ChevronUp, X, AlertCircle } from "lucide-react";
+import { supplyChainApi, SupplyChainEvent } from "./supply-chain.api";
+import { batches } from "../../lib/data/mockData";
 
-const BANNER_IMG = "https://images.unsplash.com/photo-1587293852726-70cdb56c2866?w=1400&q=80";
-
-const eventTypes = [
-  { value: "processing", label: "Processing", emoji: "⚙️" },
-  { value: "packaging", label: "Packaging", emoji: "📦" },
-  { value: "transport", label: "Transportation", emoji: "🚚" },
-  { value: "distribution", label: "Distribution", emoji: "🏭" },
-  { value: "retail", label: "Retail Entry", emoji: "🏪" },
-  { value: "storage", label: "Cold Storage", emoji: "❄️" },
-  { value: "quality_check", label: "Quality Check", emoji: "✅" },
+const EVENT_TYPES = [
+  { value: "HARVEST",      label: "Harvest",      emoji: "🌾", color: "#2E7D32" },
+  { value: "PROCESSING",   label: "Processing",   emoji: "⚙️", color: "#1565C0" },
+  { value: "PACKAGING",    label: "Packaging",    emoji: "📦", color: "#6A1B9A" },
+  { value: "TRANSPORT",    label: "Transport",    emoji: "🚚", color: "#E65100" },
+  { value: "DISTRIBUTION", label: "Distribution", emoji: "🏭", color: "#004D40" },
+  { value: "RETAIL",       label: "Retail",       emoji: "🏪", color: "#F57F17" },
+  { value: "STORAGE",      label: "Cold Storage", emoji: "❄️", color: "#0277BD" },
+  { value: "QUALITY_CHECK",label: "Quality Check",emoji: "✅", color: "#558B2F" },
 ];
 
-export function SupplyChainPage() {
-  const [form, setForm] = useState({
-    eventType: "processing",
-    batchId: "BTH-2024-001",
-    company: "",
-    employee: "",
-    location: "",
-    gps: "",
-    date: new Date().toISOString().split("T")[0],
-    description: "",
-    temperature: "",
-    humidity: "",
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const [hash] = useState("0x" + Array.from({ length: 40 }, () => Math.floor(Math.random() * 16).toString(16)).join(""));
+const EMPTY_FORM = {
+  batchId: "BTH-2024-001",
+  eventType: "HARVEST",
+  organization: "",
+  location: "",
+  gps: "",
+  employee: "",
+  description: "",
+  temperature: "",
+  humidity: "",
+  date: new Date().toISOString().split("T")[0],
+};
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
+export function SupplyChainPage() {
+  const [events, setEvents] = useState<SupplyChainEvent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedBatch, setSelectedBatch] = useState("BTH-2024-001");
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
+  const [successEvent, setSuccessEvent] = useState<SupplyChainEvent | null>(null);
+
+  const loadEvents = async (batchId: string) => {
+    setLoading(true);
+    try {
+      const data = await supplyChainApi.getEvents(batchId);
+      setEvents(data);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => { loadEvents(selectedBatch); }, [selectedBatch]);
+
+  const handleBatchChange = (batchId: string) => {
+    setSelectedBatch(batchId);
+    setForm({ ...EMPTY_FORM, batchId });
+    setSuccessEvent(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.organization.trim() || !form.location.trim() || !form.employee.trim() || !form.description.trim()) {
+      setError("Vui lòng điền đầy đủ thông tin bắt buộc");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const newEvent = await supplyChainApi.createEvent(form.batchId, form);
+      setEvents((prev) => [...prev, newEvent]);
+      setSuccessEvent(newEvent);
+      setShowForm(false);
+      setForm({ ...EMPTY_FORM, batchId: selectedBatch });
+    } catch (e: any) {
+      setError(e.message || "Có lỗi xảy ra");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getEventConfig = (type: string) => EVENT_TYPES.find((e) => e.value === type) || { emoji: "📋", label: type, color: "#666" };
 
   return (
     <div className="pb-8">
-      <div className="relative h-36 overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${BANNER_IMG})` }} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(27,94,32,0.9) 0%, rgba(46,125,50,0.6) 100%)" }} />
-        <div className="relative z-10 h-full flex items-center px-8">
+      {/* Header */}
+      <div className="relative h-36 overflow-hidden" style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #66BB6A 100%)" }}>
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 80%, white 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        <div className="relative z-10 h-full flex items-center px-8 justify-between">
           <div>
-            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>Add Supply Chain Event</h1>
-            <p className="text-green-100 text-sm mt-1">Record a new event to the blockchain supply chain trail</p>
+            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>Supply Chain Events</h1>
+            <p className="text-green-100 text-sm mt-1">Track and record blockchain-secured supply chain events</p>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="text-center">
+              <div className="font-bold text-white" style={{ fontSize: 20 }}>{events.length}</div>
+              <div className="text-green-200 text-xs">EVENTS</div>
+            </div>
+            <div className="text-center">
+              <div className="font-bold text-white" style={{ fontSize: 20 }}>{events.filter((e) => e.verified).length}</div>
+              <div className="text-green-200 text-xs">VERIFIED</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="px-6 mt-5">
-        {submitted ? (
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl p-10 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: "#E8F5E9" }}>
-                <CheckCircle className="w-8 h-8 text-green-500" />
+      <div className="px-6 -mt-4 relative z-10">
+        {/* Batch selector + Add button */}
+        <div className="bg-white rounded-2xl p-4 mb-5 flex flex-wrap items-center gap-3" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="flex-1 min-w-48">
+            <label className="text-xs font-medium text-gray-500 mb-1 block">Select Batch</label>
+            <select
+              value={selectedBatch}
+              onChange={(e) => handleBatchChange(e.target.value)}
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm outline-none bg-white"
+            >
+              {batches.map((b) => (
+                <option key={b.id} value={b.id}>{b.id} — {b.product}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2 mt-4">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-xs text-green-700">Blockchain connected</span>
+          </div>
+          <button
+            onClick={() => { setShowForm(true); setSuccessEvent(null); setError(""); }}
+            className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+            style={{ background: "#2E7D32" }}
+          >
+            <Plus className="w-4 h-4" /> Add Event
+          </button>
+        </div>
+
+        {/* Success banner */}
+        {successEvent && (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-5 flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-green-800">Event recorded to blockchain!</p>
+              <p className="text-xs text-green-600 mt-0.5">Hash: <code className="break-all">{successEvent.currentHash}</code></p>
+            </div>
+            <button onClick={() => setSuccessEvent(null)}><X className="w-4 h-4 text-green-400" /></button>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Timeline */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <span className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Event Timeline</span>
+                <span className="text-sm text-gray-400">{events.length} events</span>
               </div>
-              <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: 20 }}>Event Recorded Successfully!</h2>
-              <p className="text-gray-500 text-sm mb-6">Your supply chain event has been recorded to the blockchain and is now immutable.</p>
-              <div className="p-4 rounded-xl mb-6 text-left" style={{ background: "#F0F4F0" }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <Hash className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm font-semibold text-gray-600">Generated Blockchain Hash</span>
+
+              {loading ? (
+                <div className="flex items-center justify-center py-16 text-gray-400 text-sm">Loading...</div>
+              ) : events.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                  <Hash className="w-10 h-10 mb-3 opacity-30" />
+                  <p className="text-sm">No events recorded for this batch</p>
                 </div>
-                <code className="text-xs text-gray-700 break-all leading-relaxed">{hash}</code>
-              </div>
-              <button onClick={() => setSubmitted(false)} className="px-6 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: "#2E7D32" }}>
-                Add Another Event
-              </button>
+              ) : (
+                <div className="p-6">
+                  <div className="relative">
+                    {/* Vertical line */}
+                    <div className="absolute left-5 top-0 bottom-0 w-0.5" style={{ background: "#E8F5E9" }} />
+
+                    <div className="space-y-4">
+                      {events.map((event, idx) => {
+                        const cfg = getEventConfig(event.eventType);
+                        const isExpanded = expandedEvent === event.eventId;
+                        const isLast = idx === events.length - 1;
+                        return (
+                          <div key={event.eventId} className="relative flex gap-4">
+                            {/* Icon */}
+                            <div className="relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-lg ring-4 ring-white" style={{ background: "#E8F5E9" }}>
+                              {cfg.emoji}
+                            </div>
+
+                            {/* Card */}
+                            <div className="flex-1 bg-gray-50 rounded-xl overflow-hidden" style={{ border: isLast ? `2px solid ${cfg.color}20` : "1px solid #F0F0F0" }}>
+                              <div
+                                className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                                onClick={() => setExpandedEvent(isExpanded ? null : event.eventId)}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="text-sm font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
+                                  {event.verified && <CheckCircle className="w-3.5 h-3.5 text-green-500" />}
+                                  <span className="text-xs text-gray-400">{event.date} · {event.time}</span>
+                                </div>
+                                {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                              </div>
+
+                              {isExpanded && (
+                                <div className="px-4 pb-4 space-y-3 border-t border-gray-100">
+                                  <div className="grid grid-cols-2 gap-3 mt-3">
+                                    {[
+                                      { label: "Organization", value: event.organization },
+                                      { label: "Employee", value: event.employee },
+                                    ].map(({ label, value }) => (
+                                      <div key={label}>
+                                        <p className="text-xs text-gray-400">{label}</p>
+                                        <p className="text-sm font-medium text-gray-800">{value}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <div className="flex items-start gap-1.5">
+                                    <MapPin className="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
+                                    <p className="text-sm text-gray-700">{event.location}</p>
+                                  </div>
+                                  <p className="text-sm text-gray-600 leading-relaxed">{event.description}</p>
+                                  {(event.temperature || event.humidity) && (
+                                    <div className="flex gap-4">
+                                      {event.temperature && (
+                                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                          <Thermometer className="w-3.5 h-3.5 text-orange-400" />
+                                          {event.temperature}
+                                        </div>
+                                      )}
+                                      {event.humidity && (
+                                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                          <Droplets className="w-3.5 h-3.5 text-blue-400" />
+                                          {event.humidity}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                  <div className="p-2.5 rounded-lg" style={{ background: "#F0F4F0" }}>
+                                    <p className="text-xs text-gray-400 mb-1 flex items-center gap-1"><Hash className="w-3 h-3" /> Hash</p>
+                                    <code className="text-xs text-gray-600 break-all">{event.currentHash}</code>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div className="lg:col-span-2">
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                  <h3 className="font-semibold text-gray-900 mb-4" style={{ fontSize: 15 }}>Event Information</h3>
-                  <div className="mb-4">
-                    <label className="text-sm font-medium text-gray-600 mb-2 block">Event Type</label>
-                    <div className="flex flex-wrap gap-2">
-                      {eventTypes.map(({ value, label, emoji }) => (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => setForm({ ...form, eventType: value })}
-                          className={`px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5 ${form.eventType === value ? "text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-                          style={form.eventType === value ? { background: "#2E7D32" } : {}}
-                        >
-                          <span>{emoji}</span> {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 mb-1.5 block">Batch ID</label>
-                      <input value={form.batchId} onChange={(e) => setForm({ ...form, batchId: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none" style={{ background: "#F8FAF8" }} placeholder="BTH-2024-001" required />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 mb-1.5 block">Date & Time</label>
-                      <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white" required />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 mb-1.5 block">Company / Organization</label>
-                      <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} placeholder="Company name" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none" style={{ background: "#F8FAF8" }} required />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 mb-1.5 block">Employee Responsible</label>
-                      <input value={form.employee} onChange={(e) => setForm({ ...form, employee: e.target.value })} placeholder="Full name" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none" style={{ background: "#F8FAF8" }} required />
-                    </div>
-                  </div>
-                </div>
 
-                <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                  <h3 className="font-semibold text-gray-900 mb-4" style={{ fontSize: 15 }}>Location Details</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="md:col-span-2">
-                      <label className="text-sm font-medium text-gray-600 mb-1.5 block">Location / Address</label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Enter location" className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none" style={{ background: "#F8FAF8" }} />
-                      </div>
+          {/* Right panel */}
+          <div className="space-y-5">
+            {/* Batch info */}
+            {(() => {
+              const batch = batches.find((b) => b.id === selectedBatch);
+              return batch ? (
+                <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+                  <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>Batch Info</h4>
+                  {[
+                    { label: "Batch ID", value: batch.id },
+                    { label: "Product", value: batch.product },
+                    { label: "Farm", value: batch.farm },
+                    { label: "Status", value: batch.status },
+                    { label: "Quantity", value: batch.weight },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex justify-between py-2 border-b border-gray-50 last:border-0">
+                      <span className="text-xs text-gray-400">{label}</span>
+                      <span className="text-xs font-medium text-gray-800 text-right max-w-32 truncate">{value}</span>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 mb-1.5 block">GPS Coordinates</label>
-                      <input value={form.gps} onChange={(e) => setForm({ ...form, gps: e.target.value })} placeholder="10.8231° N, 106.6297° E" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none" style={{ background: "#F8FAF8" }} />
-                    </div>
-                    <div className="flex gap-3">
-                      <div className="flex-1">
-                        <label className="text-sm font-medium text-gray-600 mb-1.5 block">Temp (°C)</label>
-                        <input type="number" value={form.temperature} onChange={(e) => setForm({ ...form, temperature: e.target.value })} placeholder="e.g. 18" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none" style={{ background: "#F8FAF8" }} />
-                      </div>
-                      <div className="flex-1">
-                        <label className="text-sm font-medium text-gray-600 mb-1.5 block">Humidity (%)</label>
-                        <input type="number" value={form.humidity} onChange={(e) => setForm({ ...form, humidity: e.target.value })} placeholder="e.g. 75" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none" style={{ background: "#F8FAF8" }} />
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
+              ) : null;
+            })()}
 
-                <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                  <h3 className="font-semibold text-gray-900 mb-4" style={{ fontSize: 15 }}>Description & Attachments</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-600 mb-1.5 block">Event Description</label>
-                      <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={4} placeholder="Describe what happened at this stage..." className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-none" style={{ background: "#F8FAF8" }} required />
+            {/* Event types legend */}
+            <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>Event Types</h4>
+              <div className="space-y-2">
+                {EVENT_TYPES.map(({ value, label, emoji, color }) => {
+                  const count = events.filter((e) => e.eventType === value).length;
+                  return (
+                    <div key={value} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{emoji}</span>
+                        <span className="text-xs text-gray-600">{label}</span>
+                      </div>
+                      {count > 0 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: `${color}15`, color }}>{count}</span>}
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {[
-                        { label: "Upload Photos", icon: Camera, accept: "image/*", hint: "PNG, JPG up to 10MB" },
-                        { label: "Upload Documents", icon: FileText, accept: ".pdf,.doc,.docx", hint: "PDF, DOC up to 20MB" },
-                      ].map(({ label, icon: Icon, hint }) => (
-                        <div key={label}>
-                          <label className="text-sm font-medium text-gray-600 mb-1.5 block">{label}</label>
-                          <div className="border-2 border-dashed border-gray-200 rounded-xl p-5 text-center cursor-pointer hover:border-green-400 transition-colors" style={{ background: "#F8FAF8" }}>
-                            <Icon className="w-6 h-6 text-gray-300 mx-auto mb-2" />
-                            <p className="text-xs text-gray-500"><span className="font-medium" style={{ color: "#2E7D32" }}>Click to upload</span> or drag and drop</p>
-                            <p className="text-xs text-gray-400 mt-0.5">{hint}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                <div className="flex gap-3">
-                  <button type="submit" className="px-6 py-3 rounded-xl text-white font-semibold text-sm hover:opacity-90 transition-opacity" style={{ background: "#2E7D32" }}>
-                    Save Event to Blockchain
-                  </button>
-                  <button type="button" onClick={() => window.history.back()} className="px-6 py-3 rounded-xl border border-gray-200 font-semibold text-sm text-gray-700 hover:bg-gray-50">
-                    Cancel
-                  </button>
-                </div>
-              </form>
+      {/* Add Event Modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+              <h3 className="font-bold text-gray-900">Add Supply Chain Event</h3>
+              <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-4 h-4 text-gray-500" /></button>
             </div>
 
-            <div className="space-y-5">
-              <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>Blockchain Preview</h4>
-                <div className="p-3 rounded-xl mb-3" style={{ background: "#F0F4F0" }}>
-                  <div className="text-xs text-gray-400 mb-1 flex items-center gap-1"><Hash className="w-3 h-3" /> Current Block Hash</div>
-                  <code className="text-xs text-gray-600 break-all">{hash.slice(0, 42)}...</code>
-                </div>
-                <div className="p-3 rounded-xl" style={{ background: "#F0F4F0" }}>
-                  <div className="text-xs text-gray-400 mb-1 flex items-center gap-1"><Hash className="w-3 h-3" /> Previous Hash</div>
-                  <code className="text-xs text-gray-600 break-all">0x8e1f6a2b3c4d5e6f7a8b9c0d1e2f...</code>
-                </div>
-                <div className="mt-3 flex items-center gap-2 text-xs" style={{ color: "#2E7D32" }}>
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Blockchain node connected
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              {/* Event type selector */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Event Type</label>
+                <div className="flex flex-wrap gap-2">
+                  {EVENT_TYPES.map(({ value, label, emoji, color }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setForm({ ...form, eventType: value })}
+                      className="px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5"
+                      style={form.eventType === value ? { background: color, color: "#fff" } : { background: "#F5F5F5", color: "#555" }}
+                    >
+                      {emoji} {label}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>Guidelines</h4>
-                <div className="space-y-2.5">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">Batch ID</label>
+                  <select value={form.batchId} onChange={(e) => setForm({ ...form, batchId: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white">
+                    {batches.map((b) => <option key={b.id} value={b.id}>{b.id}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">Date</label>
+                  <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white" required />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">Organization <span className="text-red-400">*</span></label>
+                  <input value={form.organization} onChange={(e) => setForm({ ...form, organization: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="Company name" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">Employee <span className="text-red-400">*</span></label>
+                  <input value={form.employee} onChange={(e) => setForm({ ...form, employee: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="Full name" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block"><MapPin className="w-3.5 h-3.5 inline mr-1" />Location <span className="text-red-400">*</span></label>
+                  <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="Address or location" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block"><Thermometer className="w-3.5 h-3.5 inline mr-1" />Temperature (°C)</label>
+                  <input type="number" value={form.temperature} onChange={(e) => setForm({ ...form, temperature: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="e.g. 18" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block"><Droplets className="w-3.5 h-3.5 inline mr-1" />Humidity (%)</label>
+                  <input type="number" value={form.humidity} onChange={(e) => setForm({ ...form, humidity: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="e.g. 75" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">Description <span className="text-red-400">*</span></label>
+                  <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="Describe what happened at this stage..." />
+                </div>
+                <div className="md:col-span-2 grid grid-cols-2 gap-4">
                   {[
-                    "Record events immediately when they occur",
-                    "GPS coordinates improve traceability",
-                    "Temperature and humidity are required for cold chain",
-                    "Each event creates an immutable blockchain record",
-                    "Uploaded photos are stored securely",
-                  ].map((tip) => (
-                    <div key={tip} className="flex items-start gap-2">
-                      <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: "#E8F5E9" }}>
-                        <span className="text-green-600" style={{ fontSize: 9 }}>✓</span>
+                    { label: "Upload Photos", icon: Camera, hint: "PNG, JPG up to 10MB" },
+                    { label: "Upload Documents", icon: FileText, hint: "PDF, DOC up to 20MB" },
+                  ].map(({ label, icon: Icon, hint }) => (
+                    <div key={label}>
+                      <label className="text-sm font-medium text-gray-700 mb-1.5 block">{label}</label>
+                      <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-green-400 transition-colors" style={{ background: "#F8FAF8" }}>
+                        <Icon className="w-5 h-5 text-gray-300 mx-auto mb-1" />
+                        <p className="text-xs text-gray-400">{hint}</p>
                       </div>
-                      <p className="text-xs text-gray-500 leading-relaxed">{tip}</p>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
+
+              {error && <p className="text-sm text-red-500 flex items-center gap-1"><AlertCircle className="w-4 h-4" />{error}</p>}
+
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+                <button type="submit" disabled={saving} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2" style={{ background: "#2E7D32" }}>
+                  {saving ? "Saving..." : <><Hash className="w-4 h-4" /> Save to Blockchain</>}
+                </button>
+              </div>
+            </form>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
