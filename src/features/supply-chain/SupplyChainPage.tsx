@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { Plus, Hash, CheckCircle, Camera, FileText, MapPin, Thermometer, Droplets, ChevronDown, ChevronUp, X, AlertCircle } from "lucide-react";
 import { supplyChainApi, SupplyChainEvent } from "./supply-chain.api";
-import { batches } from "../../lib/data/mockData";
+const batches = [
+  { id: "BTH-2024-001", product: "Organic Dragon Fruit", farm: "Binh Thuan Dragon Fruit Farm", farmer: "Trần Văn Bình", status: "At Retail", weight: "2,400 kg" },
+  { id: "BTH-2024-002", product: "Premium Jasmine Rice", farm: "Mekong Delta Rice Cooperative", farmer: "Nguyễn Thị Mai", status: "Distributed", weight: "5,000 kg" },
+  { id: "BTH-2024-003", product: "Robusta Coffee", farm: "Dak Lak Highland Coffee Estate", farmer: "Lê Minh Tuấn", status: "Processing", weight: "800 kg" },
+  { id: "BTH-2024-004", product: "Longan Fruit", farm: "Hung Yen Longan Cooperative", farmer: "Phạm Thị Hoa", status: "In Transit", weight: "1,200 kg" },
+  { id: "BTH-2024-005", product: "Bitter Melon", farm: "Da Lat Vegetable Farm", farmer: "Đặng Văn Hùng", status: "Packaged", weight: "600 kg" },
+];
 
 const EVENT_TYPES = [
   { value: "HARVEST",      label: "Harvest",      emoji: "🌾", color: "#2E7D32" },
