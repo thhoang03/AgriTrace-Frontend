@@ -1,19 +1,74 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   CheckCircle, MapPin, Calendar, QrCode, Download, Share2,
-  ArrowLeft, Leaf, Hash, ChevronDown, ChevronUp, Award,
+  ArrowLeft, Leaf, Award, AlertTriangle,
 } from "lucide-react";
-import { batches, timelineEvents } from "../mocks/data";
+import { get } from "../lib/api";
+import type { PublicTraceData } from "../types/mapping";
 
 const PRODUCT_IMG = "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=600&q=80";
+
+function mapStatus(status?: number): string {
+  if (status === undefined || status === null) return "Unknown";
+  return `Status #${status}`;
+}
 
 export function PublicTracePage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const batch = batches.find((b) => b.id === id) || batches[0];
+  const { data: traceData, isLoading, isError } = useQuery({
+    queryKey: ["publicTrace", id],
+    queryFn: () => get<PublicTraceData>(`/public/trace/${id}`),
+    enabled: !!id,
+  });
+
+  const batch = traceData?.data;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen" style={{ background: "#F5F7FA" }}>
+        <div className="sticky top-0 z-30 bg-white border-b border-gray-100" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+          <div className="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">
+            <div className="h-4 w-12 bg-gray-200 rounded animate-pulse" />
+            <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
+            <div className="h-4 w-8 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="max-w-lg mx-auto pb-8">
+          <div className="w-full h-72 bg-gray-200 animate-pulse" />
+          <div className="px-4 mt-4 space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl p-4 animate-pulse">
+                <div className="h-4 w-32 bg-gray-200 rounded mb-3" />
+                <div className="h-3 w-full bg-gray-100 rounded mb-2" />
+                <div className="h-3 w-2/3 bg-gray-100 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !batch) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#F5F7FA" }}>
+        <div className="text-center">
+          <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-3" />
+          <div className="font-semibold text-gray-700 mb-2">Batch not found</div>
+          <button onClick={() => navigate("/")} className="text-sm text-gray-500 hover:underline flex items-center gap-1">
+            <ArrowLeft className="w-3.5 h-3.5" /> Return to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const timeline = batch.timeline ?? [];
 
   return (
     <div className="min-h-screen" style={{ background: "#F5F7FA" }}>
@@ -36,7 +91,7 @@ export function PublicTracePage() {
 
       <div className="max-w-lg mx-auto pb-8">
         <div className="relative">
-          <img src={PRODUCT_IMG} alt={batch.product} className="w-full h-72 object-cover" />
+          <img src={PRODUCT_IMG} alt={batch.productName ?? "Product"} className="w-full h-72 object-cover" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)" }} />
           <div className="absolute top-4 right-4">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full" style={{ background: "#2E7D32", boxShadow: "0 2px 8px rgba(46,125,50,0.4)" }}>
@@ -45,10 +100,10 @@ export function PublicTracePage() {
             </div>
           </div>
           <div className="absolute bottom-4 left-4 right-4">
-            <h1 className="text-white" style={{ fontSize: 22, fontWeight: 800 }}>{batch.product}</h1>
+            <h1 className="text-white" style={{ fontSize: 22, fontWeight: 800 }}>{batch.productName ?? "Unknown Product"}</h1>
             <div className="flex items-center gap-2 mt-1">
               <MapPin className="w-3.5 h-3.5 text-green-300" />
-              <span className="text-green-100 text-sm">{batch.location}</span>
+              <span className="text-green-100 text-sm">{batch.currentOrganizationName ?? "Unknown location"}</span>
             </div>
           </div>
         </div>
@@ -60,8 +115,8 @@ export function PublicTracePage() {
             </div>
             <div>
               <div className="text-xs text-gray-400 mb-0.5">Batch ID</div>
-              <code className="font-mono font-bold" style={{ color: "#2E7D32", fontSize: 15 }}>{batch.id}</code>
-              <div className="text-xs text-gray-400 mt-0.5">{batch.category}</div>
+              <code className="font-mono font-bold" style={{ color: "#2E7D32", fontSize: 15 }}>{batch.batchCode ?? batch.batchId}</code>
+              <div className="text-xs text-gray-400 mt-0.5">{mapStatus(batch.status)}</div>
             </div>
             <div className="ml-auto">
               <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: "#2E7D32" }}>
@@ -75,12 +130,12 @@ export function PublicTracePage() {
             <h3 className="font-semibold text-gray-900 mb-4" style={{ fontSize: 14 }}>Product Details</h3>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { label: "Farm", value: batch.farm },
-                { label: "Farmer", value: batch.farmer },
-                { label: "Harvest Date", value: batch.harvestDate },
-                { label: "Quantity", value: batch.weight },
-                { label: "Status", value: batch.status },
-                { label: "VietGAP", value: "Grade A Certified" },
+                { label: "Product", value: batch.productName ?? "—" },
+                { label: "Batch Code", value: batch.batchCode ?? "—" },
+                { label: "Quantity", value: batch.quantity ? `${batch.quantity} ${batch.unitCode ?? ""}` : "—" },
+                { label: "Status", value: mapStatus(batch.status) },
+                { label: "Organization", value: batch.currentOrganizationName ?? "—" },
+                { label: "Recall Status", value: batch.recallStatus ?? "None" },
               ].map(({ label, value }) => (
                 <div key={label} className="p-3 rounded-xl" style={{ background: "#F8FAF8" }}>
                   <div className="text-xs text-gray-400 mb-1">{label}</div>
@@ -93,56 +148,65 @@ export function PublicTracePage() {
           <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="px-5 py-4 border-b border-gray-100">
               <h3 className="font-semibold text-gray-900" style={{ fontSize: 14 }}>Supply Chain Journey</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Farm to Table — 6 verified stages</p>
+              <p className="text-gray-400 text-xs mt-0.5">{timeline.length} verified stages</p>
             </div>
             <div className="p-4">
-              {timelineEvents.map((event, i) => (
-                <div key={event.id} className="relative">
-                  {i < timelineEvents.length - 1 && (
-                    <div className="absolute left-5 top-10 w-0.5 h-6" style={{ background: "linear-gradient(to bottom, #2E7D32, #A5D6A7)" }} />
-                  )}
-                  <div className="mb-1">
-                    <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 text-left transition-colors" onClick={() => setExpanded(expanded === event.id ? null : event.id)}>
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style={{ background: "#E8F5E9", border: "2px solid #2E7D32" }}>
-                        {event.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-900 text-sm">{event.stage}</span>
-                          <span className="text-xs px-1.5 py-0.5 rounded-full" style={{ background: "#E8F5E9", color: "#2E7D32" }}>✓</span>
-                        </div>
-                        <div className="text-xs text-gray-400 mt-0.5">{event.organization} · {event.date}</div>
-                      </div>
-                      {expanded === event.id ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
-                    </button>
-                    {expanded === event.id && (
-                      <div className="ml-13 px-3 pb-3" style={{ marginLeft: 52 }}>
-                        <p className="text-sm text-gray-600 leading-relaxed mb-3">{event.description}</p>
-                        <div className="grid grid-cols-2 gap-2 mb-3">
-                          {[
-                            { label: "Location", value: event.location },
-                            { label: "Employee", value: event.employee },
-                            event.temp && { label: "Temperature", value: event.temp },
-                            event.humidity && { label: "Humidity", value: event.humidity },
-                          ].filter(Boolean).map((item) => item && (
-                            <div key={item.label} className="p-2.5 rounded-xl" style={{ background: "#F8FAF8" }}>
-                              <div className="text-xs text-gray-400">{item.label}</div>
-                              <div className="text-sm font-medium text-gray-700">{item.value}</div>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="p-2.5 rounded-xl" style={{ background: "#F0F4F0" }}>
-                          <div className="flex items-center gap-1 mb-1">
-                            <Hash className="w-3 h-3 text-gray-400" />
-                            <span className="text-xs text-gray-400">Blockchain Hash</span>
-                          </div>
-                          <code className="text-xs text-gray-600 break-all">{event.hash.slice(0, 30)}...</code>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+              {timeline.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-gray-400">
+                  <div className="text-sm">No timeline events available</div>
                 </div>
-              ))}
+              ) : (
+                <div className="relative">
+                  {timeline.map((event, i) => {
+                    const dateStr = event.eventTime?.split("T")[0] ?? "";
+                    const timeStr = event.eventTime?.split("T")[1]?.split(".")[0] ?? "";
+                    return (
+                      <div key={i} className="flex gap-5 mb-2 last:mb-0">
+                        <div className="flex flex-col items-center">
+                          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg flex-shrink-0 z-10" style={{ background: "#E8F5E9", border: "3px solid #2E7D32" }}>
+                            {event.eventTypeCode?.[0] ?? "?"}
+                          </div>
+                          {i < timeline.length - 1 && (
+                            <div className="w-0.5 flex-1 my-1" style={{ background: "linear-gradient(to bottom, #2E7D32, #A5D6A7)", minHeight: 40 }} />
+                          )}
+                        </div>
+                        <div className="flex-1 pb-5">
+                          <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <h4 className="font-bold text-gray-900" style={{ fontSize: 15 }}>{event.eventTypeCode ?? "Event"}</h4>
+                                <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{dateStr}</span>
+                                  {timeStr && <span>{timeStr}</span>}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: "#E8F5E9" }}>
+                                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                                <span className="text-xs font-semibold" style={{ color: "#2E7D32" }}>Verified</span>
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                              {event.organizationName ?? "Unknown organization"} — {event.location ?? "Unknown location"}
+                            </p>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                              {[
+                                { label: "Organization", value: event.organizationName ?? "—" },
+                                { label: "Location", value: event.location ?? "—" },
+                                { label: "Event Type", value: event.eventTypeCode ?? "—" },
+                              ].map(({ label, value }) => (
+                                <div key={label} className="p-2.5 rounded-xl" style={{ background: "#F8FAF8" }}>
+                                  <div className="text-xs text-gray-400 mb-0.5">{label}</div>
+                                  <div className="text-sm font-medium text-gray-800">{value}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
@@ -165,21 +229,6 @@ export function PublicTracePage() {
                   {valid && <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />}
                 </div>
               ))}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div className="px-5 py-4 border-b border-gray-100">
-              <h3 className="font-semibold text-gray-900 flex items-center gap-2" style={{ fontSize: 14 }}>
-                <MapPin style={{ color: "#2E7D32", width: 16, height: 16 }} /> Origin Location
-              </h3>
-            </div>
-            <div className="relative h-40 flex items-center justify-center" style={{ background: "linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%)" }}>
-              <div className="text-center">
-                <MapPin className="w-8 h-8 mx-auto mb-2" style={{ color: "#2E7D32" }} />
-                <div className="font-medium text-gray-700 text-sm">{batch.location}</div>
-                <div className="text-xs text-gray-400 mt-0.5">{batch.gps}</div>
-              </div>
             </div>
           </div>
 
