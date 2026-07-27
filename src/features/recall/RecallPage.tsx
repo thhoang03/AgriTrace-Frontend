@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { AlertTriangle, Bell, CheckCircle, Clock, Plus, X, Eye } from "lucide-react";
 import { useRecalls } from "./recalls.queries";
+import { useAuth } from "../auth/auth.store";
 import type { RecallSeverity, RecallStatus } from "./recalls.types";
 
 const severityConfig: Record<RecallSeverity, { bg: string; color: string }> = {
@@ -36,6 +37,8 @@ function mapStatusName(name: string): RecallStatus {
 
 export function RecallPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canRecall = user?.role === "ADMIN" && user?.organizationType === "SYSTEM";
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ batchId: "", reason: "", severity: "High" as RecallSeverity, notes: "" });
   const { data: recallsData, isLoading, isError } = useRecalls();
@@ -61,12 +64,16 @@ export function RecallPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-700 transition-colors hover:opacity-90" style={{ background: "rgba(255,255,255,0.95)" }}>
-              <Bell className="w-4 h-4" /> Notify Stakeholders
-            </button>
-            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.3)" }}>
-              <Plus className="w-4 h-4" /> Create Recall
-            </button>
+            {canRecall && (
+              <>
+                <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-700 transition-colors hover:opacity-90" style={{ background: "rgba(255,255,255,0.95)" }}>
+                  <Bell className="w-4 h-4" /> Notify Stakeholders
+                </button>
+                <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.3)" }}>
+                  <Plus className="w-4 h-4" /> Create Recall
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -184,9 +191,9 @@ export function RecallPage() {
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"><Eye className="w-4 h-4" /></button>
-                            {recall.statusName === "Active" && (
-                              <button className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: "#E8F5E9", color: "#2E7D32" }}>Close</button>
-                            )}
+{recall.statusName === "Active" && canRecall && (
+  <button className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: "#E8F5E9", color: "#2E7D32" }}>Close</button>
+)}
                           </div>
                         </td>
                       </tr>

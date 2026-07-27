@@ -1,26 +1,40 @@
-export type UserRole =
-  | "Administrator"
-  | "Farmer"
-  | "Processor"
-  | "Distributor"
-  | "Retailer"
-  | "Inspector";
+export type UserRole = "ADMIN" | "MANAGER" | "STAFF";
+
+export type OrganizationType =
+  | "FARM"
+  | "PROCESSOR"
+  | "DISTRIBUTOR"
+  | "RETAILER"
+  | "INSPECTION"
+  | "SYSTEM";
+
+export type EventType =
+  | "HARVEST"
+  | "RECEIVE"
+  | "PROCESSING"
+  | "PACKAGING"
+  | "TRANSPORT"
+  | "DISTRIBUTION"
+  | "RETAIL"
+  | "INSPECTION"
+  | "RECALL"
+  | "SPLIT"
+  | "MERGE";
 
 export interface User {
   id: string;
   name: string;
-  username: string;
   email: string;
   phone: string;
   role: UserRole;
-  organization: string;
+  organizationType?: OrganizationType;
+  organizationName?: string;
   avatar: string;
 }
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
-  role?: string;
 }
 
 export interface LoginResponse {
@@ -38,6 +52,6 @@ export interface ChangePasswordRequest {
 export interface AuthState {
   user: User | null;
   isLoggedIn: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
