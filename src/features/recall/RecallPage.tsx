@@ -1,20 +1,26 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { AlertTriangle, Bell, CheckCircle, Clock, Plus, X, Eye } from "lucide-react";
-import { useRecalls } from "./recalls.queries";
-import type { RecallSeverity, RecallStatus } from "./recalls.types";
+import { AlertTriangle, CheckCircle, Clock, Plus, X, Eye, Search } from "lucide-react";
+import { useRecalls, useCreateRecall, useResolveRecall } from "./recalls.queries";
+import { severityConfig, statusConfig, type RecallSeverity, type RecallStatus } from "./recalls.types";
+import type { CreateRecallRequest } from "../../types/mapping";
 
-const severityConfig: Record<RecallSeverity, { bg: string; color: string }> = {
-  Critical: { bg: "#FFEBEE", color: "#C62828" },
-  High: { bg: "#FFF3E0", color: "#E65100" },
-  Medium: { bg: "#FFF9C4", color: "#F57F17" },
-  Low: { bg: "#E8F5E9", color: "#2E7D32" },
+const getSeverityName = (severity: number): RecallSeverity => {
+  switch (severity) {
+    case 3: return "High";
+    case 2: return "Medium";
+    case 1: return "Low";
+    default: return "Medium";
+  }
 };
 
-const statusConfig: Record<RecallStatus, { bg: string; color: string; icon: React.ElementType }> = {
-  Active: { bg: "#FFEBEE", color: "#C62828", icon: AlertTriangle },
-  Resolved: { bg: "#E8F5E9", color: "#2E7D32", icon: CheckCircle },
-  Pending: { bg: "#FFF9C4", color: "#F57F17", icon: Clock },
+const getStatusName = (status: number): RecallStatus => {
+  switch (status) {
+    case 1: return "Active";
+    case 2: return "Resolved";
+    case 0: return "Pending";
+    default: return "Pending";
+  }
 };
 
 function mapSeverityName(name: string): RecallSeverity {
@@ -37,14 +43,38 @@ function mapStatusName(name: string): RecallStatus {
 export function RecallPage() {
   const navigate = useNavigate();
   const [showCreate, setShowCreate] = useState(false);
-  const [form, setForm] = useState({ batchId: "", reason: "", severity: "High" as RecallSeverity, notes: "" });
-  const { data: recallsData, isLoading, isError } = useRecalls();
+  const [showResolveModal, setShowResolveModal] = useState<string | null>(null);
+  const [form, setForm] = useState({ batchId: "", reason: "", severity: 2 as number, notes: "" });
+  const [filters, setFilters] = useState({ status: "All" as RecallStatus | "All", severity: "All" as RecallSeverity | "All", search: "" });
 
-  const recalls = recallsData?.data ?? [];
+  const { data: recallsData, isLoading, error } = useRecalls({ page: 1, pageSize: 10, status: filters.status, severity: filters.severity });
+  const createRecall = useCreateRecall();
+  const resolveRecall = useResolveRecall();
 
-  const activeCount = recalls.filter((r) => mapStatusName(r.statusName) === "Active").length;
-  const resolvedCount = recalls.filter((r) => mapStatusName(r.statusName) === "Resolved").length;
-  const pendingCount = recalls.filter((r) => mapStatusName(r.statusName) === "Pending").length;
+  const recalls = recallsData?.items || [];
+  const activeCount = recalls.filter((r) => r.status === 1).length;
+  const resolvedCount = recalls.filter((r) => r.status === 2).length;
+  const pendingCount = recalls.filter((r) => r.status === 0).length;
+
+  const handleCreate = async () => {
+    if (!form.batchId || !form.reason) return;
+    try {
+      await createRecall.mutateAsync({ batchId: form.batchId, reason: form.reason, severity: form.severity } as CreateRecallRequest);
+      setShowCreate(false);
+      setForm({ batchId: "", reason: "", severity: 2, notes: "" });
+    } catch (error) {
+      console.error("Failed to create recall:", error);
+    }
+  };
+
+  const handleResolve = async (recallId: string) => {
+    try {
+      await resolveRecall.mutateAsync(recallId);
+      setShowResolveModal(null);
+    } catch (error) {
+      console.error("Failed to resolve recall:", error);
+    }
+  };
 
   return (
     <div className="pb-8">
@@ -61,9 +91,6 @@ export function RecallPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-700 transition-colors hover:opacity-90" style={{ background: "rgba(255,255,255,0.95)" }}>
-              <Bell className="w-4 h-4" /> Notify Stakeholders
-            </button>
             <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.3)" }}>
               <Plus className="w-4 h-4" /> Create Recall
             </button>
@@ -123,13 +150,70 @@ export function RecallPage() {
               ))}
             </div>
           </div>
-        ) : isError ? (
+        ) : error ? (
           <div className="bg-white rounded-2xl p-8 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-3" />
             <div className="font-semibold text-gray-700 mb-2">Failed to load recalls</div>
             <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "#2E7D32" }}>
               Retry
             </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr style={{ background: "#F8FAF8" }}>
+                  {["Batch / Product", "Reason", "Severity", "Affected Companies", "Status", "Created Date", "Actions"].map((h) => (
+                    <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {recalls.map((recall) => {
+                  const severityName = getSeverityName(recall.severity ?? 1);
+                  const statusName = getStatusName(recall.status ?? 0);
+                  const sev = severityConfig[severityName];
+                  const sta = statusConfig[statusName];
+                  const StatusIcon = sta.icon;
+                  const recallId = recall.recallId ?? "";
+                  return (
+                    <tr key={recallId} className="hover:bg-red-50/20 transition-colors group">
+                      <td className="px-5 py-4">
+                        <div className="font-semibold text-gray-900 text-sm">{(recall as any).product || "N/A"}</div>
+                        <code className="text-xs font-mono" style={{ color: "#E53935" }}>{recall.batchCode || recall.batchId || "N/A"}</code>
+                        <div className="text-xs text-gray-400">{recallId}</div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="text-sm text-gray-700 max-w-xs leading-relaxed">{recall.reason || "N/A"}</p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: sev.bg, color: sev.color }}>
+                          {severityName}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="font-bold text-gray-900" style={{ fontSize: 18 }}>{(recall as any).affectedCompanies || 0}</div>
+                        <div className="text-xs text-gray-400">companies</div>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold w-fit" style={{ background: sta.bg, color: sta.color }}>
+                          <StatusIcon style={{ width: 12, height: 12 }} /> {statusName}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-sm text-gray-600">{recall.createdAt ? new Date(recall.createdAt).toLocaleDateString() : "N/A"}</td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => navigate(`/app/recalls/${recallId}`)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"><Eye className="w-4 h-4" /></button>
+                          {(recall.status ?? 0) === 1 && (
+                            <button onClick={() => setShowResolveModal(recallId)} className="px-3 py-1.5 rounded-lg text-xs font-semibold" style={{ background: "#E8F5E9", color: "#2E7D32" }}>Close</button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         ) : recalls.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
@@ -222,8 +306,10 @@ export function RecallPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">Severity</label>
-                <select value={form.severity} onChange={(e) => setForm({ ...form, severity: e.target.value as RecallSeverity })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white">
-                  <option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
+                <select value={form.severity} onChange={(e) => setForm({ ...form, severity: Number(e.target.value) })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white">
+                  <option value={3}>High</option>
+                  <option value={2}>Medium</option>
+                  <option value={1}>Low</option>
                 </select>
               </div>
               <div>
@@ -232,7 +318,34 @@ export function RecallPage() {
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowCreate(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90" style={{ background: "#E53935" }}>Create Recall</button>
+                <button onClick={handleCreate} disabled={createRecall.isPending} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50" style={{ background: "#E53935" }}>
+                  {createRecall.isPending ? "Creating..." : "Create Recall"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showResolveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
+                  <CheckCircle style={{ color: "#2E7D32", width: 18, height: 18 }} />
+                </div>
+                <h3 className="font-bold text-gray-900">Resolve Recall</h3>
+              </div>
+              <button onClick={() => setShowResolveModal(null)} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-4 h-4 text-gray-500" /></button>
+            </div>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-700">Are you sure you want to resolve this recall? This action will mark the recall as resolved and cannot be undone.</p>
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setShowResolveModal(null)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+                <button onClick={() => handleResolve(showResolveModal)} disabled={resolveRecall.isPending} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50" style={{ background: "#2E7D32" }}>
+                  {resolveRecall.isPending ? "Resolving..." : "Resolve Recall"}
+                </button>
               </div>
             </div>
           </div>
