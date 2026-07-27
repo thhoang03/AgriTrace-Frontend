@@ -12,15 +12,31 @@ const EMPTY_FORM = { name: "", description: "" };
 
 interface Alert { type: "success" | "error"; message: string; }
 
+function normalizeText(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "d");
+}
+
 export function CategoriesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "name">("newest");
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [detail, setDetail] = useState<Category | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState("");
   const [alert, setAlert] = useState<Alert | null>(null);
+
+  const sortOptions = [
+    { value: "newest", label: "Newest" },
+    { value: "oldest", label: "Oldest" },
+    { value: "name", label: "Name" },
+  ] as const;
 
   const { data, isLoading } = useCategoriesList(
     search ? { search } : undefined,
@@ -36,14 +52,26 @@ export function CategoriesPage() {
     setTimeout(() => setAlert(null), 3000);
   };
 
+  const getApiErrorMessage = (err: unknown) =>
+    (err as any)?.response?.data?.message || (err as any)?.message || "An error occurred";
+
   const filtered = categories.filter((c) => {
-    const matchSearch = !search || c.name.toLowerCase().includes(search.toLowerCase()) ||
-      (c.description ?? "").toLowerCase().includes(search.toLowerCase());
+    const matchSearch = !search || normalizeText(c.name).includes(normalizeText(search)) ||
+      normalizeText(c.description ?? "").includes(normalizeText(search));
     const matchStatus = statusFilter === "All" ||
       (statusFilter === "ACTIVE" && c.isActive) ||
       (statusFilter === "INACTIVE" && !c.isActive);
     return matchSearch && matchStatus;
   });
+
+  const displayed = [...filtered].sort((a, b) => {
+    if (sortBy === "name") return a.name.localeCompare(b.name);
+    const da = a.createdAt ? new Date(a.createdAt).getTime() : a.categoryId;
+    const db = b.createdAt ? new Date(b.createdAt).getTime() : b.categoryId;
+    return sortBy === "newest" ? db - da : da - db;
+  });
+
+  const missingDates = categories.some((c) => !c.createdAt);
 
   const openAdd = () => { setEditing(null); setForm(EMPTY_FORM); setError(""); setShowModal(true); };
   const openEdit = (cat: Category) => {
@@ -54,34 +82,39 @@ export function CategoriesPage() {
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) { setError("Vui lòng điền tên danh mục"); return; }
+    if (!form.name.trim()) { setError("Please enter category name"); return; }
+    const duplicate = categories.find(
+      (c) => c.name.trim().toLowerCase() === form.name.trim().toLowerCase() &&
+        c.categoryId !== editing?.categoryId,
+    );
+    if (duplicate) { setError("Category name already exists"); return; }
     setError("");
     try {
       if (editing) {
         await updateMutation.mutateAsync({ id: editing.categoryId, data: form });
-        showAlert("success", `Đã cập nhật "${form.name}" thành công`);
+        showAlert("success", `"${form.name}" updated successfully`);
       } else {
         await createMutation.mutateAsync(form);
-        showAlert("success", `Đã thêm "${form.name}" thành công`);
+        showAlert("success", `"${form.name}" added successfully`);
       }
       setShowModal(false);
     } catch (e: any) {
-      setError(e?.message || "Có lỗi xảy ra");
+      setError(getApiErrorMessage(e));
     }
   };
 
   const handleToggleStatus = async (cat: Category) => {
     const newStatus = !cat.isActive;
-    const action = newStatus ? "kích hoạt" : "vô hiệu hóa";
-    if (!confirm(`Bạn có chắc muốn ${action} danh mục "${cat.name}"?`)) return;
+    const action = newStatus ? "activate" : "deactivate";
+    if (!confirm(`Are you sure you want to ${action} category "${cat.name}"?`)) return;
     try {
       await statusMutation.mutateAsync({ id: cat.categoryId, data: { isActive: newStatus } });
       showAlert(
         "success",
-        `"${cat.name}" đã được ${newStatus ? "kích hoạt" : "vô hiệu hóa"}`
+        `"${cat.name}" has been ${newStatus ? "activated" : "deactivated"}`
       );
     } catch (e: any) {
-      showAlert("error", e?.message || "Cập nhật trạng thái thất bại");
+      showAlert("error", getApiErrorMessage(e));
     }
   };
 
@@ -141,6 +174,11 @@ export function CategoriesPage() {
                 {["All", "ACTIVE", "INACTIVE"].map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
+            <div className="flex items-center gap-2">
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white">
+                {sortOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
             <button onClick={openAdd} className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity" style={{ background: "#2E7D32" }}>
               <Plus className="w-4 h-4" /> Add Category
             </button>
@@ -149,8 +187,8 @@ export function CategoriesPage() {
 
         {/* Table */}
         <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-          <div className="px-6 py-4 border-b border-gray-100">
-            <span className="text-sm text-gray-500">Showing <span className="font-medium text-gray-800">{filtered.length}</span> categories</span>
+          <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3">
+            <span className="text-sm text-gray-500">Showing <span className="font-medium text-gray-800">{displayed.length}</span> categories</span>
           </div>
           {isLoading ? (
             <div className="flex items-center justify-center py-16 text-gray-400 text-sm">Loading...</div>
@@ -165,7 +203,7 @@ export function CategoriesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {filtered.map((cat) => {
+                  {displayed.map((cat) => {
                     const isActive = cat.isActive;
                     return (
                       <tr key={cat.categoryId} className="hover:bg-green-50/20 transition-colors group">
@@ -207,7 +245,7 @@ export function CategoriesPage() {
                   })}
                 </tbody>
               </table>
-              {filtered.length === 0 && (
+              {displayed.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                   <Tags className="w-10 h-10 mb-3 opacity-30" />
                   <p className="text-sm">No categories found</p>
