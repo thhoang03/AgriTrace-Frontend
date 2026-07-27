@@ -9,7 +9,7 @@ export const ROLE_ACCESS: Record<UserRole, string[]> = {
   ],
   MANAGER: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
-    "/app/supply-chain", "/app/inspection", "/app/recall",
+    "/app/supply-chain", "/app/recall",
     "/app/reports", "/app/categories",
     "/app/users", "/app/products", "/app/profile",
   ],
@@ -31,8 +31,17 @@ export const ORG_EVENT_PERMISSIONS: Record<OrganizationType, EventType[]> = {
 export const RECALL_CREATOR_ROLES: UserRole[] = ["ADMIN"];
 export const RECALL_REQUESTER_ORG_TYPES: OrganizationType[] = ["SYSTEM"];
 
-export function canAccessRoute(role: UserRole | undefined, path: string): boolean {
+export function canAccessRoute(
+  role: UserRole | undefined,
+  path: string,
+  organizationType?: OrganizationType
+): boolean {
   if (!role) return false;
+
+  if (path === "/app/inspection" || path.startsWith("/app/inspection/")) {
+    return role === "ADMIN" || organizationType === "INSPECTION";
+  }
+
   const allowed = ROLE_ACCESS[role] || [];
   return allowed.some(
     (route) => path === route || path.startsWith(route + "/")

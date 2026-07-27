@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { filterUsers, getRoleOptions, getStatusSummary } from "./users.utils";
-import type { UserItem } from "./users.types";
+import { filterUsers, getRoleOptions, getStatusSummary } from "../features/users/users.utils";
+import type { UserItem } from "../features/users/users.types";
 
 const mockUsers: UserItem[] = [
   {
@@ -34,6 +34,6 @@ describe("users utils", () => {
 
   it("collects role options and status summary", () => {
     expect(getRoleOptions(mockUsers)).toEqual(["ADMIN", "STAFF"]);
-    expect(getStatusSummary(mockUsers)).toEqual({ Active: 1, Inactive: 0, Pending: 1 });
+    expect(getStatusSummary(mockUsers)).toEqual({ Active: 1, Inactive: 0});
   });
 });

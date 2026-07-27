@@ -12,6 +12,7 @@ function normalizeText(text: string): string {
 export function filterUsers(users: UserItem[], filters?: UserFilters) {
   const search = normalizeText(filters?.search?.trim() ?? "");
   const role = filters?.role;
+  const orgType = filters?.orgType;
   const status = filters?.status;
 
   return users.filter((user) => {
@@ -21,9 +22,10 @@ export function filterUsers(users: UserItem[], filters?: UserFilters) {
       normalizeText(user.email).includes(search);
 
     const matchesRole = !role || role === "All" || user.role === role;
+    const matchesOrgType = !orgType || orgType === "All" || user.organizationType === orgType;
     const matchesStatus = !status || status === "All" || user.status === status;
 
-    return matchesSearch && matchesRole && matchesStatus;
+    return matchesSearch && matchesRole && matchesOrgType && matchesStatus;
   });
 }
 
@@ -31,14 +33,17 @@ export function getRoleOptions(users: UserItem[]) {
   return Array.from(new Set(users.map((user) => user.role))).sort();
 }
 
+export function getOrgTypeOptions(users: UserItem[]) {
+  return Array.from(new Set(users.map((user) => user.organizationType).filter(Boolean))).sort();
+}
+
 export function getStatusOptions() {
-  return ["All", "Active", "Inactive", "Pending"] as const;
+  return ["All", "Active", "Inactive"] as const;
 }
 
 export function getStatusSummary(users: UserItem[]) {
   return {
     Active: users.filter((user) => user.status === "Active").length,
     Inactive: users.filter((user) => user.status === "Inactive").length,
-    Pending: users.filter((user) => user.status === "Pending").length,
   } satisfies Record<Exclude<UserStatus, "All">, number>;
 }

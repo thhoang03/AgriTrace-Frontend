@@ -1,4 +1,4 @@
-export type UserStatus = "Active" | "Inactive" | "Pending";
+export type UserStatus = "Active" | "Inactive";
 export type UserRole = "ADMIN" | "MANAGER" | "STAFF";
 
 export interface UserItem {
@@ -28,6 +28,7 @@ export interface UpdateUserRequest extends Partial<CreateUserRequest> {
 export interface UserFilters {
   search?: string;
   role?: string;
+  orgType?: string;
   status?: UserStatus | "All";
   page?: number;
   limit?: number;

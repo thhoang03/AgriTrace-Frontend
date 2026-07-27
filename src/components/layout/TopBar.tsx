@@ -58,6 +58,9 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
     : user?.role;
 
   const emailDisplay = user?.email;
+  const encodedName = encodeURIComponent(user?.name);
+  const apiUrl = `https://ui-avatars.com/api/?name=${encodedName}&background=random&color=fff&rounded=true&size=128`;
+                    
 
   return (
     <header className="h-16 bg-white border-b border-gray-100 flex items-center px-6 gap-4 relative z-30" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
@@ -130,7 +133,7 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
             onClick={() => { setShowUser(!showUser); setShowNotif(false); }}
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-gray-100 transition-colors"
           >
-            <img src={user?.avatar} alt={user?.name} className="w-7 h-7 rounded-full object-cover" />
+            <img src={apiUrl} alt={user?.name} className="w-7 h-7 rounded-full object-cover" />
             <div className="hidden md:block text-left">
               <div className="text-sm font-medium text-gray-800">{user?.name}</div>
               <div className="text-xs text-gray-400">{roleDisplay}</div>
