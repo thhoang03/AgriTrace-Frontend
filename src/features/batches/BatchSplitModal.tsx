@@ -9,8 +9,9 @@ interface BatchSplitModalProps {
   productName: string;
   totalQuantity: number;
   unit?: string;
+  unitId?: string;
   onClose: () => void;
-  onSplit?: (childIds: number[]) => void;
+  onSplit?: (childIds: string[]) => void;
 }
 
 export function BatchSplitModal({
@@ -19,6 +20,7 @@ export function BatchSplitModal({
   productName,
   totalQuantity,
   unit = "kg",
+  unitId,
   onClose,
   onSplit,
 }: BatchSplitModalProps) {
@@ -59,7 +61,11 @@ export function BatchSplitModal({
       return;
     }
     try {
-      const result = await splitBatch.mutateAsync({ children, notes: notes || undefined });
+      const result = await splitBatch.mutateAsync({
+        children: children.map(c => ({ ...c, unitId: c.unitId || unitId })),
+        unitId,
+        notes: notes || undefined
+      });
       onSplit?.(result.data.childBatchIds);
       onClose();
     } catch {

@@ -17,11 +17,13 @@ import { ProductManagementPage } from "../features/products/ProductManagementPag
 import { ProductDetailPage } from "../features/products/ProductDetailPage";
 import { OrganizationsPage } from "../features/organizations/OrganizationsPage";
 import { CategoriesPage } from "../features/categories/CategoriesPage";
+import { PublicLineagePage } from "../pages/PublicLineagePage";
 
 export const router = createBrowserRouter([
   { path: "/", Component: HomePage },
   { path: "/login", Component: LoginPage },
   { path: "/trace/:id", Component: PublicTracePage },
+  { path: "/trace/:id/lineage", Component: PublicLineagePage },
   {
     path: "/app",
     Component: AppLayout,
