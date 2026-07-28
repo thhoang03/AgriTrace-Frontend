@@ -31,20 +31,6 @@ function normalizeUser(legacyUser: any): User {
     legacyUser?.organizationType
   );
 
-  if (!orgType) {
-    try {
-      const profile = authApi.getProfile();
-      const profileData = profile as any;
-      orgType = inferOrganizationTypeFromApiRole(
-        legacyUser?.role || "",
-        null,
-        profileData?.organizationType
-      );
-    } catch {
-      // Ignore profile fetch errors
-    }
-  }
-
   return {
     id: String(legacyUser?.id ?? ""),
     name: legacyUser?.name ?? "",
