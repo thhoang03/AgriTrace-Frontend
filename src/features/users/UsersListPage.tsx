@@ -15,12 +15,13 @@ import {
 import { useAuth } from "../auth/auth.store";
 import { useOrganizationsList } from "../organizations/organizations.queries";
 import {
-  useCreateUser,
   useResetPassword,
   useUpdateUser,
   useToggleStatus,
   useUsers,
 } from "./users.queries";
+import { usersApi } from "./users.api";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   filterUsers,
   getOrgTypeOptions,
@@ -34,6 +35,7 @@ import type {
   UserRole,
   UserStatus,
 } from "./users.types";
+import type { Organization } from "../organizations/organizations.types";
 
 const BANNER_IMG =
   "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=1400&q=80";
@@ -50,6 +52,7 @@ const statusConfig: Record<
 > = {
   Active: { bg: "#E8F5E9", color: "#2E7D32", dot: "#4CAF50" },
   Inactive: { bg: "#F5F5F5", color: "#757575", dot: "#9E9E9E" },
+  Pending: { bg: "#FFF8E1", color: "#FFB300", dot: "#FF9800" },
 };
 
 const orgTypeColors: Record<string, { bg: string; color: string }> = {
@@ -67,6 +70,7 @@ const emptyUserForm: CreateUserRequest = {
   password: "",
   phone: "",
   role: "STAFF",
+  organization: "",
   organizationId: undefined,
 };
 
@@ -114,13 +118,17 @@ export function UsersListPage() {
     status: statusFilter === "All" ? undefined : statusFilter,
   });
 
-  const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const toggleStatus = useToggleStatus();
   const resetPassword = useResetPassword();
+  const qc = useQueryClient();
+  const [creating, setCreating] = useState(false);
 
   const { data: orgsData } = useOrganizationsList();
-  const organizations = useMemo(() => orgsData?.data?.items ?? [], [orgsData]);
+  const organizations = useMemo<Organization[]>(
+    () => orgsData?.data?.items ?? [],
+    [orgsData]
+  );
 
   const users = useMemo(() => data?.data?.items ?? [], [data]);
   const filtered = useMemo(
@@ -136,20 +144,17 @@ export function UsersListPage() {
     if (!form.fullName || !form.email || !form.password)
       return;
     try {
-      const payload: CreateUserRequest = {
-        fullName: form.fullName,
-        email: form.email,
-        password: form.password,
-        phone: "",
-        role: isAdmin ? form.role : "STAFF",
-        organizationId: isAdmin ? form.organizationId : undefined,
-      };
-      await createUser.mutateAsync(payload);
-      showAlert("success", `User "${form.fullName}" created successfully`);
+
+      setCreating(true);
+      await usersApi.create(form as any);
+      qc.invalidateQueries({ queryKey: ["users"] });
       setForm(emptyUserForm);
       setShowAdd(false);
+      showAlert("success", `User "${form.fullName}" created successfully`);
     } catch (e: any) {
-      alert(e?.message || "Failed to create user");
+      showAlert("error", getApiErrorMessage(e));
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -166,7 +171,7 @@ const handleResetPassword = async (user: UserItem) => {
     await resetPassword.mutateAsync({ id: user.id, newPassword: password });
     showAlert("success", `Password reset for "${user.fullName}" successfully`);
   } catch (e: any) {
-    alert(e?.message || "Failed to reset password");
+    showAlert("error", getApiErrorMessage(e));
   }
 };
 
@@ -550,6 +555,18 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   </button>
                 </div>
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Organization
+                </label>
+                <input
+                  value={form.organization}
+                  onChange={(e) => setForm({ ...form, organization: e.target.value })}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
+                  style={{ background: "#F8FAF8" }}
+                  placeholder="Organization name"
+                />
+              </div>
 
               {/* ADMIN: Organization + Role */}
               {isAdmin ? (
@@ -626,7 +643,8 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90"
                   style={{ background: "#2E7D32" }}
                 >
-                  {createUser.isPending ? "Saving..." : isAdmin ? "Add User" : "Invite Staff"}
+
+                  {creating ? "Saving..." : isAdmin ? "Add User" : "Invite Staff"}
                 </button>
               </div>
             </div>
@@ -707,6 +725,17 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   </select>
                 </div>
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Organization
+                </label>
+                <input
+                  value={selectedUser.organization}
+                  onChange={(e) => setSelectedUser({ ...selectedUser, organization: e.target.value })}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
+                  style={{ background: "#F8FAF8" }}
+                />
+              </div>
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setSelectedUser(null)}
@@ -723,18 +752,21 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                           fullName: selectedUser.fullName,
                           role: selectedUser.role,
                           status: selectedUser.status,
+                          phone: selectedUser.phone,
+                          organization: selectedUser.organization,
                         },
                       });
                       showAlert("success", `User "${selectedUser.fullName}" updated successfully`);
                       setSelectedUser(null);
+                      showAlert("success", "User updated successfully");
                     } catch (e: any) {
-                      alert(e?.message || "Failed to update user");
+                      showAlert("error", getApiErrorMessage(e));
                     }
                   }}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90"
                   style={{ background: "#2E7D32" }}
                 >
-                  {updateUser.isPending ? "Saving..." : "Save"}
+                  {updateUser.status === 'pending' ? "Saving..." : "Save"}
                 </button>
               </div>
             </div>

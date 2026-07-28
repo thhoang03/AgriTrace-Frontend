@@ -14,23 +14,24 @@ export interface UserItem {
   username: string;
   fullName: string;
   organization: string;
+  organizationType?: string;
   role: string;
   status: string;
   phone: string;
   email: string;
 }
 
-export interface CreateUserRequest {
+export interface ApiCreateUserRequest {
   fullName: string;
-  username: string;
+  username?: string;
   email: string;
   password: string;
-  phone: string;
+  phone?: string;
   role: string;
-  organization: string;
+  organization?: string;
 }
 
-export interface UpdateUserRequest extends Partial<CreateUserRequest> {
+export interface UpdateUserRequest extends Partial<ApiCreateUserRequest> {
   status?: string;
 }
 
@@ -53,19 +54,19 @@ function adaptUserListItem(item: any): UserItem {
     organization: item.organizationName ?? item.organization ?? item.orgName ?? "",
     organizationType: item.organizationTypeName ?? item.organizationType ?? "",
     role: (item.role ?? "").toUpperCase(),
-    status: item.isActive ? "Active" : "Inactive",
+    status:
+      item.status ?? (typeof item.isActive === "boolean" ? (item.isActive ? "Active" : "Inactive") : "Inactive"),
     phone: item.phone ?? "",
     email: item.email ?? "",
   };
 }
 
-function adaptCreateUserRequest(legacy: CreateUserRequest): NewCreateUserRequest & { organizationId?: string } {
+function adaptCreateUserRequest(legacy: ApiCreateUserRequest): NewCreateUserRequest {
   return {
     fullName: legacy.fullName,
     email: legacy.email,
     password: legacy.password,
     role: legacy.role as any,
-    organizationId: legacy.organizationId,
   };
 }
 
@@ -74,6 +75,7 @@ function adaptUpdateUserRequest(legacy: UpdateUserRequest): NewUpdateUserRequest
     fullName: legacy.fullName,
     phone: legacy.phone,
     role: legacy.role as any,
+    ...(legacy.status !== undefined ? { status: legacy.status } : {}),
   };
 }
 
@@ -83,6 +85,7 @@ export const usersApi = {
       params: {
         search: filters?.search,
         role: filters?.role,
+        status: filters?.status,
         orgType: filters?.orgType,
         page: filters?.page,
         pageSize: filters?.limit,
@@ -103,8 +106,8 @@ export const usersApi = {
     return adaptUserListItem(response.data);
   },
 
-  create: async (data: CreateUserRequest) => {
-    const newRequest = adaptCreateUserRequest(data);
+  create: async (data: any) => {
+    const newRequest = adaptCreateUserRequest(data as ApiCreateUserRequest);
     const response = await post<{ userId: number }>("/users", newRequest);
     return { data: { id: String(response.data.userId) } };
   },
@@ -112,11 +115,18 @@ export const usersApi = {
   update: async (id: string, data: UpdateUserRequest) => {
     const newRequest = adaptUpdateUserRequest(data);
     const response = await put<any>(`/users/${id}`, newRequest);
-    let updatedData = response.data;
+    let updatedData = response?.data ?? null;
     if (data.status !== undefined) {
       const statusResponse = await patch<any>(`/users/${id}/status`, { isActive: data.status === "Active" });
-      updatedData = statusResponse.data;
+      // prefer statusResponse.data when present, otherwise fall back to a synthesized object
+      updatedData = statusResponse?.data ?? updatedData ?? { id, ...newRequest, status: data.status };
     }
+
+    // If the PUT returned no content, synthesize an object from newRequest
+    if (!updatedData) {
+      updatedData = { id, ...newRequest, status: data.status };
+    }
+
     return { data: adaptUserListItem(updatedData) };
   },
 
