@@ -30,6 +30,7 @@ export interface User {
   organizationType?: OrganizationType;
   organizationName?: string;
   avatar: string;
+  mustChangePassword?: boolean;
 }
 
 export interface LoginRequest {

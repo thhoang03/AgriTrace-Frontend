@@ -22,9 +22,7 @@ import { canAccessRoute } from "../../features/auth/permissions";
 
 const navItems = [
   { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/app/products", icon: ShoppingBag, label: "Products" },
   { to: "/app/batches", icon: Package, label: "Batch Management" },
-  { to: "/app/batches/new", icon: Package, label: "New Batch" },
   { to: "/app/supply-chain", icon: Truck, label: "Supply Chain" },
   { to: "/app/inspection", icon: FlaskConical, label: "Quality Inspection" },
   { to: "/app/recall", icon: AlertTriangle, label: "Recall Management" },
@@ -50,13 +48,16 @@ export function Sidebar() {
   };
 
   const role = user?.role;
-  const roleDisplay = role === "STAFF" && user?.organizationType
-    ? `${role} — ${user.organizationType}`
+  const roleDisplay = user?.organizationType
+    ? `${role} - ${user.organizationType}`
     : role;
 
-  const filteredNavItems = navItems.filter((item) => canAccessRoute(role, item.to));
-  const filteredAdminItems = adminItems.filter((item) => canAccessRoute(role, item.to));
 
+  const filteredNavItems = navItems.filter((item) => canAccessRoute(role, item.to, user?.organizationType));
+  const filteredAdminItems = adminItems.filter((item) => canAccessRoute(role, item.to, user?.organizationType));
+  const encodedName = encodeURIComponent(user?.name);
+  const apiUrl = `https://ui-avatars.com/api/?name=${encodedName}&background=random&color=fff&rounded=true&size=128`;
+                    
   return (
     <aside className="flex flex-col h-full" style={{ background: "linear-gradient(180deg, #1B5E20 0%, #2E7D32 60%, #388E3C 100%)" }}>
       <div className="flex items-center gap-3 px-6 py-5 border-b border-white/10">
@@ -127,17 +128,19 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
-
+        
       <div className="p-4 border-t border-white/10">
         <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
           <img
-            src={user?.avatar}
+            src={apiUrl}
             alt={user?.name}
             className="w-8 h-8 rounded-full object-cover ring-2 ring-white/20"
           />
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold text-white truncate">{user?.name}</div>
-            <div className="text-xs text-green-200 truncate">{roleDisplay}</div>
+            <div className="text-xs text-green-200 truncate">
+              {roleDisplay}
+            </div>
           </div>
           <button
             onClick={handleLogout}

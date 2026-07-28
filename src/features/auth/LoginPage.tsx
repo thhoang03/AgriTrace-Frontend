@@ -20,8 +20,8 @@ export function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await login(form.email, form.password);
-      navigate("/app/dashboard");
+      const needChange = await login(form.email, form.password);
+      navigate(needChange ? "/app/change-password" : "/app/dashboard");
     } catch (err: any) {
       setError(err.message || "Đăng nhập thất bại");
     } finally {

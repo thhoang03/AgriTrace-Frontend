@@ -114,6 +114,7 @@ export type LegacyUser = {
   phone: string;
   role: string;
   organization: string;
+  organizationType?: string;
   avatar: string;
 };
 
@@ -132,6 +133,7 @@ export function adaptUserBasicToUser(basic: UserBasic): LegacyUser {
     phone: "",
     role: basic.role ?? "",
     organization: "",
+    organizationType: (basic as any).organizationType,
     avatar: "",
   };
 }
@@ -148,6 +150,7 @@ export function adaptLoginDataToResponse(data: LoginData) {
     user: adaptUserBasicToUser(data.user ?? {}),
     accessToken: data.accessToken ?? "",
     refreshToken: data.refreshToken ?? "",
+    mustChangePassword: (data as any).mustChangePassword ?? false,
   };
 }
 
@@ -177,11 +180,6 @@ export function adaptApiRoleToCanonical(apiRole: string): UserRole {
 }
 
 const ROLE_TO_ORG_TYPE: Record<string, import("./permissions").OrganizationType> = {
-  FARMER: "FARM",
-  Processor: "PROCESSOR",
-  Distributor: "DISTRIBUTOR",
-  RETAILER: "RETAILER",
-  INSPECTOR: "INSPECTION",
   ADMIN: "SYSTEM"
 };
 
@@ -190,26 +188,17 @@ export function inferOrganizationTypeFromApiRole(
   jwtClaim?: string | null,
   profileOrgType?: string | null
 ): import("./permissions").OrganizationType | undefined {
-  const fromRole = ROLE_TO_ORG_TYPE[apiRole] ?? ROLE_TO_ORG_TYPE[apiRole.toUpperCase()];
-  if (fromRole) return fromRole;
-
-  if (jwtClaim) {
-    const normalized = jwtClaim.toUpperCase();
-    const orgTypes: import("./permissions").OrganizationType[] = [
-      "FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"
-    ];
-    const match = orgTypes.find((t) => normalized.includes(t));
-    if (match) return match;
-  }
-
   if (profileOrgType) {
     const normalized = profileOrgType.toUpperCase();
-    const orgTypes: import("./permissions").OrganizationType[] = [
+    const validTypes: import("./permissions").OrganizationType[] = [
       "FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"
     ];
-    const match = orgTypes.find((t) => normalized.includes(t));
+    const match = validTypes.find((t) => normalized === t || normalized.includes(t));
     if (match) return match;
   }
+
+  const fromRole = ROLE_TO_ORG_TYPE[apiRole] ?? ROLE_TO_ORG_TYPE[apiRole.toUpperCase()];
+  if (fromRole) return fromRole;
 
   return undefined;
 }

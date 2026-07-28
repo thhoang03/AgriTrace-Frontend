@@ -38,6 +38,7 @@ export interface UpdateUserRequest extends Partial<ApiCreateUserRequest> {
 export interface UserFilters {
   search?: string;
   role?: string;
+  orgType?: string;
   status?: string | "All";
   page?: number;
   limit?: number;
@@ -55,17 +56,23 @@ function adaptUserListItem(item: any): UserItem {
     role: item.role ?? "",
     status:
       item.status ?? (typeof item.isActive === "boolean" ? (item.isActive ? "Active" : "Inactive") : "Inactive"),
+    role: (item.role ?? "").toUpperCase(),
+    status: item.isActive ? "Active" : "Inactive",
+main
     phone: item.phone ?? "",
     email: item.email ?? "",
   };
 }
 
 function adaptCreateUserRequest(legacy: ApiCreateUserRequest): NewCreateUserRequest {
+function adaptCreateUserRequest(legacy: CreateUserRequest): NewCreateUserRequest & { organizationId?: string } {
+main
   return {
     fullName: legacy.fullName,
     email: legacy.email,
     password: legacy.password,
-    role: legacy.role as any, // Role enum may need mapping
+    role: legacy.role as any,
+    organizationId: legacy.organizationId,
   };
 }
 
@@ -75,6 +82,7 @@ function adaptUpdateUserRequest(legacy: UpdateUserRequest): NewUpdateUserRequest
     phone: legacy.phone,
     role: legacy.role as any,
     ...(legacy.status !== undefined ? { status: legacy.status } : {}),
+main
   };
 }
 
@@ -85,6 +93,7 @@ export const usersApi = {
         search: filters?.search,
         role: filters?.role,
         status: filters?.status,
+        orgType: filters?.orgType,
         page: filters?.page,
         pageSize: filters?.limit,
       }
@@ -130,6 +139,9 @@ export const usersApi = {
 
   delete: (id: string) =>
     del(`/users/${id}`),
+
+  toggleStatus: (id: string, isActive: boolean) =>
+    patch<any>(`/users/${id}/status`, { isActive }),
 
   resetPassword: (id: string, newPassword: string) =>
     post<void>(`/users/${id}/reset-password`, { newPassword }),
