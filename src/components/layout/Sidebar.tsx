@@ -6,6 +6,7 @@ import {
   FlaskConical,
   AlertTriangle,
   BarChart3,
+  LineChart,
   Users,
   UserCircle,
   LogOut,
@@ -26,6 +27,7 @@ const navItems = [
   { to: "/app/inspection", icon: FlaskConical, label: "Quality Inspection", roles: ["ADMIN", "MANAGER", "INSPECTOR"] },
   { to: "/app/recall", icon: AlertTriangle, label: "Recall Management", roles: ["ADMIN", "INSPECTOR"] },
   { to: "/app/reports", icon: BarChart3, label: "Reports", roles: ["ADMIN", "MANAGER"] },
+  { to: "/app/analytics", icon: LineChart, label: "Analytics", roles: ["ADMIN", "MANAGER"] },
 ];
 
 const adminItems = [

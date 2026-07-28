@@ -9,6 +9,12 @@ import type {
 // Legacy types for backward compatibility
 export interface AnalyticsOverview {
   totalProducts?: number;
+  totalBatches?: number;
+  totalOrganizations?: number;
+  totalEvents?: number;
+  totalRecalls?: number;
+  activeBatches?: number;
+  recalledBatches?: number;
   todayHarvest?: number;
   inProcessing?: number;
   inTransport?: number;
@@ -64,6 +70,12 @@ function adaptOverviewFromData(data: any): AnalyticsOverview {
     inTransport: 0,
     atRetail: 0,
     recallAlerts: data.totalRecalls ?? 0,
+    totalBatches: data.totalBatches ?? 0,
+    totalOrganizations: data.totalOrganizations ?? 0,
+    totalEvents: data.totalEvents ?? 0,
+    totalRecalls: data.totalRecalls ?? 0,
+    activeBatches: data.activeBatches ?? 0,
+    recalledBatches: data.recalledBatches ?? 0,
     monthlyProduction: [],
     batchStatus: [],
     inspectionResults: [],
@@ -78,19 +90,19 @@ export const analyticsApi = {
   },
 
   getBatchDistribution: async (params?: {
-    organizationId?: number;
-    categoryId?: number;
-    startDate?: string;
-    endDate?: string;
+    organizationId?: string;
+    fromDate?: string;
+    toDate?: string;
   }) => {
     const response = await get<BatchDistributionData>("/analytics/batch-distribution", { params });
     return { data: (response.data as any) as BatchDistribution };
   },
 
   getProcessingTime: async (params?: {
-    organizationId?: number;
-    startDate?: string;
-    endDate?: string;
+    organizationId?: string;
+    eventTypeId?: string;
+    fromDate?: string;
+    toDate?: string;
   }) => {
     const response = await get<ProcessingTimeData>("/analytics/processing-time", { params });
     return { data: (response.data as any) as ProcessingTime };

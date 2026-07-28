@@ -1,6 +1,11 @@
 export interface AnalyticsOverview {
   totalProducts: number;
   totalBatches: number;
+  totalOrganizations: number;
+  totalEvents: number;
+  totalRecalls: number;
+  activeBatches: number;
+  recalledBatches: number;
   todayHarvest: number;
   inProcessing: number;
   inTransport: number;
@@ -36,9 +41,17 @@ export interface RecallTrendData {
 }
 
 export interface BatchDistribution {
+  items: BatchDistributionItem[];
+  totalCount: number;
   byOrganization: OrganizationDistribution[];
   byCategory: CategoryDistribution[];
   byStatus: StatusDistribution[];
+}
+
+export interface BatchDistributionItem {
+  status: number;
+  statusName: string;
+  count: number;
 }
 
 export interface OrganizationDistribution {
@@ -62,8 +75,15 @@ export interface StatusDistribution {
 }
 
 export interface ProcessingTime {
+  averageProcessingHours: number;
+  byEventType: EventProcessingTime[];
   averageProcessingTime: number;
   byStage: StageProcessingTime[];
+}
+
+export interface EventProcessingTime {
+  eventTypeCode: string;
+  averageHours: number;
 }
 
 export interface StageProcessingTime {

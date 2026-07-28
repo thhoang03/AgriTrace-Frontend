@@ -14,19 +14,19 @@ export const analyticsQueries = {
   }),
 
   batchDistribution: (params?: {
-    organizationId?: number;
-    categoryId?: number;
-    startDate?: string;
-    endDate?: string;
+    organizationId?: string;
+    fromDate?: string;
+    toDate?: string;
   }) => ({
     queryKey: ["analytics", "batch-distribution", params],
     queryFn: () => analyticsApi.getBatchDistribution(params),
   }),
 
   processingTime: (params?: {
-    organizationId?: number;
-    startDate?: string;
-    endDate?: string;
+    organizationId?: string;
+    eventTypeId?: string;
+    fromDate?: string;
+    toDate?: string;
   }) => ({
     queryKey: ["analytics", "processing-time", params],
     queryFn: () => analyticsApi.getProcessingTime(params),
@@ -44,18 +44,18 @@ export function useAnalyticsOverview() {
 }
 
 export function useBatchDistribution(params?: {
-  organizationId?: number;
-  categoryId?: number;
-  startDate?: string;
-  endDate?: string;
+  organizationId?: string;
+  fromDate?: string;
+  toDate?: string;
 }) {
   return useQuery(analyticsQueries.batchDistribution(params));
 }
 
 export function useProcessingTime(params?: {
-  organizationId?: number;
-  startDate?: string;
-  endDate?: string;
+  organizationId?: string;
+  eventTypeId?: string;
+  fromDate?: string;
+  toDate?: string;
 }) {
   return useQuery(analyticsQueries.processingTime(params));
 }
