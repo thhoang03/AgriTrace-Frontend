@@ -10,9 +10,11 @@ import { canAccessRoute, canCreateEvent } from "./permissions";
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
+  mustChangePassword: boolean;
+  clearMustChangePassword: () => void;
   canAccessRoute: typeof canAccessRoute;
   canCreateEvent: typeof canCreateEvent;
 }
@@ -67,6 +69,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   });
   const [loading, setLoading] = useState(false);
+  const [mustChangePassword, setMustChangePassword] = useState(() => {
+    return sessionStorage.getItem("agritrace_must_change_password") === "true";
+  });
 
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
@@ -74,12 +79,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const loginRequest: LoginRequest = { email, password };
       const res = await authApi.login(loginRequest);
       const normalized = normalizeUser(res.user);
+      normalized.mustChangePassword = res.mustChangePassword;
       setUser(normalized);
       setToken(res.accessToken);
       sessionStorage.setItem("agritrace_user", JSON.stringify(normalized));
+      if (res.mustChangePassword) {
+        setMustChangePassword(true);
+        sessionStorage.setItem("agritrace_must_change_password", "true");
+      }
+      return res.mustChangePassword ?? false;
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  const clearMustChangePassword = useCallback(() => {
+    setMustChangePassword(false);
+    sessionStorage.removeItem("agritrace_must_change_password");
   }, []);
 
   const logout = useCallback(() => {
@@ -87,11 +103,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     removeToken();
     sessionStorage.removeItem("agritrace_user");
+    sessionStorage.removeItem("agritrace_must_change_password");
     queryClient.clear();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn: !!user, login, logout, loading, canAccessRoute, canCreateEvent }}>
+    <AuthContext.Provider value={{
+      user, isLoggedIn: !!user, login, logout, loading,
+      mustChangePassword, clearMustChangePassword,
+      canAccessRoute, canCreateEvent
+    }}>
       {children}
     </AuthContext.Provider>
   );

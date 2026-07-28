@@ -1,9 +1,13 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
 import { authApi } from "../features/auth/auth.api";
+import { useAuth } from "../features/auth/auth.store";
 import type { ChangePasswordRequest } from "../features/auth/auth.types";
 
 const ChangePasswordPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { mustChangePassword, clearMustChangePassword } = useAuth();
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -19,6 +23,8 @@ const ChangePasswordPage: React.FC = () => {
       await authApi.changePassword(data);
       setSuccess(true);
       reset();
+      clearMustChangePassword();
+      setTimeout(() => navigate("/app/dashboard"), 1500);
     } catch (err: any) {
       setError(err.response?.data?.message || "An unexpected error occurred.");
     } finally {
@@ -40,10 +46,12 @@ const ChangePasswordPage: React.FC = () => {
         boxShadow: "0 4px 6px rgba(0,0,0,0.07)", padding: "32px"
       }}>
         <h2 style={{ fontSize: "22px", fontWeight: "bold", color: "#1e293b", marginBottom: "8px" }}>
-          Change Password
+          {mustChangePassword ? "Set New Password" : "Change Password"}
         </h2>
         <p style={{ color: "#64748b", marginBottom: "24px", fontSize: "14px" }}>
-          For your security, please choose a strong password.
+          {mustChangePassword
+            ? "This is your first login. Please set a new password to activate your account."
+            : "For your security, please choose a strong password."}
         </p>
 
         {success && (
@@ -52,7 +60,7 @@ const ChangePasswordPage: React.FC = () => {
             borderRadius: "8px", padding: "12px 16px",
             color: "#15803d", marginBottom: "16px", fontSize: "14px"
           }}>
-            ✓ Password changed successfully.
+            ✓ Password changed successfully. Redirecting...
           </div>
         )}
 
@@ -141,7 +149,7 @@ const ChangePasswordPage: React.FC = () => {
               cursor: isLoading ? "not-allowed" : "pointer"
             }}
           >
-            {isLoading ? "Updating..." : "Change Password"}
+            {isLoading ? "Updating..." : mustChangePassword ? "Activate Account" : "Change Password"}
           </button>
         </form>
       </div>
