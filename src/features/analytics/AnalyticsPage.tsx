@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import type { LucideIcon } from "lucide-react";
 import { Search, RefreshCw, Clock3, Package, Building2, Activity, AlertTriangle } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useAnalyticsOverview, useBatchDistribution, useProcessingTime, useTraceback } from "./analytics.queries";
@@ -42,12 +43,12 @@ export function AnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {[
+        {([
           ["Total batches", overviewData?.totalBatches ?? 0, Package, "text-green-700", "bg-green-50"],
           ["Organizations", overviewData?.totalOrganizations ?? 0, Building2, "text-blue-700", "bg-blue-50"],
           ["Recorded events", overviewData?.totalEvents ?? 0, Activity, "text-purple-700", "bg-purple-50"],
           ["Recall alerts", overviewData?.totalRecalls ?? 0, AlertTriangle, "text-red-700", "bg-red-50"],
-        ].map(([label, value, Icon, color, background]) => (
+        ] as Array<[string, number, LucideIcon, string, string]>).map(([label, value, Icon, color, background]) => (
           <div className={cardClass} key={String(label)}>
             <div className={`mb-3 flex h-10 w-10 items-center justify-center rounded-xl ${background}`}><Icon className={`h-5 w-5 ${color}`} /></div>
             <div className="text-2xl font-bold text-gray-900">{Number(value).toLocaleString()}</div>
