@@ -1,17 +1,24 @@
 import { useState, useEffect } from "react";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useNavigate, useLocation } from "react-router";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { useAuth } from "../../features/auth/auth.store";
 
 export function AppLayout() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user, canAccessRoute } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!isLoggedIn) navigate("/login");
-  }, [isLoggedIn, navigate]);
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+    if (user?.role && !canAccessRoute(user.role, location.pathname)) {
+      navigate("/app/profile");
+    }
+  }, [isLoggedIn, navigate, user?.role, location.pathname, canAccessRoute]);
 
   if (!isLoggedIn) return null;
 

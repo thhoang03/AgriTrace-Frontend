@@ -1,4 +1,4 @@
-import { get, post, put, del } from "../../lib/api";
+import { get, post, put, del, patch } from "../../lib/api";
 import type { 
   UserListItem, 
   UserPagedResponse, 
@@ -49,9 +49,10 @@ function adaptUserListItem(item: any): UserItem {
     avatar: item.avatar ?? "",
     username: item.email ?? "",
     fullName: item.fullName ?? item.name ?? "",
-    organization: item.organizationName ?? item.organization ?? "",
+    organization: item.organizationName ?? item.organization ?? item.orgName ?? "",
+    organizationType: item.organizationTypeName ?? item.organizationType ?? "",
     role: item.role ?? "",
-    status: item.status ?? "Active",
+    status: item.isActive ? "Active" : "Inactive",
     phone: item.phone ?? "",
     email: item.email ?? "",
   };
@@ -63,7 +64,6 @@ function adaptCreateUserRequest(legacy: CreateUserRequest): NewCreateUserRequest
     email: legacy.email,
     password: legacy.password,
     role: legacy.role as any, // Role enum may need mapping
-    organizationId: null, // Legacy uses organization name, new uses ID
   };
 }
 
@@ -72,6 +72,7 @@ function adaptUpdateUserRequest(legacy: UpdateUserRequest): NewUpdateUserRequest
     fullName: legacy.fullName,
     phone: legacy.phone,
     role: legacy.role as any,
+    ...(legacy.status ? { status: legacy.status } : {}),
   };
 }
 
@@ -109,7 +110,12 @@ export const usersApi = {
   update: async (id: string, data: UpdateUserRequest) => {
     const newRequest = adaptUpdateUserRequest(data);
     const response = await put<any>(`/users/${id}`, newRequest);
-    return { data: adaptUserListItem(response.data) };
+    let updatedData = response.data;
+    if (data.status !== undefined) {
+      const statusResponse = await patch<any>(`/users/${id}/status`, { isActive: data.status === "Active" });
+      updatedData = statusResponse.data;
+    }
+    return { data: adaptUserListItem(updatedData) };
   },
 
   delete: (id: string) =>

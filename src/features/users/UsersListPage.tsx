@@ -3,16 +3,16 @@ import {
   Search,
   Plus,
   Edit2,
-  Trash2,
   Key,
-  Shield,
   X,
   Filter,
   Loader2,
+  Power,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import {
   useCreateUser,
-  useDeleteUser,
   useResetPassword,
   useUpdateUser,
   useUsers,
@@ -34,12 +34,9 @@ const BANNER_IMG =
   "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=1400&q=80";
 
 const roleColors: Record<string, { bg: string; color: string }> = {
-  Administrator: { bg: "#E8F5E9", color: "#1B5E20" },
-  Farmer: { bg: "#FFF3E0", color: "#E65100" },
-  Processor: { bg: "#E3F2FD", color: "#1565C0" },
-  Distributor: { bg: "#F3E5F5", color: "#6A1B9A" },
-  Retailer: { bg: "#E0F2F1", color: "#004D40" },
-  Inspector: { bg: "#FFF9C4", color: "#F57F17" },
+  ADMIN: { bg: "#E8F5E9", color: "#1B5E20" },
+  MANAGER: { bg: "#E3F2FD", color: "#1565C0" },
+  STAFF: { bg: "#FFF3E0", color: "#E65100" },
 };
 
 const statusConfig: Record<
@@ -53,12 +50,10 @@ const statusConfig: Record<
 
 const emptyUserForm: CreateUserRequest = {
   fullName: "",
-  username: "",
   email: "",
   password: "",
   phone: "",
-  role: "Farmer",
-  organization: "",
+  role: "STAFF",
 };
 
 export function UsersListPage() {
@@ -69,6 +64,17 @@ export function UsersListPage() {
   const [form, setForm] = useState<CreateUserRequest>(emptyUserForm);
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
 
+  interface Alert { type: "success" | "error"; message: string; }
+  const [alert, setAlert] = useState<Alert | null>(null);
+
+  const showAlert = (type: Alert["type"], message: string) => {
+    setAlert({ type, message });
+    setTimeout(() => setAlert(null), 3000);
+  };
+
+  const getApiErrorMessage = (err: unknown) =>
+    (err as any)?.response?.data?.message || (err as any)?.message || "An error occurred";
+
   const { data, isLoading, isError } = useUsers({
     search,
     role: roleFilter === "All" ? undefined : roleFilter,
@@ -76,8 +82,7 @@ export function UsersListPage() {
   });
 
   const createUser = useCreateUser();
-  const updateUser = useUpdateUser(selectedUser?.id ?? "");
-  const deleteUser = useDeleteUser();
+  const updateUser = useUpdateUser();
   const resetPassword = useResetPassword();
 
   const users = useMemo(() => data?.data?.items ?? [], [data]);
@@ -90,33 +95,56 @@ export function UsersListPage() {
   const summary = useMemo(() => getStatusSummary(users), [users]);
 
   const handleCreateUser = async () => {
-    if (!form.fullName || !form.username || !form.email || !form.password)
+    if (!form.fullName || !form.email || !form.password)
       return;
-    await createUser.mutateAsync(form);
-    setForm(emptyUserForm);
-    setShowAdd(false);
+    try {
+      await createUser.mutateAsync(form);
+      setForm(emptyUserForm);
+      setShowAdd(false);
+    } catch (e: any) {
+      alert(e?.message || "Failed to create user");
+    }
   };
 
-  const handleResetPassword = async (user: UserItem) => {
-    const password = window.prompt(
-      `Set a new password for ${user.fullName}`
-    );
-    if (!password) return;
+const handleResetPassword = async (user: UserItem) => {
+  const password = window.prompt(
+    `Set a new password for ${user.fullName}`
+  );
+  if (!password) return;
+  try {
     await resetPassword.mutateAsync({ id: user.id, newPassword: password });
-  };
-
-  const handleDelete = async (user: UserItem) => {
-    if (!window.confirm(`Delete ${user.fullName}?`)) return;
-    await deleteUser.mutateAsync(user.id);
-  };
+  } catch (e: any) {
+    alert(e?.message || "Failed to reset password");
+  }
+};
 
   const handleStatusToggle = async (user: UserItem) => {
     const nextStatus = user.status === "Active" ? "Inactive" : "Active";
-    await updateUser.mutateAsync({ status: nextStatus });
+    const action = nextStatus === "Active" ? "activate" : "deactivate";
+    if (!confirm(`Are you sure you want to ${action} user "${user.fullName}"?`)) return;
+    try {
+      await updateUser.mutateAsync({ id: user.id, data: { status: nextStatus } });
+      showAlert(
+        "success",
+        `"${user.fullName}" has been ${nextStatus === "Active" ? "activated" : "deactivated"}`
+      );
+    } catch (e: any) {
+      showAlert("error", getApiErrorMessage(e));
+    }
   };
 
   return (
     <div className="pb-8">
+      {/* Alert */}
+      {alert && (
+        <div className={`fixed top-5 right-5 z-[100] flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium transition-all ${alert.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
+          {alert.type === "success"
+            ? <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+            : <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />}
+          {alert.message}
+        </div>
+      )}
+
       {/* Banner */}
       <div className="relative h-36 overflow-hidden">
         <div
@@ -242,6 +270,7 @@ export function UsersListPage() {
                     {[
                       "User",
                       "Organization",
+                      "Org. Type",
                       "Role",
                       "Status",
                       "Contact",
@@ -280,14 +309,19 @@ export function UsersListPage() {
                                 {user.fullName}
                               </div>
                               <div className="text-xs text-gray-400">
-                                @{user.username}
+                                {user.email}
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-5 py-4">
                           <div className="text-sm text-gray-700 max-w-40 truncate">
-                            {user.organization}
+                            {user.organization || "—"}
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="text-sm text-gray-700">
+                            {user.organizationType || "—"}
                           </div>
                         </td>
                         <td className="px-5 py-4">
@@ -329,33 +363,31 @@ export function UsersListPage() {
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => setSelectedUser(user)}
-                              className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"
-                              title="Edit"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleResetPassword(user)}
-                              className="p-1.5 rounded-lg hover:bg-yellow-50 text-yellow-600 transition-colors"
-                              title="Reset Password"
-                            >
-                              <Key className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              className="p-1.5 rounded-lg hover:bg-purple-50 text-purple-500 transition-colors"
-                              title="Assign Role"
-                            >
-                              <Shield className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(user)}
-                              className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                             <button
+                               onClick={() => setSelectedUser(user)}
+                               className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"
+                               title="Edit"
+                             >
+                               <Edit2 className="w-3.5 h-3.5" />
+                             </button>
+                             <button
+                               onClick={() => handleResetPassword(user)}
+                               className="p-1.5 rounded-lg hover:bg-yellow-50 text-yellow-600 transition-colors"
+                               title="Reset Password"
+                             >
+                               <Key className="w-3.5 h-3.5" />
+                             </button>
+                             <button
+                               onClick={() => handleStatusToggle(user)}
+                               className={`p-1.5 rounded-lg transition-colors ${
+                                 user.status === "Active" 
+                                   ? "hover:bg-red-50 text-red-500" 
+                                   : "hover:bg-green-50 text-green-500"
+                               }`}
+                               title={user.status === "Active" ? "Deactivate" : "Activate"}
+                             >
+                               <Power className="w-3.5 h-3.5" />
+                             </button>
                           </div>
                         </td>
                       </tr>
@@ -402,33 +434,19 @@ export function UsersListPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                    Username
+                    Email
                   </label>
                   <input
-                    value={form.username}
+                    type="email"
+                    value={form.email}
                     onChange={(e) =>
-                      setForm({ ...form, username: e.target.value })
+                      setForm({ ...form, email: e.target.value })
                     }
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
                     style={{ background: "#F8FAF8" }}
-                    placeholder="user_name"
+                    placeholder="email@org.vn"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) =>
-                    setForm({ ...form, email: e.target.value })
-                  }
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                  style={{ background: "#F8FAF8" }}
-                  placeholder="email@org.vn"
-                />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
@@ -460,15 +478,8 @@ export function UsersListPage() {
                     }
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
                   >
-                    {[
-                      "Farmer",
-                      "Processor",
-                      "Distributor",
-                      "Retailer",
-                      "Inspector",
-                      "Administrator",
-                    ].map((r) => (
-                      <option key={r}>{r}</option>
+                    {["ADMIN", "MANAGER", "STAFF"].map((r) => (
+                      <option key={r} value={r}>{r}</option>
                     ))}
                   </select>
                 </div>
@@ -486,20 +497,6 @@ export function UsersListPage() {
                     placeholder="+84 900 000 000"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                  Organization
-                </label>
-                <input
-                  value={form.organization}
-                  onChange={(e) =>
-                    setForm({ ...form, organization: e.target.value })
-                  }
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                  style={{ background: "#F8FAF8" }}
-                  placeholder="Organization name"
-                />
               </div>
               <div className="flex gap-3 pt-2">
                 <button
@@ -569,15 +566,8 @@ export function UsersListPage() {
                     }
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
                   >
-                    {[
-                      "Farmer",
-                      "Processor",
-                      "Distributor",
-                      "Retailer",
-                      "Inspector",
-                      "Administrator",
-                    ].map((r) => (
-                      <option key={r}>{r}</option>
+                    {["ADMIN", "MANAGER", "STAFF"].map((r) => (
+                      <option key={r} value={r}>{r}</option>
                     ))}
                   </select>
                 </div>
@@ -610,12 +600,19 @@ export function UsersListPage() {
                 </button>
                 <button
                   onClick={async () => {
-                    await updateUser.mutateAsync({
-                      fullName: selectedUser.fullName,
-                      role: selectedUser.role,
-                      status: selectedUser.status,
-                    });
-                    setSelectedUser(null);
+                    try {
+                      await updateUser.mutateAsync({
+                        id: selectedUser.id,
+                        data: {
+                          fullName: selectedUser.fullName,
+                          role: selectedUser.role,
+                          status: selectedUser.status,
+                        },
+                      });
+                      setSelectedUser(null);
+                    } catch (e: any) {
+                      alert(e?.message || "Failed to update user");
+                    }
                   }}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90"
                   style={{ background: "#2E7D32" }}

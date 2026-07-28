@@ -1,8 +1,6 @@
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { env } from "../../config/env";
-import { mock } from "../../mocks/config";
 import { getToken, setToken, removeToken } from "./token-storage";
-import { enableMockAdapter } from "./mock-adapter";
 
 export interface ApiResponse<T> {
   data: T;
@@ -86,10 +84,6 @@ http.interceptors.response.use(
     return Promise.reject(error);
   },
 );
-
-if (mock.global) {
-  enableMockAdapter(http);
-}
 
 export function get<T>(url: string, config?: AxiosRequestConfig) {
   return http.get<ApiResponse<T>>(url, config).then((r) => r.data);

@@ -8,6 +8,7 @@ import { useCreateBatch } from "./batches.queries";
 import type { CreateBatchRequest } from "./batches.types";
 import { useAuth } from "../auth/auth.store";
 import { useCategoriesList } from "../categories/categories.queries";
+import { useProductsList } from "../products/products.queries";
 
 const initialForm: CreateBatchRequest = {
   product: "",
@@ -18,6 +19,7 @@ const initialForm: CreateBatchRequest = {
   harvestDate: "",
   quantity: 0,
   unit: "kg",
+  unitId: "",
   weight: "",
   productionArea: "",
   location: "",
@@ -70,6 +72,47 @@ function CategorySelect({
         .filter((c) => c.isActive)
         .map((c) => (
           <option key={c.categoryId} value={c.name}>
+            {c.name}
+          </option>
+        ))}
+    </select>
+  );
+}
+
+function ProductSelect({
+  value,
+  onChange,
+  onProductSelected,
+  className,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  onProductSelected?: (product: any) => void;
+  className: string;
+}) {
+  const { data, isLoading } = useProductsList({ pageSize: 100 });
+  const products = data?.data?.items ?? [];
+
+  return (
+    <select
+      value={value}
+      onChange={(e) => {
+        const val = e.target.value;
+        onChange(val);
+        if (onProductSelected) {
+          const product = products.find((p: any) => String(p.productId) === val);
+          if (product) onProductSelected(product);
+        }
+      }}
+      className={className}
+      style={{ appearance: "auto" }}
+    >
+      <option value="">-- Chọn sản phẩm --</option>
+      {isLoading && <option disabled>Đang tải...</option>}
+      {products
+        .filter((c: any) => c.isActive)
+        .map((c: any) => (
+          <option key={c.productId} value={String(c.productId)}>
             {c.name}
           </option>
         ))}
@@ -225,7 +268,17 @@ export function BatchCreatePage() {
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="space-y-1.5">
                     <FieldLabel required>Product Name</FieldLabel>
-                    <input value={form.product} onChange={(e) => handleChange("product", e.target.value)} className={inputClass} placeholder="e.g. Dragon Fruit" />
+                    <ProductSelect
+                      value={form.product}
+                      onChange={(val) => handleChange("product", val)}
+                      onProductSelected={(product) => {
+                        handleChange("productName", product.name);
+                        if (product.categoryName) handleChange("category", product.categoryName);
+                        if (product.unit) handleChange("unit", product.unit);
+                        if (product.unitId) handleChange("unitId", product.unitId);
+                      }}
+                      className={inputClass}
+                    />
                   </label>
                   <label className="space-y-1.5">
                     <FieldLabel>Display Name</FieldLabel>
@@ -284,11 +337,11 @@ export function BatchCreatePage() {
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="space-y-1.5 md:col-span-2">
                     <FieldLabel required>Farm Name</FieldLabel>
-                    <input value={form.farm} onChange={(e) => handleChange("farm", e.target.value)} disabled className={`${inputClass} bg-gray-50 opacity-70 cursor-not-allowed`} placeholder="Farm / Cooperative name" />
+                    <input value={form.farm} onChange={(e) => handleChange("farm", e.target.value)} className={inputClass} placeholder="Farm / Cooperative name" />
                   </label>
                   <label className="space-y-1.5 md:col-span-2">
                     <FieldLabel required>Farmer / Producer</FieldLabel>
-                    <input value={form.farmer} onChange={(e) => handleChange("farmer", e.target.value)} disabled className={`${inputClass} bg-gray-50 opacity-70 cursor-not-allowed`} placeholder="Farmer full name" />
+                    <input value={form.farmer} onChange={(e) => handleChange("farmer", e.target.value)} className={inputClass} placeholder="Farmer full name" />
                   </label>
                   <label className="space-y-1.5 md:col-span-2">
                     <FieldLabel required>Harvest Date</FieldLabel>
@@ -315,7 +368,7 @@ export function BatchCreatePage() {
                   </label>
                   <label className="space-y-1.5">
                     <FieldLabel>Unit</FieldLabel>
-                    <input value={form.unit} onChange={(e) => handleChange("unit", e.target.value)} className={inputClass} placeholder="kg" />
+                    <input value={form.unit} readOnly className={`${inputClass} bg-gray-50 cursor-not-allowed`} placeholder="kg" />
                   </label>
                   <label className="space-y-1.5">
                     <FieldLabel required>Weight</FieldLabel>

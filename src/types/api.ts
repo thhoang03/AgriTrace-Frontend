@@ -4,7 +4,171 @@
  */
 
 export interface paths {
-    "/auth/login": {
+    "/api/v1/analytics/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dashboard tổng quan */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/batch-distribution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Thống kê phân bố Batch theo trạng thái */
+        get: {
+            parameters: {
+                query?: {
+                    organizationId?: string;
+                    fromDate?: string;
+                    toDate?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/processing-time": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Thống kê thời gian xử lý */
+        get: {
+            parameters: {
+                query?: {
+                    organizationId?: string;
+                    eventTypeId?: string;
+                    fromDate?: string;
+                    toDate?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/traceback/{batchId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Truy vết ngược từ một Batch */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    batchId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/login": {
         parameters: {
             query?: never;
             header?: never;
@@ -21,25 +185,36 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": components["schemas"]["LoginRequest"];
+                    "text/json": components["schemas"]["LoginRequest"];
+                    "application/*+json": components["schemas"]["LoginRequest"];
                 };
             };
             responses: {
-                /** @description Đăng nhập thành công */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["LoginData"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                400: components["responses"]["BadRequest"];
-                500: components["responses"]["InternalServerError"];
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         delete?: never;
@@ -48,7 +223,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/refresh-token": {
+    "/api/v1/auth/refresh-token": {
         parameters: {
             query?: never;
             header?: never;
@@ -65,25 +240,36 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": components["schemas"]["RefreshTokenRequest"];
+                    "text/json": components["schemas"]["RefreshTokenRequest"];
+                    "application/*+json": components["schemas"]["RefreshTokenRequest"];
                 };
             };
             responses: {
-                /** @description Token mới */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["TokenPair"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                400: components["responses"]["BadRequest"];
-                500: components["responses"]["InternalServerError"];
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         delete?: never;
@@ -92,7 +278,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/logout": {
+    "/api/v1/auth/logout": {
         parameters: {
             query?: never;
             header?: never;
@@ -111,15 +297,13 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Đăng xuất thành công */
+                /** @description No Content */
                 204: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content?: never;
                 };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
             };
         };
         delete?: never;
@@ -128,7 +312,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/me": {
+    "/api/v1/auth/me": {
         parameters: {
             query?: never;
             header?: never;
@@ -145,19 +329,17 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Thông tin user */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["UserBasic"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
             };
         };
         put?: never;
@@ -168,7 +350,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/change-password": {
+    "/api/v1/auth/change-password": {
         parameters: {
             query?: never;
             header?: never;
@@ -184,16 +366,36 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": components["schemas"]["ChangePasswordRequest"];
+                    "text/json": components["schemas"]["ChangePasswordRequest"];
+                    "application/*+json": components["schemas"]["ChangePasswordRequest"];
                 };
             };
             responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         post?: never;
@@ -203,7 +405,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/forgot-password": {
+    "/api/v1/auth/forgot-password": {
         parameters: {
             query?: never;
             header?: never;
@@ -220,15 +422,25 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": components["schemas"]["ForgotPasswordRequest"];
+                    "text/json": components["schemas"]["ForgotPasswordRequest"];
+                    "application/*+json": components["schemas"]["ForgotPasswordRequest"];
                 };
             };
             responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                500: components["responses"]["InternalServerError"];
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
             };
         };
         delete?: never;
@@ -237,7 +449,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/reset-password": {
+    "/api/v1/auth/reset-password": {
         parameters: {
             query?: never;
             header?: never;
@@ -254,839 +466,36 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": components["schemas"]["ResetPasswordRequest"];
+                    "text/json": components["schemas"]["ResetPasswordRequest"];
+                    "application/*+json": components["schemas"]["ResetPasswordRequest"];
                 };
             };
             responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/organizations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Lấy danh sách tổ chức */
-        get: {
-            parameters: {
-                query?: {
-                    page?: components["parameters"]["Page"];
-                    pageSize?: components["parameters"]["PageSize"];
-                    sortBy?: components["parameters"]["SortBy"];
-                    sortDir?: components["parameters"]["SortDir"];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách tổ chức */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["OrganizationPagedResponse"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        /** Tạo tổ chức mới */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["OrganizationRequest"];
-                };
-            };
-            responses: {
-                /** @description Tạo thành công */
-                201: {
+                /** @description Bad Request */
+                400: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["OrganizationCreatedData"];
-                        };
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/organizations/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Xem chi tiết tổ chức */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: components["parameters"]["IdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Chi tiết tổ chức */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["OrganizationDetail"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        /** Cập nhật tổ chức */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: components["parameters"]["IdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["OrganizationRequest"];
-                };
-            };
-            responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/organizations/{id}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Thay đổi trạng thái tổ chức */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: components["parameters"]["IdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["StatusRequest"];
-                };
-            };
-            responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        trace?: never;
-    };
-    "/organizations/{id}/users": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Lấy người dùng thuộc tổ chức */
-        get: {
-            parameters: {
-                query?: {
-                    page?: components["parameters"]["Page"];
-                    pageSize?: components["parameters"]["PageSize"];
-                };
-                header?: never;
-                path: {
-                    id: components["parameters"]["IdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách người dùng */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["UserPagedResponse"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/organizations/{id}/products": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Lấy sản phẩm của tổ chức */
-        get: {
-            parameters: {
-                query?: {
-                    page?: components["parameters"]["Page"];
-                    pageSize?: components["parameters"]["PageSize"];
-                };
-                header?: never;
-                path: {
-                    id: components["parameters"]["IdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách sản phẩm */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["ProductPagedResponse"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/users": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Lấy danh sách người dùng */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Lọc theo tổ chức */
-                    organizationId?: number;
-                    /** @description Lọc theo quyền */
-                    role?: string;
-                    /** @description Tìm kiếm theo tên/email */
-                    search?: string;
-                    page?: components["parameters"]["Page"];
-                    pageSize?: components["parameters"]["PageSize"];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách người dùng */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["UserPagedResponse"];
-                        };
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        /** Tạo User mới */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateUserRequest"];
-                };
-            };
-            responses: {
-                /** @description Tạo thành công */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: {
-                                /** @example 10 */
-                                userId?: number;
-                            };
-                        };
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                409: components["responses"]["Conflict"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/users/profile": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Xem hồ sơ cá nhân */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Hồ sơ người dùng */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["UserDetail"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        /** Cập nhật hồ sơ cá nhân */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateUserRequest"];
-                };
-            };
-            responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/users/{userId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Lấy thông tin chi tiết User */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    userId: components["parameters"]["UserIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Chi tiết người dùng */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["UserDetail"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        /** Cập nhật User */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    userId: components["parameters"]["UserIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateUserRequest"];
-                };
-            };
-            responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/users/{userId}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Kích hoạt / Vô hiệu hóa tài khoản */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    userId: components["parameters"]["UserIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UserStatusRequest"];
-                };
-            };
-            responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        trace?: never;
-    };
-    "/categories": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Lấy danh sách Category */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Tìm kiếm tên category */
-                    search?: string;
-                    page?: components["parameters"]["Page"];
-                    pageSize?: components["parameters"]["PageSize"];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách category */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["CategoryPagedResponse"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        /** Tạo Category mới */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CategoryRequest"];
-                };
-            };
-            responses: {
-                /** @description Tạo thành công */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: {
-                                /** @example 5 */
-                                categoryId?: number;
-                            };
-                        };
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/categories/{categoryId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Chi tiết Category */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    categoryId: components["parameters"]["CategoryIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Chi tiết category */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["CategoryDetail"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        /** Cập nhật Category */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    categoryId: components["parameters"]["CategoryIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CategoryRequest"];
-                };
-            };
-            responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        post?: never;
-        /** Xóa Category */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    categoryId: components["parameters"]["CategoryIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Xóa thành công */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                /** @description Category đang được sử dụng */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
                         "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/categories/{categoryId}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Thay đổi trạng thái Category */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    categoryId: components["parameters"]["CategoryIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ActiveStatusRequest"];
-                };
-            };
-            responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        trace?: never;
-    };
-    "/products": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Danh sách Product */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Lọc theo tổ chức */
-                    organizationId?: number;
-                    /** @description Lọc theo danh mục */
-                    categoryId?: number;
-                    /** @description Tìm theo tên */
-                    search?: string;
-                    page?: components["parameters"]["Page"];
-                    pageSize?: components["parameters"]["PageSize"];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách sản phẩm */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["ProductPagedResponse"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        /** Tạo Product mới */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ProductRequest"];
-                };
-            };
-            responses: {
-                /** @description Tạo thành công */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: {
-                                /** @example 10 */
-                                productId?: number;
-                            };
-                        };
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                500: components["responses"]["InternalServerError"];
             };
         };
         delete?: never;
@@ -1095,260 +504,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/products/{productId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Chi tiết Product */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    productId: components["parameters"]["ProductIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Chi tiết sản phẩm */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["ProductDetail"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        /** Cập nhật Product */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    productId: components["parameters"]["ProductIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ProductRequest"];
-                };
-            };
-            responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        post?: never;
-        /** Xóa Product */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    productId: components["parameters"]["ProductIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Xóa thành công */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                /** @description Product đang có Batch */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ErrorResponse"];
-                    };
-                };
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/products/{productId}/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Thay đổi trạng thái Product */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    productId: components["parameters"]["ProductIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["ActiveStatusRequest"];
-                };
-            };
-            responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        trace?: never;
-    };
-    "/products/{productId}/images": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Danh sách ảnh sản phẩm */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    productId: components["parameters"]["ProductIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách ảnh */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["ImageListData"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        /** Upload ảnh sản phẩm */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    productId: components["parameters"]["ProductIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "multipart/form-data": components["schemas"]["ImageUploadRequest"];
-                };
-            };
-            responses: {
-                /** @description Upload thành công */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["ImageCreatedData"];
-                        };
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/products/images/{imageId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Xóa ảnh sản phẩm */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    imageId: components["parameters"]["ImageIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Xóa thành công */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/batches": {
+    "/api/v1/batches": {
         parameters: {
             query?: never;
             header?: never;
@@ -1359,14 +515,11 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Lọc theo tổ chức */
+                    productId?: string;
                     organizationId?: string;
-                    /** @description Lọc theo trạng thái */
-                    status?: number;
-                    /** @description Tìm theo BatchCode */
                     search?: string;
-                    page?: components["parameters"]["Page"];
-                    pageSize?: components["parameters"]["PageSize"];
+                    page?: number;
+                    pageSize?: number;
                 };
                 header?: never;
                 path?: never;
@@ -1374,19 +527,17 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Danh sách batch */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["BatchPagedResponse"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
             };
         };
         put?: never;
@@ -1398,28 +549,36 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": components["schemas"]["CreateBatchRequest"];
+                    "text/json": components["schemas"]["CreateBatchRequest"];
+                    "application/*+json": components["schemas"]["CreateBatchRequest"];
                 };
             };
             responses: {
-                /** @description Tạo thành công */
+                /** @description Created */
                 201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["BatchCreatedData"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                422: components["responses"]["UnprocessableEntity"];
-                500: components["responses"]["InternalServerError"];
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         delete?: never;
@@ -1428,54 +587,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/batches/merge": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Gộp Batch */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["MergeBatchRequest"];
-                };
-            };
-            responses: {
-                /** @description Gộp thành công */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["MergeBatchData"];
-                        };
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                422: components["responses"]["UnprocessableEntity"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/batches/{batchId}": {
+    "/api/v1/batches/{batchId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1488,26 +600,34 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    batchId: components["parameters"]["BatchIdPath"];
+                    batchId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Chi tiết batch */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["BatchDetail"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         /** Cập nhật Batch */
@@ -1516,22 +636,51 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    batchId: components["parameters"]["BatchIdPath"];
+                    batchId: string;
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": components["schemas"]["UpdateBatchRequest"];
+                    "text/json": components["schemas"]["UpdateBatchRequest"];
+                    "application/*+json": components["schemas"]["UpdateBatchRequest"];
                 };
             };
             responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         post?: never;
@@ -1541,7 +690,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/batches/{batchId}/status": {
+    "/api/v1/batches/{batchId}/status": {
         parameters: {
             query?: never;
             header?: never;
@@ -1560,28 +709,56 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    batchId: components["parameters"]["BatchIdPath"];
+                    batchId: string;
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": components["schemas"]["BatchStatusRequest"];
+                    "text/json": components["schemas"]["BatchStatusRequest"];
+                    "application/*+json": components["schemas"]["BatchStatusRequest"];
                 };
             };
             responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                409: components["responses"]["Conflict"];
-                500: components["responses"]["InternalServerError"];
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         trace?: never;
     };
-    "/batches/{batchId}/qr-code": {
+    "/api/v1/batches/{batchId}/qr-code": {
         parameters: {
             query?: never;
             header?: never;
@@ -1594,26 +771,34 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    batchId: components["parameters"]["BatchIdPath"];
+                    batchId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description QR Code URL */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["QrCodeData"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         put?: never;
@@ -1624,7 +809,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/batches/{batchId}/images": {
+    "/api/v1/batches/{batchId}/images": {
         parameters: {
             query?: never;
             header?: never;
@@ -1637,26 +822,23 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    batchId: components["parameters"]["BatchIdPath"];
+                    batchId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Danh sách ảnh */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["ImageListData"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
             };
         };
         put?: never;
@@ -1666,31 +848,31 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    batchId: components["parameters"]["BatchIdPath"];
+                    batchId: string;
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
-                    "multipart/form-data": components["schemas"]["ImageUploadRequest"];
+                    "multipart/form-data": {
+                        /** Format: binary */
+                        File: string;
+                        IsPrimary?: boolean;
+                    };
                 };
             };
             responses: {
-                /** @description Upload thành công */
-                201: {
+                /** @description Not Implemented */
+                501: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["ImageCreatedData"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                500: components["responses"]["InternalServerError"];
             };
         };
         delete?: never;
@@ -1699,7 +881,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/batches/images/{imageId}": {
+    "/api/v1/batches/images/{imageId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1715,23 +897,23 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    imageId: components["parameters"]["ImageIdPath"];
+                    imageId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Xóa thành công */
-                204: {
+                /** @description Not Implemented */
+                501: {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
                 };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
             };
         };
         options?: never;
@@ -1739,176 +921,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/batches/{batchId}/events": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Danh sách Event của Batch */
-        get: {
-            parameters: {
-                query?: {
-                    page?: components["parameters"]["Page"];
-                    pageSize?: components["parameters"]["PageSize"];
-                };
-                header?: never;
-                path: {
-                    batchId: components["parameters"]["BatchIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách event */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["EventPagedResponse"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        /** Ghi nhận Supply Chain Event */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    batchId: components["parameters"]["BatchIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateEventRequest"];
-                };
-            };
-            responses: {
-                /** @description Ghi nhận thành công */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["EventCreatedData"];
-                        };
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                422: components["responses"]["UnprocessableEntity"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/batches/{batchId}/events/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Kiểm tra Hash Chain của Batch */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    batchId: components["parameters"]["BatchIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Kết quả verify */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: {
-                                isValid?: boolean;
-                                totalEvents?: number;
-                            };
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/events/{eventId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Chi tiết Event */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    eventId: components["parameters"]["EventIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Chi tiết event */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["EventDetail"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/batches/{batchId}/split": {
+    "/api/v1/batches/{batchId}/split": {
         parameters: {
             query?: never;
             header?: never;
@@ -1923,32 +936,51 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    batchId: components["parameters"]["BatchIdPath"];
+                    batchId: string;
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
                     "application/json": components["schemas"]["SplitBatchRequest"];
+                    "text/json": components["schemas"]["SplitBatchRequest"];
+                    "application/*+json": components["schemas"]["SplitBatchRequest"];
                 };
             };
             responses: {
-                /** @description Tách thành công */
+                /** @description Created */
                 201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["SplitBatchData"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                422: components["responses"]["UnprocessableEntity"];
-                500: components["responses"]["InternalServerError"];
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         delete?: never;
@@ -1957,340 +989,16 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/batches/{batchId}/inspections": {
+    "/api/v1/batches/merge": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Danh sách kiểm định của Batch */
-        get: {
-            parameters: {
-                query?: {
-                    page?: components["parameters"]["Page"];
-                    pageSize?: components["parameters"]["PageSize"];
-                };
-                header?: never;
-                path: {
-                    batchId: components["parameters"]["BatchIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách kiểm định */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["InspectionPagedResponse"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
+        get?: never;
         put?: never;
-        /** Tạo kiểm định */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    batchId: components["parameters"]["BatchIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateInspectionRequest"];
-                };
-            };
-            responses: {
-                /** @description Tạo thành công */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: {
-                                /** Format: uuid */
-                                inspectionId?: string;
-                            };
-                        };
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/inspections/{inspectionId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Chi tiết kiểm định */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    inspectionId: components["parameters"]["InspectionIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Chi tiết kiểm định */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["InspectionDetail"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        /** Cập nhật kiểm định */
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    inspectionId: components["parameters"]["InspectionIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateInspectionRequest"];
-                };
-            };
-            responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/batches/{batchId}/certificates": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Danh sách chứng nhận của Batch */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    batchId: components["parameters"]["BatchIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách chứng nhận */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["CertificatePagedResponse"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        /** Cấp chứng nhận */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    batchId: components["parameters"]["BatchIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateCertificateRequest"];
-                };
-            };
-            responses: {
-                /** @description Cấp thành công */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: {
-                                /** Format: uuid */
-                                certificateId?: string;
-                            };
-                        };
-                    };
-                };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/certificates/{certificateId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Chi tiết chứng nhận */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    certificateId: components["parameters"]["CertificateIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Chi tiết chứng nhận */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["CertificateDetail"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        post?: never;
-        /** Thu hồi chứng nhận */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    certificateId: components["parameters"]["CertificateIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Thu hồi thành công */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/recalls": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Danh sách Recall */
-        get: {
-            parameters: {
-                query?: {
-                    page?: components["parameters"]["Page"];
-                    pageSize?: components["parameters"]["PageSize"];
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách recall */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["RecallPagedResponse"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        /** Tạo Recall (thu hồi Batch) */
+        /** Gộp Batch */
         post: {
             parameters: {
                 query?: never;
@@ -2298,30 +1006,114 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
-                    "application/json": components["schemas"]["CreateRecallRequest"];
+                    "application/json": components["schemas"]["MergeBatchRequest"];
+                    "text/json": components["schemas"]["MergeBatchRequest"];
+                    "application/*+json": components["schemas"]["MergeBatchRequest"];
                 };
             };
             responses: {
-                /** @description Tạo thành công */
+                /** @description Created */
                 201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: {
-                                /** Format: uuid */
-                                recallId?: string;
-                            };
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                /** @description Batch đã Recall */
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lấy danh sách Category */
+        get: {
+            parameters: {
+                query?: {
+                    Search?: string;
+                    SortBy?: string;
+                    SortDir?: string;
+                    Page?: number;
+                    PageSize?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Tạo Category mới */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CategoryRequest"];
+                    "text/json": components["schemas"]["CategoryRequest"];
+                    "application/*+json": components["schemas"]["CategoryRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
                 409: {
                     headers: {
                         [name: string]: unknown;
@@ -2330,7 +1122,6 @@ export interface paths {
                         "application/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                500: components["responses"]["InternalServerError"];
             };
         };
         delete?: never;
@@ -2339,51 +1130,147 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/recalls/{recallId}": {
+    "/api/v1/categories/{categoryId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Chi tiết Recall */
+        /** Chi tiết Category */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    recallId: components["parameters"]["RecallIdPath"];
+                    categoryId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Chi tiết recall */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["RecallDetail"];
-                        };
+                        "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
-        put?: never;
+        /** Cập nhật Category */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    categoryId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CategoryRequest"];
+                    "text/json": components["schemas"]["CategoryRequest"];
+                    "application/*+json": components["schemas"]["CategoryRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
         post?: never;
-        delete?: never;
+        /** Xóa Category */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    categoryId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/recalls/{recallId}/resolve": {
+    "/api/v1/categories/{categoryId}/status": {
         parameters: {
             query?: never;
             header?: never;
@@ -2396,67 +1283,336 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Kết thúc Recall */
+        /** Thay đổi trạng thái Category */
         patch: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    recallId: components["parameters"]["RecallIdPath"];
+                    categoryId: string;
                 };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: {
                 content: {
-                    "application/json": components["schemas"]["ResolveRecallRequest"];
+                    "application/json": components["schemas"]["ActiveStatusRequest"];
+                    "text/json": components["schemas"]["ActiveStatusRequest"];
+                    "application/*+json": components["schemas"]["ActiveStatusRequest"];
                 };
             };
             responses: {
-                200: components["responses"]["SuccessMessage"];
-                400: components["responses"]["BadRequest"];
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         trace?: never;
     };
-    "/notifications": {
+    "/api/v1/batches/{batchId}/certificates": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Danh sách thông báo */
+        /** Danh sách chứng nhận của Batch */
         get: {
             parameters: {
                 query?: {
-                    /** @description Lọc theo trạng thái đã đọc */
-                    isRead?: boolean;
-                    page?: components["parameters"]["Page"];
-                    pageSize?: components["parameters"]["PageSize"];
+                    page?: number;
+                    pageSize?: number;
                 };
                 header?: never;
-                path?: never;
+                path: {
+                    batchId: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Danh sách thông báo */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["NotificationPagedResponse"];
-                        };
+                        "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        /** Cấp chứng nhận */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    batchId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["IssueCertificateRequest"];
+                    "text/json": components["schemas"]["IssueCertificateRequest"];
+                    "application/*+json": components["schemas"]["IssueCertificateRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/certificates/{certificateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Chi tiết chứng nhận */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    certificateId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Thu hồi chứng nhận */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    certificateId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/batches/{batchId}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách Event của Batch */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                };
+                header?: never;
+                path: {
+                    batchId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Ghi nhận Supply Chain Event */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    batchId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateEventRequest"];
+                    "text/json": components["schemas"]["CreateEventRequest"];
+                    "application/*+json": components["schemas"]["CreateEventRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/batches/{batchId}/events/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Kiểm tra Hash Chain của Batch */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    batchId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2467,7 +1623,575 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/notifications/unread-count": {
+    "/api/v1/events/{eventId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Chi tiết Event */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    eventId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inspections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Danh sách tất cả kiểm định (hỗ trợ lọc theo batchId và phân trang)
+         *     GET /api/v1/inspections
+         */
+        get: {
+            parameters: {
+                query?: {
+                    batchId?: string;
+                    page?: number;
+                    pageSize?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/batches/{batchId}/inspections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách kiểm định của Batch */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                };
+                header?: never;
+                path: {
+                    batchId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Tạo kiểm định */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    batchId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateInspectionRequest"];
+                    "text/json": components["schemas"]["CreateInspectionRequest"];
+                    "application/*+json": components["schemas"]["CreateInspectionRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inspections/{inspectionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Chi tiết kiểm định */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    inspectionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** Cập nhật kiểm định */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    inspectionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateInspectionRequest"];
+                    "text/json": components["schemas"]["UpdateInspectionRequest"];
+                    "application/*+json": components["schemas"]["UpdateInspectionRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách Role */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organization-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách loại tổ chức */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/event-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách loại Event */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách đơn vị tính */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inspection-results": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách kết quả kiểm định */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/certificate-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách loại chứng nhận */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recall-severities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách mức độ Recall */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách thông báo */
+        get: {
+            parameters: {
+                query?: {
+                    isRead?: boolean;
+                    page?: number;
+                    pageSize?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/unread-count": {
         parameters: {
             query?: never;
             header?: never;
@@ -2484,22 +2208,17 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Số lượng chưa đọc */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: {
-                                /** @example 3 */
-                                unreadCount?: number;
-                            };
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
             };
         };
         put?: never;
@@ -2510,7 +2229,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/notifications/read-all": {
+    "/api/v1/notifications/read-all": {
         parameters: {
             query?: never;
             header?: never;
@@ -2533,14 +2252,22 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                200: components["responses"]["SuccessMessage"];
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
             };
         };
         trace?: never;
     };
-    "/notifications/{notificationId}/read": {
+    "/api/v1/notifications/{notificationId}/read": {
         parameters: {
             query?: never;
             header?: never;
@@ -2559,162 +2286,52 @@ export interface paths {
                 query?: never;
                 header?: never;
                 path: {
-                    notificationId: components["parameters"]["NotificationIdPath"];
+                    notificationId: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                200: components["responses"]["SuccessMessage"];
-                401: components["responses"]["Unauthorized"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        trace?: never;
-    };
-    "/public/trace/{batchId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Tra cứu công khai theo Batch ID */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    batchId: components["parameters"]["BatchIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Thông tin truy xuất nguồn gốc */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["PublicTraceData"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/public/trace/{batchId}/lineage": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Phả hệ Batch (quan hệ split/merge) */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    batchId: components["parameters"]["BatchIdPath"];
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Phả hệ batch */
-                200: {
+                /** @description Not Found */
+                404: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["LineageData"];
-                        };
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
                     };
                 };
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
             };
         };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
-    "/analytics/overview": {
+    "/api/v1/organizations": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Dashboard tổng quan */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Tổng quan hệ thống */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["OverviewData"];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/analytics/batch-distribution": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Thống kê phân bố Batch theo trạng thái */
+        /** Lấy danh sách tổ chức */
         get: {
             parameters: {
                 query?: {
-                    /** @description Lọc theo tổ chức */
-                    organizationId?: string;
-                    /** @description Từ ngày */
-                    fromDate?: string;
-                    /** @description Đến ngày */
-                    toDate?: string;
+                    organizationTypeId?: string;
+                    page?: number;
+                    pageSize?: number;
                 };
                 header?: never;
                 path?: never;
@@ -2722,110 +2339,259 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Thống kê batch */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["BatchDistributionData"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                500: components["responses"]["InternalServerError"];
             };
         };
         put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/analytics/processing-time": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Thống kê thời gian xử lý */
-        get: {
+        /** Tạo tổ chức mới */
+        post: {
             parameters: {
-                query?: {
-                    organizationId?: string;
-                    eventTypeId?: string;
-                    fromDate?: string;
-                    toDate?: string;
-                };
+                query?: never;
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
-            requestBody?: never;
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["OrganizationRequest"];
+                    "text/json": components["schemas"]["OrganizationRequest"];
+                    "application/*+json": components["schemas"]["OrganizationRequest"];
+                };
+            };
             responses: {
-                /** @description Thời gian xử lý */
-                200: {
+                /** @description Created */
+                201: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["ProcessingTimeData"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                500: components["responses"]["InternalServerError"];
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/analytics/traceback/{batchId}": {
+    "/api/v1/organizations/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Truy vết ngược từ một Batch */
+        /** Xem chi tiết tổ chức */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
                 path: {
-                    batchId: components["parameters"]["BatchIdPath"];
+                    id: string;
                 };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Kết quả truy vết */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["TracebackData"];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                403: components["responses"]["Forbidden"];
-                404: components["responses"]["NotFound"];
-                500: components["responses"]["InternalServerError"];
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** Cập nhật tổ chức */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["OrganizationRequest"];
+                    "text/json": components["schemas"]["OrganizationRequest"];
+                    "application/*+json": components["schemas"]["OrganizationRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizations/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Thay đổi trạng thái tổ chức */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["StatusRequest"];
+                    "text/json": components["schemas"]["StatusRequest"];
+                    "application/*+json": components["schemas"]["StatusRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/organizations/{id}/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lấy người dùng thuộc tổ chức */
+        get: {
+            parameters: {
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                };
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2836,36 +2602,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/roles": {
+    "/api/v1/organizations/{id}/products": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Danh sách Role */
+        /** Lấy sản phẩm của tổ chức */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                };
                 header?: never;
-                path?: never;
+                path: {
+                    id: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Danh sách role */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["LookupItem"][];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
             };
         };
         put?: never;
@@ -2876,36 +2645,422 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/organization-types": {
+    "/api/v1/products": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Danh sách loại tổ chức */
+        /** Danh sách Product */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    organizationId?: string;
+                    categoryId?: string;
+                    search?: string;
+                    page?: number;
+                    pageSize?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Danh sách loại tổ chức */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["LookupItem"][];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        /** Tạo Product mới */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ProductRequest"];
+                    "text/json": components["schemas"]["ProductRequest"];
+                    "application/*+json": components["schemas"]["ProductRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Chi tiết Product */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    productId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        /** Cập nhật Product */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    productId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ProductRequest"];
+                    "text/json": components["schemas"]["ProductRequest"];
+                    "application/*+json": components["schemas"]["ProductRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Xóa Product */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    productId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/{productId}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Thay đổi trạng thái Product */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    productId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ProductStatusRequest"];
+                    "text/json": components["schemas"]["ProductStatusRequest"];
+                    "application/*+json": components["schemas"]["ProductStatusRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/products/{productId}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Danh sách ảnh sản phẩm */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    productId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Upload ảnh sản phẩm */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    productId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "multipart/form-data": {
+                        /** Format: binary */
+                        File: string;
+                        IsPrimary?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Not Implemented */
+                501: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/products/images/{imageId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Xóa ảnh sản phẩm */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    imageId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Not Implemented */
+                501: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/trace/{batchId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public traceability lookup by batch ID. No authentication required. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    batchId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2916,36 +3071,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/event-types": {
+    "/api/v1/public/trace/{batchId}/lineage": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Danh sách loại Event */
+        /** Batch lineage (split/merge relationships). No authentication required. */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    batchId: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Danh sách loại event */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["LookupItem"][];
-                        };
+                        "application/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2956,36 +3118,138 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/units": {
+    "/api/v1/recalls": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Danh sách đơn vị tính */
+        /** Danh sách Recall */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    page?: number;
+                    pageSize?: number;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Danh sách đơn vị */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["LookupItem"][];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        /** Tạo Recall (thu hồi Batch) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateRecallRequest"];
+                    "text/json": components["schemas"]["CreateRecallRequest"];
+                    "application/*+json": components["schemas"]["CreateRecallRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Conflict */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recalls/{recallId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Chi tiết Recall */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    recallId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
         put?: never;
@@ -2996,14 +3260,165 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/inspection-results": {
+    "/api/v1/recalls/{recallId}/resolve": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Danh sách kết quả kiểm định */
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Kết thúc Recall */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    recallId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["ResolveRecallRequest"];
+                    "text/json": components["schemas"]["ResolveRecallRequest"];
+                    "application/*+json": components["schemas"]["ResolveRecallRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v1/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lấy danh sách người dùng */
+        get: {
+            parameters: {
+                query?: {
+                    organizationId?: string;
+                    role?: string;
+                    search?: string;
+                    page?: number;
+                    pageSize?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Tạo User mới */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["CreateUserRequest"];
+                    "text/json": components["schemas"]["CreateUserRequest"];
+                    "application/*+json": components["schemas"]["CreateUserRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Xem hồ sơ cá nhân */
         get: {
             parameters: {
                 query?: never;
@@ -3013,22 +3428,59 @@ export interface paths {
             };
             requestBody?: never;
             responses: {
-                /** @description Danh sách kết quả */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["LookupItem"][];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
             };
         };
-        put?: never;
+        /** Cập nhật hồ sơ cá nhân */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateUserRequest"];
+                    "text/json": components["schemas"]["UpdateUserRequest"];
+                    "application/*+json": components["schemas"]["UpdateUserRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
         post?: never;
         delete?: never;
         options?: never;
@@ -3036,39 +3488,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/certificate-types": {
+    "/api/v1/users/{userId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Danh sách loại chứng nhận */
+        /** Lấy thông tin chi tiết User */
         get: {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    userId: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
             responses: {
-                /** @description Danh sách loại chứng nhận */
+                /** @description OK */
                 200: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["LookupItem"][];
-                        };
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
                     };
                 };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
             };
         };
-        put?: never;
+        /** Cập nhật User */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UpdateUserRequest"];
+                    "text/json": components["schemas"]["UpdateUserRequest"];
+                    "application/*+json": components["schemas"]["UpdateUserRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
         post?: never;
         delete?: never;
         options?: never;
@@ -3076,855 +3591,294 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/recall-severities": {
+    "/api/v1/users/{userId}/status": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Danh sách mức độ Recall */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Danh sách mức độ */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["ApiResponse"] & {
-                            data?: components["schemas"]["LookupItem"][];
-                        };
-                    };
-                };
-                401: components["responses"]["Unauthorized"];
-                500: components["responses"]["InternalServerError"];
-            };
-        };
+        get?: never;
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** Kích hoạt / Vô hiệu hóa tài khoản */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": components["schemas"]["UserStatusRequest"];
+                    "text/json": components["schemas"]["UserStatusRequest"];
+                    "application/*+json": components["schemas"]["UserStatusRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ApiResponse"];
+                        "application/json": components["schemas"]["ApiResponse"];
+                        "text/json": components["schemas"]["ApiResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ErrorResponse"];
+                        "application/json": components["schemas"]["ErrorResponse"];
+                        "text/json": components["schemas"]["ErrorResponse"];
+                    };
+                };
+            };
+        };
         trace?: never;
     };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        ApiResponse: {
-            /** @example true */
-            success?: boolean;
-            data?: unknown;
-            /** @example Thực hiện thành công */
-            message?: string;
-            /**
-             * Format: date-time
-             * @example 2026-07-07T10:00:00Z
-             */
-            timestamp?: string;
-        };
-        ErrorResponse: {
-            /** @example false */
-            success?: boolean;
-            /** @example null */
-            data?: unknown;
-            /** @example Validation failed */
-            message?: string;
-            errors?: components["schemas"]["FieldError"][];
-            /** Format: date-time */
-            timestamp?: string;
-        };
-        FieldError: {
-            /** @example email */
-            field?: string;
-            /** @example REQUIRED */
-            code?: string;
-            /** @example Email không được để trống */
-            message?: string;
-        };
-        PagedMeta: {
-            /** @example 100 */
-            totalCount?: number;
-            /** @example 1 */
-            page?: number;
-            /** @example 20 */
-            pageSize?: number;
-            /** @example 5 */
-            totalPages?: number;
-        };
-        LookupItem: {
-            id?: string;
-            code?: string;
-            name?: string;
-        };
-        LoginRequest: {
-            /**
-             * Format: email
-             * @example farmer@gmail.com
-             */
-            email: string;
-            /**
-             * Format: password
-             * @example 12345678
-             */
-            password: string;
-        };
-        LoginData: {
-            /** @example eyJhbGciOiJIUzI1... */
-            accessToken?: string;
-            /** @example refresh_token_value */
-            refreshToken?: string;
-            user?: components["schemas"]["UserBasic"];
-        };
-        TokenPair: {
-            accessToken?: string;
-            refreshToken?: string;
-        };
-        RefreshTokenRequest: {
-            refreshToken: string;
-        };
-        ChangePasswordRequest: {
-            /** Format: password */
-            currentPassword: string;
-            /** Format: password */
-            newPassword: string;
-        };
-        ForgotPasswordRequest: {
-            /** Format: email */
-            email: string;
-        };
-        ResetPasswordRequest: {
-            token: string;
-            /** Format: password */
-            newPassword: string;
-        };
-        UserBasic: {
-            /** @example 1 */
-            id?: number;
-            /** @example Nguyen Van A */
-            name?: string;
-            /**
-             * Format: email
-             * @example farmer@gmail.com
-             */
-            email?: string;
-            /** @example FARMER */
-            role?: string;
-        };
-        OrganizationRequest: {
-            /** @example Green Farm */
-            name: string;
-            /**
-             * @example FARM
-             * @enum {string}
-             */
-            type: "FARM" | "PROCESSOR" | "DISTRIBUTOR" | "RETAILER" | "INSPECTOR_ORG";
-            /** @example Lam Dong */
-            address?: string;
-        };
-        OrganizationCreatedData: {
-            /** @example 10 */
-            organizationId?: number;
-            /** @example Green Farm */
-            name?: string;
-        };
-        OrganizationDetail: {
-            /** @example 1 */
-            organizationId?: number;
-            /** @example Farm ABC */
-            name?: string;
-            /** @example Da Lat */
-            address?: string;
-            /** @example FARM */
-            type?: string;
-            /** @example ACTIVE */
-            status?: string;
-        };
-        OrganizationListItem: {
-            organizationId?: number;
-            name?: string;
-            type?: string;
-            status?: string;
-        };
-        OrganizationPagedResponse: components["schemas"]["PagedMeta"] & {
-            items?: components["schemas"]["OrganizationListItem"][];
-        };
-        StatusRequest: {
-            /** @example INACTIVE */
-            status: string;
-        };
+        /** @description Request body for toggling active status. Matches swagger `ActiveStatusRequest`. */
         ActiveStatusRequest: {
-            /** @example false */
             isActive: boolean;
         };
-        CreateUserRequest: {
-            /** @example 1 */
-            organizationId?: number | null;
-            /** @example Trần Văn B */
-            fullName: string;
-            /**
-             * Format: email
-             * @example tranb@gmail.com
-             */
-            email: string;
-            /**
-             * Format: password
-             * @example 12345678
-             */
-            password: string;
-            /**
-             * @example FARMER
-             * @enum {string}
-             */
-            role: "ADMIN" | "MANAGER" | "STAFF" | "FARMER" | "INSPECTOR" | "CONSUMER";
-        };
-        UpdateUserRequest: {
-            /** @example Nguyễn Văn C */
-            fullName?: string;
-            /** @example 098888888 */
-            phone?: string;
-            /** @enum {string} */
-            role?: "ADMIN" | "MANAGER" | "STAFF" | "FARMER" | "INSPECTOR" | "CONSUMER";
-        };
-        UserStatusRequest: {
-            /** @example false */
-            isActive: boolean;
-        };
-        UserDetail: {
-            /** @example 1 */
-            userId?: number;
-            /** @example Nguyễn Văn A */
-            fullName?: string;
-            /** Format: email */
-            email?: string;
-            /** @example FARMER */
-            role?: string;
-            /** @example 1 */
-            organizationId?: number;
-            /** @example 090xxxxxxx */
-            phone?: string;
-            /** @example true */
-            isActive?: boolean;
-        };
-        UserListItem: {
-            userId?: number;
-            fullName?: string;
-            /** Format: email */
-            email?: string;
-            role?: string;
-            organizationId?: number;
-            organizationName?: string;
-            isActive?: boolean;
+        /**
+         * @description Envelope chuẩn cho response thành công của API, khớp schema `ApiResponse` trong swagger.yaml.
+         *     Hình dạng: { success, data, message, timestamp }.
+         */
+        ApiResponse: {
+            success?: boolean;
+            data?: unknown;
+            message?: string | null;
             /** Format: date-time */
-            createdAt?: string;
+            timestamp?: string;
         };
-        UserPagedResponse: components["schemas"]["PagedMeta"] & {
-            items?: components["schemas"]["UserListItem"][];
-        };
-        CategoryRequest: {
-            /** @example Coffee */
-            name: string;
-            /** @example Các loại cà phê */
-            description?: string;
-        };
-        CategoryDetail: {
-            /** @example 1 */
-            categoryId?: number;
-            /** @example Coffee */
-            name?: string;
-            /** @example Sản phẩm cà phê */
-            description?: string;
-            /** @example true */
-            isActive?: boolean;
-        };
-        CategoryListItem: {
-            categoryId?: number;
-            name?: string;
-            description?: string;
-            isActive?: boolean;
-        };
-        CategoryPagedResponse: components["schemas"]["PagedMeta"] & {
-            items?: components["schemas"]["CategoryListItem"][];
-        };
-        ProductRequest: {
-            /** @example Cà phê Arabica */
-            name: string;
-            /** @example 5 */
-            categoryId: number;
-            /** @example kg */
-            unit: string;
-            /** @example 1 */
-            organizationId: number;
-        };
-        ProductDetail: {
-            /** @example 1 */
-            productId?: number;
-            /** @example Cà phê Arabica */
-            name?: string;
-            category?: {
-                id?: number;
-                name?: string;
-            };
-            /** @example kg */
-            unit?: string;
-            organizationId?: number;
-            isActive?: boolean;
-        };
-        ProductListItem: {
-            productId?: number;
-            name?: string;
-            categoryId?: number;
-            categoryName?: string;
-            unit?: string;
-            organizationId?: number;
-            isActive?: boolean;
-        };
-        ProductPagedResponse: components["schemas"]["PagedMeta"] & {
-            items?: components["schemas"]["ProductListItem"][];
-        };
-        ImageUploadRequest: {
-            /**
-             * Format: binary
-             * @description Ảnh (jpg/png, tối đa 5MB)
-             */
-            file: string;
-            /** @example true */
-            isPrimary?: boolean;
-        };
-        ImageItem: {
-            /** Format: uuid */
-            imageId?: string;
-            /**
-             * Format: uri
-             * @example https://storage.agritrace.vn/batches/uuid/img1.jpg
-             */
-            url?: string;
-            isPrimary?: boolean;
-        };
-        ImageListData: {
-            items?: components["schemas"]["ImageItem"][];
-        };
-        ImageCreatedData: {
-            /** Format: uuid */
-            imageId?: string;
-            /** Format: uri */
-            url?: string;
-        };
-        CreateBatchRequest: {
-            /** Format: uuid */
-            productId: string;
-            /** @example 1000 */
-            quantity: number;
-            /** Format: uuid */
-            unitId: string;
-            /**
-             * Format: date
-             * @example 2026-07-01
-             */
-            productionDate: string;
-            /**
-             * Format: date
-             * @example 2026-07-15
-             */
-            expiryDate?: string | null;
-        };
-        UpdateBatchRequest: {
-            /** @example 1200 */
-            quantity?: number;
-            /**
-             * Format: date
-             * @example 2026-07-20
-             */
-            expiryDate?: string;
-        };
+        /** @description Request body for setting a batch's status. Matches swagger `BatchStatusRequest`. */
         BatchStatusRequest: {
-            /** @example 2 */
+            /** Format: int32 */
             status: number;
         };
-        BatchCreatedData: {
-            /** Format: uuid */
-            batchId?: string;
-            /** @example TOMATO-2026-001 */
-            batchCode?: string;
-            /** Format: uri */
-            qrCodeUrl?: string;
+        CategoryRequest: {
+            name: string;
+            description?: string | null;
         };
-        QrCodeData: {
-            /** Format: uuid */
-            batchId?: string;
-            /** @example TOMATO-2026-001 */
-            batchCode?: string;
-            /** Format: uri */
-            qrCodeUrl?: string;
-            /** Format: uri */
-            publicTraceUrl?: string;
+        ChangePasswordRequest: {
+            currentPassword?: string | null;
+            newPassword?: string | null;
         };
-        BatchListItem: {
-            /** Format: uuid */
-            batchId?: string;
+        /**
+         * @description Request body for creating a new batch. Matches swagger `CreateBatchRequest`.
+         *     The server generates the batch code; the client does not provide it.
+         */
+        CreateBatchRequest: {
             /** Format: uuid */
             productId?: string;
-            productName?: string;
-            batchCode?: string;
+            /** Format: double */
             quantity?: number;
             /** Format: uuid */
             unitId?: string;
-            unitCode?: string;
-            status?: number;
-            statusName?: string;
-            /** Format: uuid */
-            currentOrganizationId?: string;
-            /** Format: uri */
-            qrCodeUrl?: string;
-            /** Format: date-time */
-            createdAt?: string;
-        };
-        BatchPagedResponse: components["schemas"]["PagedMeta"] & {
-            items?: components["schemas"]["BatchListItem"][];
-        };
-        BatchDetail: {
-            /** Format: uuid */
-            batchId?: string;
-            /** Format: uuid */
-            productId?: string;
-            productName?: string;
-            /** Format: uuid */
-            categoryId?: string;
-            categoryName?: string;
-            batchCode?: string;
-            quantity?: number;
-            /** Format: uuid */
-            unitId?: string;
-            unitCode?: string;
             /** Format: date */
             productionDate?: string;
             /** Format: date */
             expiryDate?: string | null;
-            status?: number;
-            /** Format: uuid */
-            currentOrganizationId?: string;
-            organizationName?: string;
-            /** Format: uri */
-            qrCodeUrl?: string;
-            /** Format: date-time */
-            createdAt?: string;
         };
+        /** @description Request body for creating a supply-chain event. Matches swagger `CreateEventRequest`. */
         CreateEventRequest: {
             /** Format: uuid */
             eventTypeId: string;
-            /**
-             * @description JSON string chứa dữ liệu bổ sung
-             * @example {"temperature":25}
-             */
-            eventData?: string;
-            /** @example Da Lat */
-            location?: string;
+            eventData?: string | null;
+            location?: string | null;
         };
-        EventCreatedData: {
-            /** Format: uuid */
-            eventId?: string;
-            /** @example abc123 */
-            previousHash?: string;
-            /** @example xyz789 */
-            currentHash?: string;
-        };
-        EventDetail: {
-            /** Format: uuid */
-            eventId?: string;
-            /** Format: uuid */
-            batchId?: string;
-            /** Format: uuid */
-            eventTypeId?: string;
-            /** @example PROCESSING */
-            eventTypeCode?: string;
-            /** Format: uuid */
-            organizationId?: string;
-            /** Format: uuid */
-            performedByUserId?: string;
-            /** @example {"machine":"M-01"} */
-            eventData?: string;
-            /** @example Processor A */
-            location?: string;
-            previousHash?: string;
-            currentHash?: string;
-            /** Format: date-time */
-            eventTime?: string;
-        };
-        EventListItem: components["schemas"]["EventDetail"];
-        EventPagedResponse: components["schemas"]["PagedMeta"] & {
-            items?: components["schemas"]["EventListItem"][];
-        };
-        SplitBatchRequest: {
-            splits: {
-                /** @example 400 */
-                quantity: number;
-                /** Format: uuid */
-                unitId: string;
-            }[];
-        };
-        SplitBatchData: {
-            /** Format: uuid */
-            parentBatchId?: string;
-            childBatchIds?: string[];
-        };
-        MergeBatchRequest: {
-            sourceBatchIds: string[];
-            /** Format: uuid */
-            productId: string;
-            /** @example 1000 */
-            quantity: number;
-            /** Format: uuid */
-            unitId: string;
-            /**
-             * Format: date
-             * @example 2026-07-01
-             */
-            productionDate: string;
-        };
-        MergeBatchData: {
-            /** Format: uuid */
-            newBatchId?: string;
-            /** @example MERGED-2026-001 */
-            batchCode?: string;
-        };
+        /** @description Request body for creating a new quality inspection on a batch. */
         CreateInspectionRequest: {
-            /**
-             * @example PASS
-             * @enum {string}
-             */
-            result: "PASS" | "FAIL";
-            /** @example No pesticide residue detected */
-            notes?: string;
+            /** @description Inspection result: "PASS" or "FAIL". */
+            result: string;
+            /** @description Optional notes about the inspection findings. */
+            notes?: string | null;
         };
-        UpdateInspectionRequest: {
-            /**
-             * @example FAIL
-             * @enum {string}
-             */
-            result: "PASS" | "FAIL";
-            /** @example Detected residue above limit */
-            notes?: string;
-        };
-        InspectionDetail: {
-            /** Format: uuid */
-            inspectionId?: string;
+        /**
+         * @description Request body for creating a recall. Matches swagger `CreateRecallRequest`.
+         *     severity: 1=LOW, 2=MEDIUM, 3=HIGH.
+         */
+        CreateRecallRequest: {
             /** Format: uuid */
             batchId?: string;
-            /** @example TOMATO-2026-001 */
-            batchCode?: string;
-            /** Format: uuid */
-            inspectorId?: string;
-            /** @example Nguyen Van A */
-            inspectorName?: string;
-            status?: number;
-            /** @enum {string} */
-            result?: "PASS" | "FAIL";
-            notes?: string;
+            reason: string;
+            /** Format: int32 */
+            severity?: number;
+        };
+        /**
+         * @description Request body for creating a user. Matches swagger `CreateUserRequest`.
+         *     organizationId is not accepted; it is auto-assigned from the authenticated MANAGER's token.
+         *     role is a required string enum (STAFF only).
+         */
+        CreateUserRequest: {
+            fullName?: string | null;
+            email?: string | null;
+            password?: string | null;
+            role?: string | null;
+        };
+        /**
+         * @description Envelope chuẩn cho response lỗi của API, khớp schema `ErrorResponse` trong swagger.yaml.
+         *     Hình dạng: { success, data, message, errors[], timestamp }.
+         */
+        ErrorResponse: {
+            success?: boolean;
+            data?: unknown;
+            message?: string | null;
+            errors?: components["schemas"]["FieldError"][] | null;
             /** Format: date-time */
-            createdAt?: string;
+            timestamp?: string;
         };
-        InspectionPagedResponse: components["schemas"]["PagedMeta"] & {
-            items?: components["schemas"]["InspectionDetail"][];
+        /**
+         * @description Mô tả một lỗi ở cấp field, khớp schema `FieldError` trong swagger.yaml.
+         *     Hình dạng: { field, code, message }.
+         */
+        FieldError: {
+            field?: string | null;
+            code?: string | null;
+            message?: string | null;
         };
-        CreateCertificateRequest: {
-            /** Format: uuid */
-            inspectionId: string;
-            /** @example VietGAP */
-            certificateType: string;
+        ForgotPasswordRequest: {
+            email?: string | null;
+        };
+        /** @description Request body for issuing a new certificate on a batch. */
+        IssueCertificateRequest: {
             /**
-             * Format: uri
-             * @example https://storage.agritrace.vn/certs/uuid.pdf
+             * Format: uuid
+             * @description Related inspection Id.
              */
+            inspectionId: string;
+            /** @description Certificate type. */
+            certificateType: string;
+            /** @description URL to the certificate file. */
             fileUrl: string;
             /**
              * Format: date
-             * @example 2026-07-07
+             * @description Issued date.
              */
             issuedDate: string;
         };
-        CertificateDetail: {
+        LoginRequest: {
+            email?: string | null;
+            password?: string | null;
+        };
+        /** @description Request body for merging batches. Matches swagger `MergeBatchRequest` (min 2 sources). */
+        MergeBatchRequest: {
+            sourceBatchIds: string[];
             /** Format: uuid */
-            certificateId?: string;
+            productId?: string;
+            /** Format: double */
+            quantity?: number;
             /** Format: uuid */
-            batchId?: string;
-            batchCode?: string;
-            /** Format: uuid */
-            inspectionId?: string;
-            /** @example VietGAP */
-            certificateType?: string;
-            /** Format: uri */
-            fileUrl?: string;
+            unitId?: string;
             /** Format: date */
-            issuedDate?: string;
-            /** Format: date-time */
-            createdAt?: string;
+            productionDate?: string;
         };
-        CertificatePagedResponse: components["schemas"]["PagedMeta"] & {
-            items?: components["schemas"]["CertificateDetail"][];
+        /** @description Request body for creating/updating an organization. Matches swagger `OrganizationRequest`. */
+        OrganizationRequest: {
+            name: string;
+            /** @description Organization type. One of: FARM, PROCESSOR, DISTRIBUTOR, RETAILER, INSPECTOR_ORG. */
+            type: string;
+            address?: string | null;
         };
-        CreateRecallRequest: {
+        /**
+         * @description Request body for creating/updating a product.
+         *     Supports both string Unit and UUID UnitId for frontend flexibility.
+         */
+        ProductRequest: {
+            name: string;
             /** Format: uuid */
-            batchId: string;
-            /** @example E. coli contamination detected */
-            reason: string;
+            categoryId?: string | null;
+            /** @description Unit code/name (e.g. "kg"). */
+            unit?: string | null;
             /**
-             * @description 1=LOW, 2=MEDIUM, 3=HIGH
-             * @example 3
+             * Format: uuid
+             * @description Direct Unit ID (Guid).
              */
-            severity: number;
+            unitId?: string | null;
+            /** Format: uuid */
+            organizationId?: string | null;
         };
+        /** @enum {string} */
+        ProductStatus: "Created" | "Active" | "Inactive";
+        /** @description Request body for setting a product's status. */
+        ProductStatusRequest: {
+            status: components["schemas"]["ProductStatus"];
+        };
+        RefreshTokenRequest: {
+            refreshToken?: string | null;
+        };
+        ResetPasswordRequest: {
+            token?: string | null;
+            newPassword?: string | null;
+        };
+        /** @description Request body for resolving a recall. Matches swagger `ResolveRecallRequest`. */
         ResolveRecallRequest: {
-            /** @example 3 */
-            status: number;
-        };
-        RecallDetail: {
-            /** Format: uuid */
-            recallId?: string;
-            /** Format: uuid */
-            batchId?: string;
-            batchCode?: string;
-            /** Format: uuid */
-            createdBy?: string;
-            createdByName?: string;
-            reason?: string;
-            severity?: number;
-            /** @example HIGH */
-            severityName?: string;
+            /** Format: int32 */
             status?: number;
-            /** @example PENDING */
-            statusName?: string;
-            /** Format: date-time */
-            createdAt?: string;
         };
-        RecallPagedResponse: components["schemas"]["PagedMeta"] & {
-            items?: components["schemas"]["RecallDetail"][];
+        /** @description Request body for splitting a batch. Matches swagger `SplitBatchRequest` (min 2 splits). */
+        SplitBatchRequest: {
+            splits: components["schemas"]["SplitItem"][];
         };
-        NotificationItem: {
+        SplitItem: {
+            /** Format: double */
+            quantity?: number;
             /** Format: uuid */
-            notificationId?: string;
-            /** Format: uuid */
-            userId?: string;
-            /** @example Recall Alert */
-            title?: string;
-            /** @example Batch TOMATO-2026-001 has been recalled */
-            message?: string;
-            /** @example false */
-            isRead?: boolean;
-            /** Format: date-time */
-            createdAt?: string;
+            unitId?: string;
         };
-        NotificationPagedResponse: components["schemas"]["PagedMeta"] & {
-            items?: components["schemas"]["NotificationItem"][];
+        /** @description Request body for setting an organization's status. Matches swagger `StatusRequest`. */
+        StatusRequest: {
+            status: string;
         };
-        TimelineEvent: {
-            /** @example HARVEST */
-            eventTypeCode?: string;
-            /** @example Green Farm */
-            organizationName?: string;
-            /** Format: date-time */
-            eventTime?: string;
-            /** @example Da Lat */
-            location?: string;
-        };
-        PublicInspectionSummary: {
-            /** @enum {string} */
-            result?: "PASS" | "FAIL";
-            inspectorName?: string;
-            /** Format: date-time */
-            createdAt?: string;
-        };
-        PublicCertificateSummary: {
-            /** @example VietGAP */
-            certificateType?: string;
-            /** Format: uri */
-            fileUrl?: string;
+        /**
+         * @description Request body for updating an existing batch. Matches swagger `UpdateBatchRequest`.
+         *     Only `quantity` and `expiryDate` are updatable.
+         */
+        UpdateBatchRequest: {
+            /** Format: double */
+            quantity?: number | null;
             /** Format: date */
-            issuedDate?: string;
+            expiryDate?: string | null;
         };
-        PublicTraceData: {
-            /** Format: uuid */
-            batchId?: string;
-            batchCode?: string;
-            productName?: string;
-            quantity?: number;
-            unitCode?: string;
-            currentOrganizationName?: string;
-            status?: number;
-            timeline?: components["schemas"]["TimelineEvent"][];
-            inspections?: components["schemas"]["PublicInspectionSummary"][];
-            certificates?: components["schemas"]["PublicCertificateSummary"][];
-            recallStatus?: string | null;
+        /** @description Request body for updating an existing quality inspection. */
+        UpdateInspectionRequest: {
+            /** @description Updated inspection result: "PASS" or "FAIL". */
+            result: string;
+            /** @description Updated notes about the inspection findings. */
+            notes?: string | null;
         };
-        LineageNode: {
-            /** Format: uuid */
-            batchId?: string;
-            batchCode?: string;
-            /** @example SPLIT */
-            eventTypeCode?: string;
-            quantity?: number;
-            /** Format: uuid */
-            parentBatchId?: string | null;
+        /**
+         * @description Request body for updating a user. Matches swagger `UpdateUserRequest`.
+         *     All fields are optional. role is a string enum when provided.
+         */
+        UpdateUserRequest: {
+            fullName?: string | null;
+            phone?: string | null;
+            role?: string | null;
         };
-        LineageData: {
-            /** Format: uuid */
-            rootBatchId?: string;
-            lineage?: components["schemas"]["LineageNode"][];
-        };
-        OverviewData: {
-            /** @example 150 */
-            totalBatches?: number;
-            /** @example 12 */
-            totalOrganizations?: number;
-            /** @example 890 */
-            totalEvents?: number;
-            /** @example 2 */
-            totalRecalls?: number;
-            /** @example 120 */
-            activeBatches?: number;
-            /** @example 2 */
-            recalledBatches?: number;
-        };
-        BatchStatusDistributionItem: {
-            status?: number;
-            statusName?: string;
-            count?: number;
-        };
-        BatchDistributionData: {
-            items?: components["schemas"]["BatchStatusDistributionItem"][];
-            totalCount?: number;
-        };
-        ProcessingTimeByEventType: {
-            /** @example PROCESSING */
-            eventTypeCode?: string;
-            /** @example 12 */
-            averageHours?: number;
-        };
-        ProcessingTimeData: {
-            /** @example 24.5 */
-            averageProcessingHours?: number;
-            byEventType?: components["schemas"]["ProcessingTimeByEventType"][];
-        };
-        AffectedBatch: {
-            /** Format: uuid */
-            batchId?: string;
-            batchCode?: string;
-            /** @enum {string} */
-            relationship?: "SPLIT" | "MERGE";
-        };
-        RelatedOrganization: {
-            /** Format: uuid */
-            organizationId?: string;
-            name?: string;
-            type?: string;
-        };
-        TracebackData: {
-            /** Format: uuid */
-            batchId?: string;
-            batchCode?: string;
-            affectedBatches?: components["schemas"]["AffectedBatch"][];
-            relatedOrganizations?: components["schemas"]["RelatedOrganization"][];
+        /** @description Request body for changing a user's active status. Matches swagger `UserStatusRequest`. */
+        UserStatusRequest: {
+            isActive?: boolean;
         };
     };
-    responses: {
-        /** @description Thao tác thành công */
-        SuccessMessage: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ApiResponse"];
-            };
-        };
-        /** @description Dữ liệu không hợp lệ */
-        BadRequest: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ErrorResponse"];
-            };
-        };
-        /** @description Chưa đăng nhập */
-        Unauthorized: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ErrorResponse"];
-            };
-        };
-        /** @description Không đủ quyền */
-        Forbidden: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ErrorResponse"];
-            };
-        };
-        /** @description Không tìm thấy dữ liệu */
-        NotFound: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ErrorResponse"];
-            };
-        };
-        /** @description Trùng dữ liệu hoặc xung đột trạng thái */
-        Conflict: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ErrorResponse"];
-            };
-        };
-        /** @description Sai nghiệp vụ */
-        UnprocessableEntity: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ErrorResponse"];
-            };
-        };
-        /** @description Lỗi server */
-        InternalServerError: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["ErrorResponse"];
-            };
-        };
-    };
-    parameters: {
-        IdPath: number;
-        UserIdPath: number;
-        CategoryIdPath: number;
-        ProductIdPath: number;
-        BatchIdPath: string;
-        EventIdPath: string;
-        InspectionIdPath: string;
-        CertificateIdPath: string;
-        RecallIdPath: string;
-        NotificationIdPath: string;
-        ImageIdPath: string;
-        Page: number;
-        PageSize: number;
-        SortBy: string;
-        SortDir: "asc" | "desc";
-    };
+    responses: never;
+    parameters: never;
     requestBodies: never;
     headers: never;
     pathItems: never;

@@ -18,7 +18,6 @@ export function filterUsers(users: UserItem[], filters?: UserFilters) {
     const matchesSearch =
       !search ||
       normalizeText(user.fullName).includes(search) ||
-      normalizeText(user.username).includes(search) ||
       normalizeText(user.email).includes(search);
 
     const matchesRole = !role || role === "All" || user.role === role;
