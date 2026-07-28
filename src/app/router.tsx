@@ -10,6 +10,7 @@ import { RecallPage } from "../features/recall/RecallPage";
 import { ReportsPage } from "../features/reports/ReportsPage";
 import { UsersListPage } from "../features/users/UsersListPage";
 import { ProfilePage } from "../features/users/ProfilePage";
+import ChangePasswordPage from "../pages/ChangePasswordPage";
 import { InspectionPage } from "../features/inspection/InspectionPage";
 import { SupplyChainPage } from "../features/supply-chain/SupplyChainPage";
 import { PublicTracePage } from "../pages/PublicTracePage";
@@ -17,10 +18,8 @@ import { ProductManagementPage } from "../features/products/ProductManagementPag
 import { ProductDetailPage } from "../features/products/ProductDetailPage";
 import { OrganizationsPage } from "../features/organizations/OrganizationsPage";
 import { CategoriesPage } from "../features/categories/CategoriesPage";
- feature/an-branch
 import { AnalyticsPage } from "../features/analytics/AnalyticsPage";
 import { PublicLineagePage } from "../pages/PublicLineagePage";
-main
 
 export const router = createBrowserRouter([
   { path: "/", Component: HomePage },
@@ -43,6 +42,7 @@ export const router = createBrowserRouter([
       { path: "analytics", Component: AnalyticsPage },
       { path: "users", Component: UsersListPage },
       { path: "profile", Component: ProfilePage },
+      { path: "change-password", Component: ChangePasswordPage },
       { path: "products", Component: ProductManagementPage },
       { path: "products/:id", Component: ProductDetailPage },
       { path: "organizations", Component: OrganizationsPage },

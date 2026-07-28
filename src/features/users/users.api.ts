@@ -59,12 +59,13 @@ function adaptUserListItem(item: any): UserItem {
   };
 }
 
-function adaptCreateUserRequest(legacy: CreateUserRequest): NewCreateUserRequest {
+function adaptCreateUserRequest(legacy: CreateUserRequest): NewCreateUserRequest & { organizationId?: string } {
   return {
     fullName: legacy.fullName,
     email: legacy.email,
     password: legacy.password,
-    role: legacy.role as any, // Role enum may need mapping
+    role: legacy.role as any,
+    organizationId: legacy.organizationId,
   };
 }
 

@@ -150,6 +150,7 @@ export function adaptLoginDataToResponse(data: LoginData) {
     user: adaptUserBasicToUser(data.user ?? {}),
     accessToken: data.accessToken ?? "",
     refreshToken: data.refreshToken ?? "",
+    mustChangePassword: (data as any).mustChangePassword ?? false,
   };
 }
 
