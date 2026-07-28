@@ -38,12 +38,13 @@ export function getOrgTypeOptions(users: UserItem[]) {
 }
 
 export function getStatusOptions() {
-  return ["All", "Active", "Inactive"] as const;
+  return ["All", "Active", "Inactive", "Pending"] as const;
 }
 
 export function getStatusSummary(users: UserItem[]) {
   return {
     Active: users.filter((user) => user.status === "Active").length,
     Inactive: users.filter((user) => user.status === "Inactive").length,
+    Pending: users.filter((user) => user.status === "Pending").length,
   } satisfies Record<Exclude<UserStatus, "All">, number>;
 }

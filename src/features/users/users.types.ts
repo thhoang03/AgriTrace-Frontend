@@ -1,4 +1,4 @@
-export type UserStatus = "Active" | "Inactive";
+export type UserStatus = "Active" | "Inactive" | "Pending";
 export type UserRole = "ADMIN" | "MANAGER" | "STAFF";
 
 export interface UserItem {

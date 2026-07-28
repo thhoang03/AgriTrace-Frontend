@@ -53,26 +53,20 @@ function adaptUserListItem(item: any): UserItem {
     fullName: item.fullName ?? item.name ?? "",
     organization: item.organizationName ?? item.organization ?? item.orgName ?? "",
     organizationType: item.organizationTypeName ?? item.organizationType ?? "",
-    role: item.role ?? "",
+    role: (item.role ?? "").toUpperCase(),
     status:
       item.status ?? (typeof item.isActive === "boolean" ? (item.isActive ? "Active" : "Inactive") : "Inactive"),
-    role: (item.role ?? "").toUpperCase(),
-    status: item.isActive ? "Active" : "Inactive",
-main
     phone: item.phone ?? "",
     email: item.email ?? "",
   };
 }
 
 function adaptCreateUserRequest(legacy: ApiCreateUserRequest): NewCreateUserRequest {
-function adaptCreateUserRequest(legacy: CreateUserRequest): NewCreateUserRequest & { organizationId?: string } {
-main
   return {
     fullName: legacy.fullName,
     email: legacy.email,
     password: legacy.password,
     role: legacy.role as any,
-    organizationId: legacy.organizationId,
   };
 }
 
@@ -82,7 +76,6 @@ function adaptUpdateUserRequest(legacy: UpdateUserRequest): NewUpdateUserRequest
     phone: legacy.phone,
     role: legacy.role as any,
     ...(legacy.status !== undefined ? { status: legacy.status } : {}),
-main
   };
 }
 

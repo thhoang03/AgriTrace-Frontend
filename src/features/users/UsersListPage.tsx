@@ -35,6 +35,7 @@ import type {
   UserRole,
   UserStatus,
 } from "./users.types";
+import type { Organization } from "../organizations/organizations.types";
 
 const BANNER_IMG =
   "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=1400&q=80";
@@ -51,6 +52,7 @@ const statusConfig: Record<
 > = {
   Active: { bg: "#E8F5E9", color: "#2E7D32", dot: "#4CAF50" },
   Inactive: { bg: "#F5F5F5", color: "#757575", dot: "#9E9E9E" },
+  Pending: { bg: "#FFF8E1", color: "#FFB300", dot: "#FF9800" },
 };
 
 const orgTypeColors: Record<string, { bg: string; color: string }> = {
@@ -70,7 +72,6 @@ const emptyUserForm: CreateUserRequest = {
   role: "STAFF",
   organization: "",
   organizationId: undefined,
- main
 };
 
 function generatePassword(length = 12): string {
@@ -124,7 +125,10 @@ export function UsersListPage() {
   const [creating, setCreating] = useState(false);
 
   const { data: orgsData } = useOrganizationsList();
-  const organizations = useMemo(() => orgsData?.data?.items ?? [], [orgsData]);
+  const organizations = useMemo<Organization[]>(
+    () => orgsData?.data?.items ?? [],
+    [orgsData]
+  );
 
   const users = useMemo(() => data?.data?.items ?? [], [data]);
   const filtered = useMemo(
@@ -144,20 +148,9 @@ export function UsersListPage() {
       setCreating(true);
       await usersApi.create(form as any);
       qc.invalidateQueries({ queryKey: ["users"] });
-      const payload: CreateUserRequest = {
-        fullName: form.fullName,
-        email: form.email,
-        password: form.password,
-        phone: "",
-        role: isAdmin ? form.role : "STAFF",
-        organizationId: isAdmin ? form.organizationId : undefined,
-      };
-      await createUser.mutateAsync(payload);
-      showAlert("success", `User "${form.fullName}" created successfully`);
-main
       setForm(emptyUserForm);
       setShowAdd(false);
-      showAlert("success", "User created successfully");
+      showAlert("success", `User "${form.fullName}" created successfully`);
     } catch (e: any) {
       showAlert("error", getApiErrorMessage(e));
     } finally {
@@ -176,9 +169,7 @@ const handleResetPassword = async (user: UserItem) => {
   if (!password) return;
   try {
     await resetPassword.mutateAsync({ id: user.id, newPassword: password });
-    showAlert("success", `Password reset for ${user.fullName}`);
     showAlert("success", `Password reset for "${user.fullName}" successfully`);
-    main
   } catch (e: any) {
     showAlert("error", getApiErrorMessage(e));
   }
@@ -640,7 +631,6 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                 </>
               )}
 
-main
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowAdd(false)}
@@ -654,9 +644,7 @@ main
                   style={{ background: "#2E7D32" }}
                 >
 
-                  {creating ? "Saving..." : "Add User"}
-                  {createUser.isPending ? "Saving..." : isAdmin ? "Add User" : "Invite Staff"}
-main
+                  {creating ? "Saving..." : isAdmin ? "Add User" : "Invite Staff"}
                 </button>
               </div>
             </div>
