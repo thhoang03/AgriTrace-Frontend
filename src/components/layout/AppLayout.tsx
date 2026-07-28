@@ -15,7 +15,7 @@ export function AppLayout() {
       navigate("/login");
       return;
     }
-    if (user?.role && !canAccessRoute(user.role, location.pathname)) {
+    if (user?.role && !canAccessRoute(user.role, location.pathname, user?.organizationType)) {
       navigate("/app/profile");
     }
   }, [isLoggedIn, navigate, user?.role, location.pathname, canAccessRoute]);

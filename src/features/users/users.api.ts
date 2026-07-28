@@ -37,6 +37,7 @@ export interface UpdateUserRequest extends Partial<CreateUserRequest> {
 export interface UserFilters {
   search?: string;
   role?: string;
+  orgType?: string;
   status?: string | "All";
   page?: number;
   limit?: number;
@@ -51,7 +52,7 @@ function adaptUserListItem(item: any): UserItem {
     fullName: item.fullName ?? item.name ?? "",
     organization: item.organizationName ?? item.organization ?? item.orgName ?? "",
     organizationType: item.organizationTypeName ?? item.organizationType ?? "",
-    role: item.role ?? "",
+    role: (item.role ?? "").toUpperCase(),
     status: item.isActive ? "Active" : "Inactive",
     phone: item.phone ?? "",
     email: item.email ?? "",
@@ -72,7 +73,6 @@ function adaptUpdateUserRequest(legacy: UpdateUserRequest): NewUpdateUserRequest
     fullName: legacy.fullName,
     phone: legacy.phone,
     role: legacy.role as any,
-    ...(legacy.status ? { status: legacy.status } : {}),
   };
 }
 
@@ -82,6 +82,7 @@ export const usersApi = {
       params: {
         search: filters?.search,
         role: filters?.role,
+        orgType: filters?.orgType,
         page: filters?.page,
         pageSize: filters?.limit,
       }
@@ -120,6 +121,9 @@ export const usersApi = {
 
   delete: (id: string) =>
     del(`/users/${id}`),
+
+  toggleStatus: (id: string, isActive: boolean) =>
+    patch<any>(`/users/${id}/status`, { isActive }),
 
   resetPassword: (id: string, newPassword: string) =>
     post<void>(`/users/${id}/reset-password`, { newPassword }),

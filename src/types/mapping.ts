@@ -114,6 +114,7 @@ export type LegacyUser = {
   phone: string;
   role: string;
   organization: string;
+  organizationType?: string;
   avatar: string;
 };
 
@@ -132,6 +133,7 @@ export function adaptUserBasicToUser(basic: UserBasic): LegacyUser {
     phone: "",
     role: basic.role ?? "",
     organization: "",
+    organizationType: (basic as any).organizationType,
     avatar: "",
   };
 }

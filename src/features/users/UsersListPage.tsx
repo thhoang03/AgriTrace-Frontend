@@ -15,10 +15,12 @@ import {
   useCreateUser,
   useResetPassword,
   useUpdateUser,
+  useToggleStatus,
   useUsers,
 } from "./users.queries";
 import {
   filterUsers,
+  getOrgTypeOptions,
   getRoleOptions,
   getStatusOptions,
   getStatusSummary,
@@ -45,7 +47,15 @@ const statusConfig: Record<
 > = {
   Active: { bg: "#E8F5E9", color: "#2E7D32", dot: "#4CAF50" },
   Inactive: { bg: "#F5F5F5", color: "#757575", dot: "#9E9E9E" },
-  Pending: { bg: "#FFF9C4", color: "#F57F17", dot: "#FFC107" },
+};
+
+const orgTypeColors: Record<string, { bg: string; color: string }> = {
+  FARM: { bg: "#E8F5E9", color: "#1B5E20" },
+  PROCESSOR: { bg: "#E3F2FD", color: "#0D47A1" },
+  DISTRIBUTOR: { bg: "#FFF3E0", color: "#BF360C" },
+  RETAILER: { bg: "#F3E5F5", color: "#4A148C" },
+  INSPECTION: { bg: "#E0F7FA", color: "#006064" },
+  SYSTEM: { bg: "#FCE4EC", color: "#880E4F" },
 };
 
 const emptyUserForm: CreateUserRequest = {
@@ -59,6 +69,7 @@ const emptyUserForm: CreateUserRequest = {
 export function UsersListPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "All">("All");
+  const [orgTypeFilter, setOrgTypeFilter] = useState<string | "All">("All");
   const [statusFilter, setStatusFilter] = useState<UserStatus | "All">("All");
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState<CreateUserRequest>(emptyUserForm);
@@ -78,19 +89,22 @@ export function UsersListPage() {
   const { data, isLoading, isError } = useUsers({
     search,
     role: roleFilter === "All" ? undefined : roleFilter,
+    orgType: orgTypeFilter === "All" ? undefined : orgTypeFilter,
     status: statusFilter === "All" ? undefined : statusFilter,
   });
 
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
+  const toggleStatus = useToggleStatus();
   const resetPassword = useResetPassword();
 
   const users = useMemo(() => data?.data?.items ?? [], [data]);
   const filtered = useMemo(
-    () => filterUsers(users, { search, role: roleFilter, status: statusFilter }),
-    [users, search, roleFilter, statusFilter]
+    () => filterUsers(users, { search, role: roleFilter, orgType: orgTypeFilter, status: statusFilter }),
+    [users, search, roleFilter, orgTypeFilter, statusFilter]
   );
   const roles = ["All", ...getRoleOptions(users)];
+  const orgTypes = ["All", ...getOrgTypeOptions(users)];
   const statuses = getStatusOptions();
   const summary = useMemo(() => getStatusSummary(users), [users]);
 
@@ -99,6 +113,7 @@ export function UsersListPage() {
       return;
     try {
       await createUser.mutateAsync(form);
+      showAlert("success", `User "${form.fullName}" created successfully`);
       setForm(emptyUserForm);
       setShowAdd(false);
     } catch (e: any) {
@@ -113,6 +128,7 @@ const handleResetPassword = async (user: UserItem) => {
   if (!password) return;
   try {
     await resetPassword.mutateAsync({ id: user.id, newPassword: password });
+    showAlert("success", `Password reset for "${user.fullName}" successfully`);
   } catch (e: any) {
     alert(e?.message || "Failed to reset password");
   }
@@ -123,7 +139,7 @@ const handleResetPassword = async (user: UserItem) => {
     const action = nextStatus === "Active" ? "activate" : "deactivate";
     if (!confirm(`Are you sure you want to ${action} user "${user.fullName}"?`)) return;
     try {
-      await updateUser.mutateAsync({ id: user.id, data: { status: nextStatus } });
+      await toggleStatus.mutateAsync({ id: user.id, isActive: nextStatus === "Active" });
       showAlert(
         "success",
         `"${user.fullName}" has been ${nextStatus === "Active" ? "activated" : "deactivated"}`
@@ -218,6 +234,17 @@ const handleResetPassword = async (user: UserItem) => {
                 ))}
               </select>
               <select
+                value={orgTypeFilter}
+                onChange={(e) =>
+                  setOrgTypeFilter(e.target.value)
+                }
+                className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
+              >
+                {orgTypes.map((o) => (
+                  <option key={o}>{o}</option>
+                ))}
+              </select>
+              <select
                 value={statusFilter}
                 onChange={(e) =>
                   setStatusFilter(e.target.value as UserStatus | "All")
@@ -287,11 +314,13 @@ const handleResetPassword = async (user: UserItem) => {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filtered.map((user) => {
-                    const roleCfg = roleColors[user.role] || {
-                      bg: "#F5F5F5",
-                      color: "#666",
-                    };
+const roleCfg = roleColors[user.role.toUpperCase()] || {
+                       bg: "#F5F5F5",
+                       color: "#666",
+                     };
                     const staCfg = statusConfig[user.status];
+                    const encodedName = encodeURIComponent(user.fullName);
+                    const apiUrl = `https://ui-avatars.com/api/?name=${encodedName}&background=random&color=fff&rounded=true&size=128`;
                     return (
                       <tr
                         key={user.id}
@@ -300,7 +329,7 @@ const handleResetPassword = async (user: UserItem) => {
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
                             <img
-                              src={user.avatar}
+                              src={apiUrl}
                               alt={user.fullName}
                               className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-100"
                             />
@@ -320,21 +349,27 @@ const handleResetPassword = async (user: UserItem) => {
                           </div>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="text-sm text-gray-700">
-                            {user.organizationType || "—"}
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <span
-                            className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                            style={{
-                              background: roleCfg.bg,
-                              color: roleCfg.color,
-                            }}
-                          >
-                            {user.role}
-                          </span>
-                        </td>
+                           <span
+                             className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                             style={{
+                               backgroundColor: (orgTypeColors[user.organizationType.toUpperCase()] || { bg: "#F5F5F5", color: "#666" }).bg,
+                               color: (orgTypeColors[user.organizationType.toUpperCase()] || { bg: "#F5F5F5", color: "#666" }).color,
+                             }}
+                           >
+                             {user.organizationType || "—"}
+                           </span>
+                         </td>
+                         <td className="px-5 py-4">
+                           <span
+                             className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                             style={{
+                               backgroundColor: roleCfg.bg,
+                               color: roleCfg.color,
+                             }}
+                           >
+                             {user.role}
+                           </span>
+                         </td>
                         <td className="px-5 py-4">
                           <button
                             onClick={() => handleStatusToggle(user)}
@@ -478,7 +513,7 @@ const handleResetPassword = async (user: UserItem) => {
                     }
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
                   >
-                    {["ADMIN", "MANAGER", "STAFF"].map((r) => (
+                    {["MANAGER", "STAFF"].map((r) => (
                       <option key={r} value={r}>{r}</option>
                     ))}
                   </select>
@@ -566,7 +601,7 @@ const handleResetPassword = async (user: UserItem) => {
                     }
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
                   >
-                    {["ADMIN", "MANAGER", "STAFF"].map((r) => (
+                    {["MANAGER", "STAFF"].map((r) => (
                       <option key={r} value={r}>{r}</option>
                     ))}
                   </select>
@@ -585,7 +620,7 @@ const handleResetPassword = async (user: UserItem) => {
                     }
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
                   >
-                    {(["Active", "Inactive", "Pending"] as const).map((s) => (
+            {(["Active", "Inactive"] as const).map((s) => (
                       <option key={s}>{s}</option>
                     ))}
                   </select>
@@ -598,7 +633,7 @@ const handleResetPassword = async (user: UserItem) => {
                 >
                   Cancel
                 </button>
-                <button
+                  <button
                   onClick={async () => {
                     try {
                       await updateUser.mutateAsync({
@@ -609,6 +644,7 @@ const handleResetPassword = async (user: UserItem) => {
                           status: selectedUser.status,
                         },
                       });
+                      showAlert("success", `User "${selectedUser.fullName}" updated successfully`);
                       setSelectedUser(null);
                     } catch (e: any) {
                       alert(e?.message || "Failed to update user");
