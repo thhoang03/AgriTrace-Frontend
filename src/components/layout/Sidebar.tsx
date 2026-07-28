@@ -21,24 +21,15 @@ import { useAuth } from "../../features/auth/auth.store";
 import { canAccessRoute } from "../../features/auth/permissions";
 
 const navItems = [
- feature/an-branch
-  { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },
-  { to: "/app/products", icon: ShoppingBag, label: "Products", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR", "INSPECTOR"] },
-  { to: "/app/batches", icon: Package, label: "Batch Management", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR"] },
-  { to: "/app/supply-chain", icon: Truck, label: "Supply Chain", roles: ["ADMIN", "MANAGER", "FARMER", "PROCESSOR", "DISTRIBUTOR"] },
-  { to: "/app/inspection", icon: FlaskConical, label: "Quality Inspection", roles: ["ADMIN", "MANAGER", "INSPECTOR"] },
-  { to: "/app/recall", icon: AlertTriangle, label: "Recall Management", roles: ["ADMIN", "INSPECTOR"] },
-  { to: "/app/reports", icon: BarChart3, label: "Reports", roles: ["ADMIN", "MANAGER"] },
-  { to: "/app/analytics", icon: LineChart, label: "Analytics", roles: ["ADMIN", "MANAGER"] },
-
   { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/app/products", icon: ShoppingBag, label: "Products" },
   { to: "/app/batches", icon: Package, label: "Batch Management" },
   { to: "/app/batches/new", icon: Package, label: "New Batch" },
   { to: "/app/supply-chain", icon: Truck, label: "Supply Chain" },
   { to: "/app/inspection", icon: FlaskConical, label: "Quality Inspection" },
   { to: "/app/recall", icon: AlertTriangle, label: "Recall Management" },
   { to: "/app/reports", icon: BarChart3, label: "Reports" },
- main
+  { to: "/app/analytics", icon: LineChart, label: "Analytics" },
 ];
 
 const adminItems = [
