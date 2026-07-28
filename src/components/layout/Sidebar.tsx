@@ -6,6 +6,7 @@ import {
   FlaskConical,
   AlertTriangle,
   BarChart3,
+  LineChart,
   Users,
   UserCircle,
   LogOut,
@@ -21,12 +22,14 @@ import { canAccessRoute } from "../../features/auth/permissions";
 
 const navItems = [
   { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/app/products", icon: ShoppingBag, label: "Products" },
   { to: "/app/batches", icon: Package, label: "Batch Management" },
   { to: "/app/batches/new", icon: Package, label: "New Batch" },
   { to: "/app/supply-chain", icon: Truck, label: "Supply Chain" },
   { to: "/app/inspection", icon: FlaskConical, label: "Quality Inspection" },
   { to: "/app/recall", icon: AlertTriangle, label: "Recall Management" },
   { to: "/app/reports", icon: BarChart3, label: "Reports" },
+  { to: "/app/analytics", icon: LineChart, label: "Analytics" },
 ];
 
 const adminItems = [

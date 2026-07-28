@@ -17,7 +17,10 @@ import { ProductManagementPage } from "../features/products/ProductManagementPag
 import { ProductDetailPage } from "../features/products/ProductDetailPage";
 import { OrganizationsPage } from "../features/organizations/OrganizationsPage";
 import { CategoriesPage } from "../features/categories/CategoriesPage";
+ feature/an-branch
+import { AnalyticsPage } from "../features/analytics/AnalyticsPage";
 import { PublicLineagePage } from "../pages/PublicLineagePage";
+main
 
 export const router = createBrowserRouter([
   { path: "/", Component: HomePage },
@@ -37,6 +40,7 @@ export const router = createBrowserRouter([
       { path: "inspection", Component: InspectionPage },
       { path: "recall", Component: RecallPage },
       { path: "reports", Component: ReportsPage },
+      { path: "analytics", Component: AnalyticsPage },
       { path: "users", Component: UsersListPage },
       { path: "profile", Component: ProfilePage },
       { path: "products", Component: ProductManagementPage },
