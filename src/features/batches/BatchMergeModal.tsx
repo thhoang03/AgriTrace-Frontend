@@ -6,9 +6,10 @@ interface BatchMergeModalProps {
   currentBatchId: string;
   currentBatchCode: string;
   productName: string;
-  productId?: number;
+  productId?: string;
+  unitId?: string;
   onClose: () => void;
-  onMerged?: (mergedBatchId: number) => void;
+  onMerged?: (mergedBatchId: string) => void;
 }
 
 export function BatchMergeModal({
@@ -16,6 +17,7 @@ export function BatchMergeModal({
   currentBatchCode,
   productName,
   productId,
+  unitId,
   onClose,
   onMerged,
 }: BatchMergeModalProps) {
@@ -62,12 +64,13 @@ export function BatchMergeModal({
       return;
     }
     try {
-      const allIds = [Number(currentBatchId), ...selectedIds.map(Number)];
+      const allIds = [currentBatchId, ...selectedIds];
       const result = await mergeBatch.mutateAsync({
         batchIds: allIds,
-        productId: productId ?? 0,
+        productId: productId || undefined,
         quantity: Number(mergedQuantity),
         unit: mergedUnit || undefined,
+        unitId: unitId || undefined,
         notes: notes || undefined,
       });
       onMerged?.(result.data.mergedBatchId);

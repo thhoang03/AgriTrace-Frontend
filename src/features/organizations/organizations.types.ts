@@ -1,4 +1,4 @@
-export type OrganizationType = "FARM" | "PROCESSOR" | "DISTRIBUTOR" | "INSPECTOR" | "RETAIL";
+export type OrganizationType = "FARM" | "PROCESSOR" | "DISTRIBUTOR" | "RETAILER" | "INSPECTION" | "SYSTEM";
 export type OrganizationStatus = "ACTIVE" | "INACTIVE";
 
 export interface Organization {

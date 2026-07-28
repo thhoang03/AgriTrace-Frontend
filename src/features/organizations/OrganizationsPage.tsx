@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Edit2, ToggleLeft, ToggleRight, X, Building2, Filter, Eye, CheckCircle, AlertCircle, Users, Package } from "lucide-react";
+import { Search, Plus, Edit2, ToggleLeft, ToggleRight, X, Building2, Filter, Eye, CheckCircle, AlertCircle, Users, Package, Mail } from "lucide-react";
 import { organizationsApi } from "./organizations.api";
+import { useAuth } from "../../features/auth/auth.store";
 import type { Organization } from "./organizations.types";
 
 const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
@@ -8,15 +9,17 @@ const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
   PROCESSOR:   { bg: "#E3F2FD", color: "#1565C0" },
   DISTRIBUTOR: { bg: "#F3E5F5", color: "#6A1B9A" },
   RETAILER:    { bg: "#E0F2F1", color: "#004D40" },
-  INSPECTOR:   { bg: "#FFF9C4", color: "#F57F17" },
+  INSPECTION:  { bg: "#FFF9C4", color: "#F57F17" },
 };
 
-const ORG_TYPES = ["FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTOR"];
+const ORG_TYPES = ["FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION"];
 const EMPTY_FORM = { name: "", type: "FARM", address: "" };
 
 interface Alert { type: "success" | "error"; message: string; }
 
 export function OrganizationsPage() {
+  const { user } = useAuth();
+  const isManager = user?.role === "MANAGER";
   const [orgs, setOrgs] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -25,6 +28,9 @@ export function OrganizationsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Organization | null>(null);
   const [detail, setDetail] = useState<Organization | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -97,6 +103,23 @@ export function OrganizationsPage() {
       );
     } catch (e: any) {
       showAlert("error", e.message || "Cập nhật trạng thái thất bại");
+    }
+  };
+
+  const handleInviteStaff = async () => {
+    if (!inviteEmail.trim()) { showAlert("error", "Vui lòng nhập email"); return; }
+    if (!detail) return;
+    setInviting(true);
+    setError("");
+    try {
+      await organizationsApi.inviteStaff(detail.organizationId, inviteEmail.trim());
+      showAlert("success", `Đã gửi lời mời đến ${inviteEmail}`);
+      setInviteEmail("");
+      setShowInviteModal(false);
+    } catch (e: any) {
+      setError(e.message || "Gửi lời mời thất bại");
+    } finally {
+      setInviting(false);
     }
   };
 
@@ -322,6 +345,11 @@ export function OrganizationsPage() {
                     <div className="text-xs text-gray-400">Members</div>
                     <div className="text-sm font-semibold text-gray-800">—</div>
                   </div>
+                  {isManager && (
+                    <button onClick={() => setShowInviteModal(true)} className="ml-auto text-xs font-semibold text-green-600 hover:text-green-800 flex items-center gap-1" title="Invite Staff">
+                      <Mail className="w-3.5 h-3.5" /> Invite
+                    </button>
+                  )}
                 </div>
                 <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "#F8FAF8" }}>
                   <Package className="w-4 h-4 text-gray-400" />
@@ -342,6 +370,36 @@ export function OrganizationsPage() {
                   style={detail.status !== "ACTIVE" ? { background: "#2E7D32" } : {}}
                 >
                   {detail.status === "ACTIVE" ? <><ToggleRight className="w-3.5 h-3.5" /> Deactivate</> : <><ToggleLeft className="w-3.5 h-3.5" /> Activate</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Invite Staff Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: "#E3F2FD" }}>
+                  <Mail className="w-4 h-4 text-blue-600" />
+                </div>
+                <h3 className="font-bold text-gray-900">Invite Staff</h3>
+              </div>
+              <button onClick={() => setShowInviteModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-4 h-4 text-gray-500" /></button>
+            </div>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">Send an invitation to a new staff member for <strong>{detail?.name}</strong>.</p>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">Email Address</label>
+                <input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="staff@example.com" className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} />
+              </div>
+              {error && <p className="text-sm text-red-500">{error}</p>}
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => { setShowInviteModal(false); setError(""); }} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+                <button onClick={handleInviteStaff} disabled={inviting} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60" style={{ background: "#2E7D32" }}>
+                  {inviting ? "Sending..." : "Send Invite"}
                 </button>
               </div>
             </div>

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { recallsApi } from "./recalls.api";
-import type { CreateRecallRequest, RecallFilters } from "./recalls.types";
+import type { CreateRecallRequest, RecallFilters } from "./recalls.api";
 
 const QUERY_KEY = "recalls";
 

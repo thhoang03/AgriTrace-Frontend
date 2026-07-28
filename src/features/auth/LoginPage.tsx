@@ -8,7 +8,7 @@ const BG_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1
 export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [showPass, setShowPass] = useState(false);
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await login(form.username, form.password);
+      await login(form.email, form.password);
       navigate("/app/dashboard");
     } catch (err: any) {
       setError(err.message || "Đăng nhập thất bại");
@@ -102,14 +102,14 @@ export function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Username</label>
+            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Email</label>
             <div className="relative">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value })}
-                placeholder="Enter your username"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="Enter your email"
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500"
                 style={{ background: "#F8FAF8" }}
                 required

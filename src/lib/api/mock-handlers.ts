@@ -22,6 +22,7 @@ import type {
 } from "../../features/recall/recalls.types";
 import type { UserItem } from "../../features/users/users.types";
 import type { User, UserRole } from "../../features/auth/auth.types";
+import type { OrganizationType } from "../../features/auth/permissions";
 
 export interface MockResponse<T> {
   data: T;
@@ -35,15 +36,28 @@ function ok<T>(data: T, message = "OK"): MockResponse<T> {
   return { data, message, status: 200 };
 }
 
+const ROLE_TO_ORG_TYPE: Record<string, OrganizationType> = {
+  ADMIN: "SYSTEM",
+  MANAGER: "SYSTEM",
+  STAFF: "FARM",
+  Farmer: "FARM",
+  Processor: "PROCESSOR",
+  Distributor: "DISTRIBUTOR",
+  Retailer: "RETAILER",
+  Inspector: "INSPECTION",
+};
+
 function toUser(item: UserItem, roleOverride?: UserRole): User {
+  const apiRole = roleOverride ?? (item.role as any);
+  const orgType = ROLE_TO_ORG_TYPE[apiRole] || ROLE_TO_ORG_TYPE[item.role] || "FARM";
   return {
     id: item.id,
     name: item.fullName,
-    username: item.username,
     email: item.email,
     phone: item.phone,
-    role: (roleOverride ?? item.role) as UserRole,
-    organization: item.organization,
+    role: apiRole,
+    organizationType: orgType,
+    organizationName: item.organization,
     avatar: item.avatar,
   };
 }
@@ -99,8 +113,7 @@ function filterUsers(list: UserItem[], config: AxiosRequestConfig): UserItem[] {
     result = result.filter(
       (u) =>
         u.fullName.toLowerCase().includes(q) ||
-        u.email.toLowerCase().includes(q) ||
-        u.username.toLowerCase().includes(q),
+        u.email.toLowerCase().includes(q),
     );
   }
   return result;
@@ -135,7 +148,8 @@ export const handlers: Record<string, MockHandler> = {
   "POST /auth/login": (config) => {
     const body = config.data as { username?: string; role?: string } | undefined;
     const role = body?.role as UserRole | undefined;
-    return ok({ user: toUser(users[0], role), accessToken: "mock-access-token", refreshToken: "mock-refresh-token" });
+    const mappedRole = role || "STAFF";
+    return ok({ user: toUser(users[0], mappedRole), accessToken: "mock-access-token", refreshToken: "mock-refresh-token" });
   },
 
   "POST /auth/logout": () => ok(null),

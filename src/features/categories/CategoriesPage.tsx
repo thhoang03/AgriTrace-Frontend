@@ -6,6 +6,7 @@ import {
   useUpdateCategory,
   useUpdateCategoryStatus,
 } from "./categories.queries";
+import { useAuth } from "../auth/auth.store";
 import type { Category } from "./categories.types";
 
 const EMPTY_FORM = { name: "", description: "" };
@@ -22,6 +23,8 @@ function normalizeText(text: string): string {
 }
 
 export function CategoriesPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "name">("newest");
@@ -179,9 +182,11 @@ export function CategoriesPage() {
                 {sortOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
-            <button onClick={openAdd} className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity" style={{ background: "#2E7D32" }}>
-              <Plus className="w-4 h-4" /> Add Category
-            </button>
+            {isAdmin && (
+              <button onClick={openAdd} className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity" style={{ background: "#2E7D32" }}>
+                <Plus className="w-4 h-4" /> Add Category
+              </button>
+            )}
           </div>
         </div>
 
@@ -232,12 +237,16 @@ export function CategoriesPage() {
                             <button onClick={() => setDetail(cat)} className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors" title="View Detail">
                               <Eye className="w-3.5 h-3.5" />
                             </button>
-                            <button onClick={() => openEdit(cat)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors" title="Edit">
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button onClick={() => handleToggleStatus(cat)} className={`p-1.5 rounded-lg transition-colors ${isActive ? "hover:bg-red-50 text-red-400" : "hover:bg-green-50 text-green-500"}`} title={isActive ? "Deactivate" : "Activate"}>
-                              {isActive ? <PowerOff className="w-3.5 h-3.5" /> : <Power className="w-3.5 h-3.5" />}
-                            </button>
+                            {isAdmin && (
+                              <>
+                                <button onClick={() => openEdit(cat)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors" title="Edit">
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button onClick={() => handleToggleStatus(cat)} className={`p-1.5 rounded-lg transition-colors ${isActive ? "hover:bg-red-50 text-red-400" : "hover:bg-green-50 text-green-500"}`} title={isActive ? "Deactivate" : "Activate"}>
+                                  {isActive ? <PowerOff className="w-3.5 h-3.5" /> : <Power className="w-3.5 h-3.5" />}
+                                </button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -336,18 +345,20 @@ export function CategoriesPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-1">
-                <button onClick={() => { setDetail(null); openEdit(detail); }} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2">
-                  <Edit2 className="w-3.5 h-3.5" /> Edit
-                </button>
-                <button
-                  onClick={() => handleToggleStatus(detail)}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 ${detail.isActive ? "bg-red-50 text-red-600 hover:bg-red-100" : "text-white hover:opacity-90"}`}
-                  style={!detail.isActive ? { background: "#2E7D32" } : {}}
-                >
-                  {detail.isActive ? <><PowerOff className="w-3.5 h-3.5" /> Deactivate</> : <><Power className="w-3.5 h-3.5" /> Activate</>}
-                </button>
-              </div>
+              {isAdmin && (
+                <div className="flex gap-3 pt-1">
+                  <button onClick={() => { setDetail(null); openEdit(detail); }} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2">
+                    <Edit2 className="w-3.5 h-3.5" /> Edit
+                  </button>
+                  <button
+                    onClick={() => handleToggleStatus(detail)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 ${detail.isActive ? "bg-red-50 text-red-600 hover:bg-red-100" : "text-white hover:opacity-90"}`}
+                    style={!detail.isActive ? { background: "#2E7D32" } : {}}
+                  >
+                    {detail.isActive ? <><PowerOff className="w-3.5 h-3.5" /> Deactivate</> : <><Power className="w-3.5 h-3.5" /> Activate</>}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

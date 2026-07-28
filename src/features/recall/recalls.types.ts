@@ -1,3 +1,5 @@
+import { AlertTriangle, CheckCircle, Clock } from "lucide-react";
+
 export type RecallSeverity = "Critical" | "High" | "Medium" | "Low";
 export type RecallStatus = "Active" | "Resolved" | "Pending";
 
@@ -25,3 +27,16 @@ export interface RecallFilters {
   page?: number;
   limit?: number;
 }
+
+export const severityConfig = {
+  Critical: { bg: "#FFEBEE", color: "#C62828", icon: AlertTriangle },
+  High: { bg: "#FFEBEE", color: "#C62828", icon: AlertTriangle },
+  Medium: { bg: "#FFF9C4", color: "#F57F17", icon: AlertTriangle },
+  Low: { bg: "#E8F5E9", color: "#2E7D32", icon: AlertTriangle },
+};
+
+export const statusConfig = {
+  Active: { bg: "#FFEBEE", color: "#C62828", icon: AlertTriangle },
+  Resolved: { bg: "#E8F5E9", color: "#2E7D32", icon: CheckCircle },
+  Pending: { bg: "#FFF9C4", color: "#F57F17", icon: Clock },
+};
