@@ -12,11 +12,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import {
-  useCreateUser,
   useResetPassword,
   useUpdateUser,
   useUsers,
 } from "./users.queries";
+import { usersApi } from "./users.api";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   filterUsers,
   getRoleOptions,
@@ -54,6 +55,7 @@ const emptyUserForm: CreateUserRequest = {
   password: "",
   phone: "",
   role: "STAFF",
+  organization: "",
 };
 
 export function UsersListPage() {
@@ -81,9 +83,10 @@ export function UsersListPage() {
     status: statusFilter === "All" ? undefined : statusFilter,
   });
 
-  const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const resetPassword = useResetPassword();
+  const qc = useQueryClient();
+  const [creating, setCreating] = useState(false);
 
   const users = useMemo(() => data?.data?.items ?? [], [data]);
   const filtered = useMemo(
@@ -98,11 +101,16 @@ export function UsersListPage() {
     if (!form.fullName || !form.email || !form.password)
       return;
     try {
-      await createUser.mutateAsync(form);
+      setCreating(true);
+      await usersApi.create(form as any);
+      qc.invalidateQueries({ queryKey: ["users"] });
       setForm(emptyUserForm);
       setShowAdd(false);
+      showAlert("success", "User created successfully");
     } catch (e: any) {
-      alert(e?.message || "Failed to create user");
+      showAlert("error", getApiErrorMessage(e));
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -113,8 +121,9 @@ const handleResetPassword = async (user: UserItem) => {
   if (!password) return;
   try {
     await resetPassword.mutateAsync({ id: user.id, newPassword: password });
+    showAlert("success", `Password reset for ${user.fullName}`);
   } catch (e: any) {
-    alert(e?.message || "Failed to reset password");
+    showAlert("error", getApiErrorMessage(e));
   }
 };
 
@@ -498,6 +507,18 @@ const handleResetPassword = async (user: UserItem) => {
                   />
                 </div>
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Organization
+                </label>
+                <input
+                  value={form.organization}
+                  onChange={(e) => setForm({ ...form, organization: e.target.value })}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
+                  style={{ background: "#F8FAF8" }}
+                  placeholder="Organization name"
+                />
+              </div>
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowAdd(false)}
@@ -510,7 +531,7 @@ const handleResetPassword = async (user: UserItem) => {
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90"
                   style={{ background: "#2E7D32" }}
                 >
-                  {createUser.isPending ? "Saving..." : "Add User"}
+                  {creating ? "Saving..." : "Add User"}
                 </button>
               </div>
             </div>
@@ -591,6 +612,17 @@ const handleResetPassword = async (user: UserItem) => {
                   </select>
                 </div>
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Organization
+                </label>
+                <input
+                  value={selectedUser.organization}
+                  onChange={(e) => setSelectedUser({ ...selectedUser, organization: e.target.value })}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
+                  style={{ background: "#F8FAF8" }}
+                />
+              </div>
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setSelectedUser(null)}
@@ -607,17 +639,20 @@ const handleResetPassword = async (user: UserItem) => {
                           fullName: selectedUser.fullName,
                           role: selectedUser.role,
                           status: selectedUser.status,
+                          phone: selectedUser.phone,
+                          organization: selectedUser.organization,
                         },
                       });
                       setSelectedUser(null);
+                      showAlert("success", "User updated successfully");
                     } catch (e: any) {
-                      alert(e?.message || "Failed to update user");
+                      showAlert("error", getApiErrorMessage(e));
                     }
                   }}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90"
                   style={{ background: "#2E7D32" }}
                 >
-                  {updateUser.isPending ? "Saving..." : "Save"}
+                  {updateUser.status === 'pending' ? "Saving..." : "Save"}
                 </button>
               </div>
             </div>

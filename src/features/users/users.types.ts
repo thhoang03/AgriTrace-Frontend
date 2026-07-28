@@ -19,6 +19,7 @@ export interface CreateUserRequest {
   password: string;
   phone: string;
   role: UserRole;
+  organization?: string;
 }
 
 export interface UpdateUserRequest extends Partial<CreateUserRequest> {
