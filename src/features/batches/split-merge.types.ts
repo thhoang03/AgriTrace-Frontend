@@ -1,27 +1,30 @@
 export interface SplitBatchChild {
   quantity: number;
   unit?: string;
+  unitId?: string;
 }
 
 export interface SplitBatchRequest {
   children: SplitBatchChild[];
+  unitId?: string;
   notes?: string;
 }
 
 export interface SplitBatchResponse {
-  parentBatchId: number;
-  childBatchIds: number[];
+  parentBatchId: string;
+  childBatchIds: string[];
 }
 
 export interface MergeBatchRequest {
-  batchIds: number[];
-  productId: number;
+  batchIds: (string | number)[];
+  productId?: string | number;
   quantity: number;
   unit?: string;
+  unitId?: string;
   notes?: string;
 }
 
 export interface MergeBatchResponse {
-  mergedBatchId: number;
+  mergedBatchId: string;
   batchCode: string;
 }

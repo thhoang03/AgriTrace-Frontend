@@ -12,7 +12,6 @@ import { BatchMergeModal } from "./BatchMergeModal";
 import { BatchEventModal } from "./BatchEventModal";
 import { BatchMediaTab } from "./BatchMediaTab";
 import { BatchLineageTab } from "./BatchLineageTab";
-import { batches, timelineEvents } from "../../mocks/data";
 
 const PRODUCT_IMG = "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=800&q=80";
 
@@ -67,14 +66,52 @@ export function BatchDetailPage() {
 
   const statusCfg = statusConfig[statusNorm] ?? { bg: "#F3F4F6", color: "#6B7280" };
 
-  const handleDownloadQr = () => {
-    if (!qrCode?.qrCodeUrl) return;
-    const a = document.createElement("a");
-    a.href = qrCode.qrCodeUrl;
-    a.download = `qrcode-${batch?.batchCode || batch?.id}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+  const handleDownloadQr = async () => {
+    const qrUrl = qrCode?.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + "/public/trace/" + (batch?.id || ""))}`;
+    try {
+      const res = await fetch(qrUrl);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `qrcode-${batch?.batchCode || batch?.id || "batch"}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      const a = document.createElement("a");
+      a.href = qrUrl;
+      a.target = "_blank";
+      a.download = `qrcode-${batch?.batchCode || batch?.id || "batch"}.png`;
+      a.click();
+    }
+  };
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/app/batches/${batch?.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Batch Traceability - ${batch?.productName || batch?.product}`,
+          text: `Check traceability for Batch ${batch?.batchCode || batch?.id}`,
+          url: shareUrl,
+        });
+        return;
+      } catch {
+        // User cancelled or fallback
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert("Traceability link copied to clipboard!");
+    } catch {
+      alert(`Traceability link: ${shareUrl}`);
+    }
+  };
+
+  const handleDownloadPdf = () => {
+    window.print();
   };
 
   if (isLoading) {
@@ -157,10 +194,10 @@ export function BatchDetailPage() {
               >
                 <Merge className="w-4 h-4" /> Merge
               </button>
-              <button className="px-4 py-2 rounded-xl text-sm font-semibold bg-white/15 text-white hover:bg-white/25 flex items-center gap-2 transition-colors">
+              <button onClick={handleShare} className="px-4 py-2 rounded-xl text-sm font-semibold bg-white/15 text-white hover:bg-white/25 flex items-center gap-2 transition-colors">
                 <Share2 className="w-4 h-4" /> Share
               </button>
-              <button className="px-4 py-2 rounded-xl text-sm font-semibold bg-white text-gray-800 hover:opacity-90 flex items-center gap-2 transition-opacity">
+              <button onClick={handleDownloadPdf} className="px-4 py-2 rounded-xl text-sm font-semibold bg-white text-gray-800 hover:opacity-90 flex items-center gap-2 transition-opacity">
                 <Download className="w-4 h-4" /> PDF
               </button>
             </div>
@@ -263,11 +300,11 @@ export function BatchDetailPage() {
                 </div>
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-36 h-36 rounded-2xl overflow-hidden flex items-center justify-center" style={{ background: "#F8FAF8", border: "2px dashed #E0E0E0" }}>
-                    {qrCode?.qrCodeUrl ? (
-                      <img src={qrCode.qrCodeUrl} alt="QR Code" className="w-full h-full object-contain" />
-                    ) : (
-                      <QrCode className="w-16 h-16 text-gray-300" />
-                    )}
+                    <img
+                      src={qrCode?.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.origin + "/public/trace/" + (batch.id || ""))}`}
+                      alt="QR Code"
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <code className="text-xs font-mono px-3 py-1 rounded-lg" style={{ background: "#E8F5E9", color: "#2E7D32" }}>
                     {qrCode?.batchCode ?? batch.batchCode ?? batch.id}
@@ -507,6 +544,7 @@ export function BatchDetailPage() {
           productName={batch.productName ?? batch.product}
           totalQuantity={batch.quantity}
           unit={batch.unit}
+          unitId={batch.unitId}
           onClose={() => setShowSplit(false)}
         />
       )}
@@ -515,7 +553,8 @@ export function BatchDetailPage() {
           currentBatchId={batch.id}
           currentBatchCode={batch.batchCode ?? batch.id}
           productName={batch.productName ?? batch.product}
-          productId={batch.categoryId}
+          productId={batch.productId}
+          unitId={batch.unitId}
           onClose={() => setShowMerge(false)}
           onMerged={(mergedId) => navigate(`/app/batches/${mergedId}`)}
         />

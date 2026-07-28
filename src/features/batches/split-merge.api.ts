@@ -40,31 +40,31 @@ function adaptSplitToNew(legacy: SplitBatchRequest): NewSplitBatchRequest {
   return {
     splits: legacy.children.map((c) => ({
       quantity: c.quantity,
-      unitId: c.unit ?? "",
+      unitId: c.unitId ?? legacy.unitId ?? c.unit ?? "",
     })),
   };
 }
 
 function adaptSplitFromNew(data: any): SplitBatchResponse {
   return {
-    parentBatchId: Number(data.parentBatchId ?? 0),
-    childBatchIds: (data.childBatchIds ?? []).map(Number),
+    parentBatchId: String(data.parentBatchId ?? data.batchId ?? ""),
+    childBatchIds: (data.childBatchIds ?? data.items ?? []).map(String),
   };
 }
 
 function adaptMergeToNew(legacy: MergeBatchRequest): NewMergeBatchRequest {
   return {
     sourceBatchIds: legacy.batchIds.map(String),
-    productId: String(legacy.productId),
+    productId: String(legacy.productId ?? ""),
     quantity: legacy.quantity,
-    unitId: legacy.unit ?? "",
+    unitId: legacy.unitId ?? legacy.unit ?? "",
     productionDate: new Date().toISOString().split("T")[0],
   };
 }
 
 function adaptMergeFromNew(data: any): MergeBatchResponse {
   return {
-    mergedBatchId: Number(data.newBatchId ?? 0),
+    mergedBatchId: String(data.batchId ?? data.newBatchId ?? data.mergedBatchId ?? ""),
     batchCode: data.batchCode ?? "",
   };
 }

@@ -12,7 +12,6 @@ import { BatchDeleteModal } from "./BatchDeleteModal";
 import { BatchEditModal } from "./BatchEditModal";
 import { BatchSplitModal } from "./BatchSplitModal";
 import { BatchMergeModal } from "./BatchMergeModal";
-import { batches } from "../../mocks/data";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=1400&q=80";
 
@@ -53,7 +52,7 @@ export function BatchManagementPage() {
   const [statusFilter, setStatusFilter] = useState<BatchStatus | "All">("All");
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
-  const [showQR, setShowQR] = useState<string | null>(null);
+  const [showQRBatch, setShowQRBatch] = useState<Batch | null>(null);
   const [sortField, setSortField] = useState<SortField>("harvestDate");
   const [sortAsc, setSortAsc] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; code: string; name: string; isDeleted?: boolean } | null>(null);
@@ -379,6 +378,9 @@ export function BatchManagementPage() {
                       >
                         <div className="flex items-center gap-1.5">Quantity <SortIcon field="quantity" /></div>
                       </th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                        Remaining Qty
+                      </th>
                       <th
                         className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("status")}
@@ -424,8 +426,9 @@ export function BatchManagementPage() {
                                 {batch.batchCode ?? batch.id}
                               </code>
                               <button
-                                onClick={(e) => { e.stopPropagation(); setShowQR(batch.id); }}
+                                onClick={(e) => { e.stopPropagation(); setShowQRBatch(batch); }}
                                 className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                                title="View QR Code"
                               >
                                 <QrCode className="w-3.5 h-3.5" />
                               </button>
@@ -441,7 +444,13 @@ export function BatchManagementPage() {
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="text-sm font-semibold text-gray-900">{batch.quantity.toLocaleString()}</div>
-                            <div className="text-xs text-gray-400">{batch.weight}</div>
+                            <div className="text-xs text-gray-400">{batch.unit || batch.weight}</div>
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <div className="text-sm font-bold text-green-700">
+                              {(batch.remainingQuantity ?? batch.quantity).toLocaleString()}
+                            </div>
+                            <div className="text-xs text-gray-400">{batch.unit || batch.weight}</div>
                           </td>
                           <td className="px-4 py-3.5">
                             <span className="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap" style={{ background: cfg.bg, color: cfg.color }}>
@@ -570,21 +579,54 @@ export function BatchManagementPage() {
       </div>
 
       {/* QR Modal */}
-      {showQR && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowQR(null)}>
+      {showQRBatch && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowQRBatch(null)}>
           <div className="bg-white rounded-2xl p-8 max-w-xs w-full mx-4" onClick={(e) => e.stopPropagation()} style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-gray-900">QR Code</h3>
-              <button onClick={() => setShowQR(null)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"><X className="w-4 h-4" /></button>
+              <button onClick={() => setShowQRBatch(null)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"><X className="w-4 h-4" /></button>
             </div>
             <div className="flex flex-col items-center gap-4">
-              <div className="w-48 h-48 rounded-2xl flex items-center justify-center" style={{ background: "#F8FAF8", border: "2px dashed #E0E0E0" }}>
-                <QrCode className="w-24 h-24 text-gray-300" />
+              <div className="w-48 h-48 rounded-2xl overflow-hidden flex items-center justify-center p-2" style={{ background: "#F8FAF8", border: "2px dashed #E0E0E0" }}>
+                <img
+                  src={showQRBatch.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin + "/public/trace/" + showQRBatch.id)}`}
+                  alt="QR Code"
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <code className="text-sm font-mono font-semibold px-3 py-1.5 rounded-lg" style={{ background: "#E8F5E9", color: "#2E7D32" }}>{showQR}</code>
+              <code className="text-sm font-mono font-semibold px-3 py-1.5 rounded-lg" style={{ background: "#E8F5E9", color: "#2E7D32" }}>
+                {showQRBatch.batchCode ?? showQRBatch.id}
+              </code>
               <div className="flex gap-2 w-full">
-                <button className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50">Download</button>
-                <button className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ background: "#2E7D32" }}>Print Label</button>
+                <button
+                  onClick={async () => {
+                    const qrUrl = showQRBatch.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + "/public/trace/" + showQRBatch.id)}`;
+                    try {
+                      const res = await fetch(qrUrl);
+                      const blob = await res.blob();
+                      const blobUrl = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = blobUrl;
+                      a.download = `qrcode-${showQRBatch.batchCode || showQRBatch.id}.png`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(blobUrl);
+                    } catch {
+                      window.open(qrUrl, "_blank");
+                    }
+                  }}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5" /> Download
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-1.5"
+                  style={{ background: "#2E7D32" }}
+                >
+                  Print
+                </button>
               </div>
             </div>
           </div>

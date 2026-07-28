@@ -6,10 +6,9 @@ const mockUsers: UserItem[] = [
   {
     id: "1",
     avatar: "",
-    username: "admin",
     fullName: "Nguyễn Văn A",
     organization: "Green Farm",
-    role: "Administrator",
+    role: "ADMIN",
     status: "Active",
     phone: "0900000001",
     email: "admin@agri.vn",
@@ -17,10 +16,9 @@ const mockUsers: UserItem[] = [
   {
     id: "2",
     avatar: "",
-    username: "farmer",
     fullName: "Trần Thị B",
     organization: "Green Farm",
-    role: "Farmer",
+    role: "STAFF",
     status: "Pending",
     phone: "0900000002",
     email: "farmer@agri.vn",
@@ -29,13 +27,13 @@ const mockUsers: UserItem[] = [
 
 describe("users utils", () => {
   it("filters by search, role and status", () => {
-    const result = filterUsers(mockUsers, { search: "tran", role: "Farmer", status: "Pending" });
+    const result = filterUsers(mockUsers, { search: "tran", role: "STAFF", status: "Pending" });
     expect(result).toHaveLength(1);
-    expect(result[0].username).toBe("farmer");
+    expect(result[0].email).toBe("farmer@agri.vn");
   });
 
   it("collects role options and status summary", () => {
-    expect(getRoleOptions(mockUsers)).toEqual(["Administrator", "Farmer"]);
+    expect(getRoleOptions(mockUsers)).toEqual(["ADMIN", "STAFF"]);
     expect(getStatusSummary(mockUsers)).toEqual({ Active: 1, Inactive: 0, Pending: 1 });
   });
 });

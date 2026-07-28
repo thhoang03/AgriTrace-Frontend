@@ -23,6 +23,7 @@ export interface Product {
   categoryName?: string;
   category?: ProductCategoryRef;
   unit: string;
+  unitId?: string;
   organizationId: number;
   isActive: boolean;
 }
@@ -33,6 +34,7 @@ export interface ProductListItem {
   categoryId: number;
   categoryName: string;
   unit: string;
+  unitId?: string;
   organizationId: number;
   isActive: boolean;
 }
@@ -87,6 +89,7 @@ function adaptProductFromListItem(item: any): ProductListItem {
     categoryId: item.categoryId ?? 0,
     categoryName: item.categoryName ?? "",
     unit: item.unit ?? "",
+    unitId: item.unitId ?? "",
     organizationId: item.organizationId ?? 0,
     isActive: item.isActive ?? true,
   };
@@ -100,6 +103,7 @@ function adaptProductFromDetail(item: any): Product {
     categoryName: item.category?.name ?? item.categoryName ?? "",
     category: item.category ? { id: item.category.id, name: item.category.name } : { id: item.categoryId ?? 0, name: item.categoryName ?? "" },
     unit: item.unit ?? "",
+    unitId: item.unitId ?? "",
     organizationId: item.organizationId ?? 0,
     isActive: item.isActive ?? true,
   };
