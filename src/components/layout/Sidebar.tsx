@@ -16,6 +16,7 @@ import {
   ShoppingBag,
   Building2,
   Tags,
+  Bell,
 } from "lucide-react";
 import { useAuth } from "../../features/auth/auth.store";
 import { canAccessRoute } from "../../features/auth/permissions";
@@ -30,6 +31,7 @@ const navItems = [
   { to: "/app/recall", icon: AlertTriangle, label: "Recall Management" },
   { to: "/app/reports", icon: BarChart3, label: "Reports" },
   { to: "/app/analytics", icon: LineChart, label: "Analytics" },
+  { to: "/app/notifications", icon: Bell, label: "Notifications" },
 ];
 
 const adminItems = [

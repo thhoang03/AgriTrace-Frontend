@@ -6,16 +6,19 @@ export const ROLE_ACCESS: Record<UserRole, string[]> = {
     "/app/supply-chain", "/app/inspection", "/app/recall",
     "/app/reports", "/app/organizations", "/app/categories",
     "/app/users", "/app/products", "/app/profile",
+    "/app/analytics", "/app/notifications",
   ],
   MANAGER: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
     "/app/supply-chain", "/app/recall",
     "/app/reports", "/app/categories",
     "/app/users", "/app/products", "/app/profile",
+    "/app/analytics", "/app/notifications",
   ],
   STAFF: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
     "/app/supply-chain", "/app/profile",
+    "/app/notifications",
   ],
 };
 

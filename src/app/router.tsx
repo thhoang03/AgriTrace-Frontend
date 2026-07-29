@@ -20,6 +20,7 @@ import { OrganizationsPage } from "../features/organizations/OrganizationsPage";
 import { CategoriesPage } from "../features/categories/CategoriesPage";
 import { AnalyticsPage } from "../features/analytics/AnalyticsPage";
 import { PublicLineagePage } from "../pages/PublicLineagePage";
+import { NotificationsPage } from "../features/notifications/NotificationsPage";
 
 export const router = createBrowserRouter([
   { path: "/", Component: HomePage },
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
       { path: "products/:id", Component: ProductDetailPage },
       { path: "organizations", Component: OrganizationsPage },
       { path: "categories", Component: CategoriesPage },
+      { path: "notifications", Component: NotificationsPage },
     ],
   },
 ]);

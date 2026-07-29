@@ -12,6 +12,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  updateUser: (partial: Partial<User>) => void;
   loading: boolean;
   mustChangePassword: boolean;
   clearMustChangePassword: () => void;
@@ -24,25 +25,13 @@ const AuthContext = createContext<AuthContextType | null>(null);
 function normalizeUser(legacyUser: any): User {
   const canonicalRole = adaptApiRoleToCanonical(legacyUser?.role || "STAFF");
 
-  let orgType: OrganizationType | undefined;
-  orgType = inferOrganizationTypeFromApiRole(
-    legacyUser?.role || "",
-    typeof window !== "undefined" ? localStorage.getItem("agritrace_token") : null,
-    legacyUser?.organizationType
-  );
-
+  let orgType: OrganizationType | undefined = legacyUser?.organizationType;
   if (!orgType) {
-    try {
-      const profile = authApi.getProfile();
-      const profileData = profile as any;
-      orgType = inferOrganizationTypeFromApiRole(
-        legacyUser?.role || "",
-        null,
-        profileData?.organizationType
-      );
-    } catch {
-      // Ignore profile fetch errors
-    }
+    orgType = inferOrganizationTypeFromApiRole(
+      legacyUser?.role || "",
+      typeof window !== "undefined" ? localStorage.getItem("agritrace_token") : null,
+      legacyUser?.organizationType
+    );
   }
 
   return {
@@ -72,6 +61,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [mustChangePassword, setMustChangePassword] = useState(() => {
     return sessionStorage.getItem("agritrace_must_change_password") === "true";
   });
+
+  const updateUser = useCallback((partial: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...partial };
+      sessionStorage.setItem("agritrace_user", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
@@ -109,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      user, isLoggedIn: !!user, login, logout, loading,
+      user, isLoggedIn: !!user, login, logout, updateUser, loading,
       mustChangePassword, clearMustChangePassword,
       canAccessRoute, canCreateEvent
     }}>
