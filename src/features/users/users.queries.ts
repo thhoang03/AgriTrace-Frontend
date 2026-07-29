@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { usersApi } from "./users.api";
-import type { CreateUserRequest, UpdateUserRequest, UserFilters } from "./users.types";
+import type { UpdateUserRequest, UserFilters } from "./users.types";
 
 const QUERY_KEY = "users";
 
@@ -19,13 +19,6 @@ export function useUser(id: string) {
   });
 }
 
-export function useCreateUser() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: CreateUserRequest) => usersApi.create(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
-  });
-}
 
 export function useUpdateUser() {
   const qc = useQueryClient();
@@ -54,8 +47,10 @@ export function useToggleStatus() {
 }
 
 export function useResetPassword() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, newPassword }: { id: string; newPassword: string }) =>
       usersApi.resetPassword(id, newPassword),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 }

@@ -25,6 +25,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 function normalizeUser(legacyUser: any): User {
   const canonicalRole = adaptApiRoleToCanonical(legacyUser?.role || "STAFF");
 
+<<<<<<< HEAD
   let orgType: OrganizationType | undefined = legacyUser?.organizationType;
   if (!orgType) {
     orgType = inferOrganizationTypeFromApiRole(
@@ -33,6 +34,14 @@ function normalizeUser(legacyUser: any): User {
       legacyUser?.organizationType
     );
   }
+=======
+  let orgType: OrganizationType | undefined;
+  orgType = inferOrganizationTypeFromApiRole(
+    legacyUser?.role || "",
+    typeof window !== "undefined" ? localStorage.getItem("agritrace_token") : null,
+    legacyUser?.organizationType
+  );
+>>>>>>> origin/main
 
   return {
     id: String(legacyUser?.id ?? ""),
