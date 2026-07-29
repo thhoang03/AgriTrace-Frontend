@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Leaf, Eye, EyeOff, Shield, Lock, User, ArrowLeft } from "lucide-react";
+import { Leaf, Eye, EyeOff, Shield, Lock, User, ArrowLeft, KeyRound, Sparkles } from "lucide-react";
 import { useAuth } from "./auth.store";
+import { toast } from "sonner";
 
 const BG_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1200&q=80";
+
+const DEMO_ACCOUNTS = [
+  { roleVi: "Nông Dân (Farmer)", roleEn: "Farmer Demo", email: "farmer@agritrace.vn", pass: "Password123!" },
+  { roleVi: "Cơ Sở Chế Biến", roleEn: "Processor Demo", email: "processor@agritrace.vn", pass: "Password123!" },
+  { roleVi: "Đơn Vị Kiểm Tra", roleEn: "Inspector Demo", email: "inspector@agritrace.vn", pass: "Password123!" },
+  { roleVi: "Quản Trị Viên", roleEn: "Admin Demo", email: "admin@agritrace.vn", pass: "Password123!" },
+];
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -21,113 +29,118 @@ export function LoginPage() {
     setLoading(true);
     try {
       const needChange = await login(form.email, form.password);
+      toast.success(lang === "vi" ? "Đăng nhập thành công!" : "Login successful!");
       navigate(needChange ? "/app/change-password" : "/app/dashboard");
     } catch (err: any) {
-      setError(err.message || "Đăng nhập thất bại");
+      setError(err.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleQuickFill = (email: string, pass: string) => {
+    setForm({ email, password: pass });
+    toast.info(lang === "vi" ? `Đã điền tài khoản mẫu ${email}` : `Filled sample demo account ${email}`);
+  };
+
   return (
-    <div className="min-h-screen flex" style={{ background: "#F5F7FA" }}>
+    <div className="min-h-screen flex bg-[#F5F7FA]">
+      {/* Left Decorative Column */}
       <div className="hidden lg:flex flex-col flex-1 relative overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${BG_IMG})` }} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(27,94,32,0.9) 0%, rgba(46,125,50,0.8) 100%)" }} />
-        <div className="relative z-10 flex flex-col h-full p-12">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.15)" }}>
+        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(27,94,32,0.92) 0%, rgba(46,125,50,0.85) 100%)" }} />
+        
+        <div className="relative z-10 flex flex-col h-full p-12 justify-between">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
+            <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-white/15 backdrop-blur shadow-sm">
               <Leaf className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-white font-bold" style={{ fontSize: 18 }}>AgriTrace Vietnam</div>
-              <div className="text-green-200 text-xs">Government Platform</div>
+              <div className="text-white font-bold text-lg">AgriTrace Vietnam</div>
+              <div className="text-green-200 text-xs">Cổng Nông Nghiệp Số Quốc Gia</div>
             </div>
           </div>
 
           <div className="flex-1 flex flex-col items-start justify-center max-w-md">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6" style={{ background: "rgba(255,255,255,0.12)" }}>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-white/15 backdrop-blur">
               <Shield className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-white mb-4" style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.2 }}>
-              Secure Access to
+            <h1 className="text-white mb-4 text-4xl font-extrabold leading-tight">
+              {lang === "vi" ? "Đăng Nhập Nền Tảng" : "Secure Access to"}
               <br />
-              <span style={{ color: "#A5D6A7" }}>Agricultural Data</span>
+              <span className="text-green-300">
+                {lang === "vi" ? "Dữ Liệu Nông Nghiệp Số" : "Agricultural Data"}
+              </span>
             </h1>
-            <p className="text-green-200 leading-relaxed" style={{ fontSize: 16 }}>
-              The national platform for agricultural supply chain traceability, powered by blockchain technology and verified by the Vietnamese government.
+            <p className="text-green-100 leading-relaxed text-sm">
+              {lang === "vi"
+                ? "Hệ thống quản lý truy xuất nguồn gốc nông sản từ Trang trại đến Bàn ăn, bảo chứng bởi Bộ Nông nghiệp & PTNT."
+                : "The national platform for agricultural supply chain traceability, powered by blockchain technology and verified by the government."}
             </p>
-
-            <div className="mt-10 space-y-4">
-              {["Real-time supply chain visibility", "Blockchain-secured records", "Government-verified certificates", "QR code product authentication"].map((f) => (
-                <div key={f} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "#66BB6A" }}>
-                    <span className="text-white text-xs">✓</span>
-                  </div>
-                  <span className="text-green-100 text-sm">{f}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
-          <div className="text-green-300 text-xs">
-            Ministry of Agriculture and Rural Development of Vietnam
+          <div className="text-green-300 text-xs font-semibold">
+            © 2026 Ministry of Agriculture and Rural Development · Vietnam
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col w-full max-w-md mx-auto lg:mx-0 lg:w-[440px] p-8 justify-center">
+      {/* Right Form Column */}
+      <div className="flex flex-col w-full max-w-md mx-auto lg:mx-0 lg:w-[480px] p-8 justify-center min-h-screen">
         <button
           onClick={() => navigate("/")}
-          className="flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm mb-8 transition-colors lg:hidden"
+          className="flex items-center gap-2 text-gray-500 hover:text-green-800 text-xs font-semibold mb-6 transition-colors self-start"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to home
+          <ArrowLeft className="w-4 h-4" /> {lang === "vi" ? "Về trang chủ" : "Back to home"}
         </button>
 
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-gray-900" style={{ fontSize: 26, fontWeight: 700 }}>Welcome back</h2>
-            <p className="text-gray-500 text-sm mt-1">Sign in to your AgriTrace account</p>
+            <h2 className="text-gray-900 text-2xl font-extrabold">
+              {lang === "vi" ? "Đăng Nhập Hàng" : "Welcome Back"}
+            </h2>
+            <p className="text-gray-500 text-xs mt-1">
+              {lang === "vi" ? "Nhập thông tin tài khoản AgriTrace của bạn" : "Sign in to access your AgriTrace dashboard"}
+            </p>
           </div>
+
           <select
             value={lang}
             onChange={(e) => setLang(e.target.value)}
-            className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 outline-none bg-white"
+            className="text-xs font-semibold border border-gray-200 rounded-xl px-2.5 py-1.5 outline-none bg-white cursor-pointer"
           >
-            <option value="vi">🇻🇳 VI</option>
             <option value="en">🇬🇧 EN</option>
+            <option value="vi">🇻🇳 VI</option>
           </select>
         </div>
 
-
+        {/* Form Input */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Email</label>
+            <label className="text-xs font-semibold text-gray-700 mb-1 block">Email / Username</label>
             <div className="relative">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="Enter your email"
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500"
-                style={{ background: "#F8FAF8" }}
+                placeholder="e.g. farmer@agritrace.vn"
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-600 bg-gray-50/50"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Password</label>
+            <label className="text-xs font-semibold text-gray-700 mb-1 block">{lang === "vi" ? "Mật khẩu" : "Password"}</label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type={showPass ? "text" : "password"}
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                placeholder="Enter your password"
-                className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500"
-                style={{ background: "#F8FAF8" }}
+                placeholder="••••••••"
+                className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-600 bg-gray-50/50"
                 required
               />
               <button
@@ -140,45 +153,50 @@ export function LoginPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                className="w-4 h-4 rounded"
-                style={{ accentColor: "#2E7D32" }}
-              />
-              <span className="text-sm text-gray-600">Remember me</span>
-            </label>
-            <button type="button" className="text-sm font-medium" style={{ color: "#2E7D32" }}>
-              Forgot password?
-            </button>
-          </div>
-
           {error && (
-            <p className="text-sm text-red-500 text-center">{error}</p>
+            <p className="text-xs font-semibold text-red-500 bg-red-50 p-2.5 rounded-xl text-center border border-red-100">
+              {error}
+            </p>
           )}
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ background: "linear-gradient(135deg, #2E7D32 0%, #388E3C 100%)", boxShadow: "0 4px 16px rgba(46,125,50,0.35)" }}
+            className="w-full py-3.5 rounded-xl text-white font-bold text-sm transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg"
+            style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)" }}
           >
             {loading ? (
               <>
                 <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                Signing in...
+                <span>{lang === "vi" ? "Đang xác thực..." : "Authenticating..."}</span>
               </>
             ) : (
-              "Sign In"
+              <span>{lang === "vi" ? "Đăng Nhập Hàng" : "Sign In"}</span>
             )}
           </button>
         </form>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
-          © 2024 Ministry of Agriculture and Rural Development · Vietnam
-        </p>
+        {/* Quick Demo Accounts Fill Box */}
+        <div className="mt-6 p-4 rounded-2xl bg-green-50/60 border border-green-100 space-y-3">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-green-900">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <span>{lang === "vi" ? "Thử nghiệm nhanh tài khoản demo:" : "Quick Demo Test Login Accounts:"}</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            {DEMO_ACCOUNTS.map((acc, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => handleQuickFill(acc.email, acc.pass)}
+                className="p-2 rounded-xl bg-white border border-green-200 hover:border-green-600 hover:bg-green-100/50 text-left transition-all text-xs"
+              >
+                <div className="font-bold text-green-900">{lang === "vi" ? acc.roleVi : acc.roleEn}</div>
+                <div className="text-[10px] text-gray-500 font-mono truncate">{acc.email}</div>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { authApi } from "../features/auth/auth.api";
 import { setToken, removeToken } from "../lib/api";
-import type { User, LoginRequest } from "../types/mapping";
+import { User, LoginRequest } from "../types/mapping";
 import { adaptLoginDataToResponse } from "../types/mapping";
 
 interface AuthContextType {
