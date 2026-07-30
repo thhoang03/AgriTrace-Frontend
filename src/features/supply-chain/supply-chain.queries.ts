@@ -1,8 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supplyChainApi } from "./supply-chain.api";
-import type { CreateEventRequest } from "./supply-chain.types";
+import { batchesApi } from "../batches/batches.api";
+import type { CreateEventRequest, SupplyChainFilters } from "./supply-chain.api";
 
 const QUERY_KEY = "supply-chain";
+
+export function useEventTypes() {
+  return useQuery({
+    queryKey: [QUERY_KEY, "event-types"],
+    queryFn: () => supplyChainApi.getEventTypes(),
+    staleTime: 5 * 60 * 1000,
+  });
+}
 
 export function useSupplyChain(batchId: string) {
   return useQuery({
@@ -12,19 +21,11 @@ export function useSupplyChain(batchId: string) {
   });
 }
 
-export function useSupplyChainNode(nodeId: string) {
+export function useEvents(batchId: string, filters?: SupplyChainFilters) {
   return useQuery({
-    queryKey: [QUERY_KEY, "node", nodeId],
-    queryFn: () => supplyChainApi.getNode(nodeId),
-    enabled: !!nodeId,
-  });
-}
-
-export function useTraceByQR(qrCode: string) {
-  return useQuery({
-    queryKey: [QUERY_KEY, "trace", qrCode],
-    queryFn: () => supplyChainApi.traceByQR(qrCode),
-    enabled: !!qrCode,
+    queryKey: [QUERY_KEY, "events", batchId, filters],
+    queryFn: () => supplyChainApi.getEvents(batchId, filters),
+    enabled: !!batchId,
   });
 }
 
@@ -33,8 +34,19 @@ export function useCreateEvent(batchId: string) {
   return useMutation({
     mutationFn: (data: CreateEventRequest) => supplyChainApi.createEvent(batchId, data),
     onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [QUERY_KEY, "events", batchId] });
       qc.invalidateQueries({ queryKey: [QUERY_KEY, batchId] });
-      qc.invalidateQueries({ queryKey: ["batches", batchId, "timeline"] });
     },
+  });
+}
+
+export function useRecentBatches() {
+  return useQuery({
+    queryKey: [QUERY_KEY, "recent-batches"],
+    queryFn: async () => {
+      const result = await batchesApi.getAll({ limit: 5, sortBy: "createdAt", sortOrder: "desc" });
+      return result.data ?? [];
+    },
+    staleTime: 2 * 60 * 1000,
   });
 }

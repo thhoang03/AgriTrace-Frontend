@@ -8,6 +8,8 @@ interface TopBarProps {
   sidebarOpen?: boolean;
 }
 
+const BATCH_CODE_REGEX = /^[A-Z]{2,6}-\d{4}-\d{3,}$/i;
+
 export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -15,6 +17,18 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
   const [showUser, setShowUser] = useState(false);
   const [showNotif, setShowNotif] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const handleSearch = () => {
+    const q = searchQuery.trim();
+    if (!q) return;
+    if (BATCH_CODE_REGEX.test(q) || q.includes("/trace/")) {
+      const code = q.includes("/trace/") ? q.split("/trace/").pop()! : q;
+      navigate(`/trace/${code}`);
+    } else {
+      navigate(`/app/batches?search=${encodeURIComponent(q)}`);
+    }
+    setSearchQuery("");
+  };
 
   const getBreadcrumbs = () => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -34,6 +48,11 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
           'reports': 'Reports',
           'users': 'User Management',
           'profile': 'My Profile',
+          'analytics': 'Analytics',
+          'notifications': 'Notifications',
+          'products': 'Products',
+          'categories': 'Categories',
+          'organizations': 'Organizations',
         };
         breadcrumbs.push({
           label: pageLabels[pageName] || pageName.charAt(0).toUpperCase() + pageName.slice(1),
@@ -86,15 +105,25 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
       </nav>
 
       <div className="flex-1 max-w-md relative ml-auto md:ml-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         <input
           type="text"
-          placeholder="Search batches, farms, products..."
+          placeholder="Search batches, batch codes... (Enter)"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400 focus:ring-2"
+          onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
+          className="w-full pl-9 pr-10 py-2 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
           style={{ background: "#F8FAF8", fontSize: 13 }}
         />
+        {searchQuery && (
+          <button
+            onClick={handleSearch}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-semibold px-2 py-0.5 rounded-lg text-white transition-colors"
+            style={{ background: "#2E7D32", fontSize: 11 }}
+          >
+            Go
+          </button>
+        )}
       </div>
 
       <div className="ml-auto flex items-center gap-2">
@@ -122,7 +151,13 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
                 </div>
               ))}
               <div className="px-4 py-2 text-center">
-                <button className="text-sm font-medium" style={{ color: "#2E7D32" }}>View all notifications</button>
+                <button
+                  onClick={() => { setShowNotif(false); navigate("/app/notifications"); }}
+                  className="text-sm font-medium hover:underline transition-colors"
+                  style={{ color: "#2E7D32" }}
+                >
+                  View all notifications
+                </button>
               </div>
             </div>
           )}
@@ -153,6 +188,7 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
                 <User className="w-4 h-4" /> My Profile
               </button>
               <button
+                onClick={() => { navigate("/app/profile"); setShowUser(false); }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
               >
                 <Settings className="w-4 h-4" /> Settings

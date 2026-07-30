@@ -1,4 +1,4 @@
-export type UserStatus = "Active" | "Inactive";
+export type UserStatus = "Active" | "Inactive" | "Pending";
 export type UserRole = "ADMIN" | "MANAGER" | "STAFF";
 
 export interface UserItem {
@@ -19,6 +19,8 @@ export interface CreateUserRequest {
   password: string;
   phone?: string;
   role: UserRole;
+  organization?: string;
+  organizationId?: string;
 }
 
 export interface UpdateUserRequest extends Partial<CreateUserRequest> {

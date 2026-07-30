@@ -10,10 +10,13 @@ import { canAccessRoute, canCreateEvent } from "./permissions";
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (data: any) => Promise<boolean>;
   logout: () => void;
+  updateUser: (partial: Partial<User>) => void;
   loading: boolean;
+  mustChangePassword: boolean;
+  clearMustChangePassword: () => void;
   canAccessRoute: typeof canAccessRoute;
   canCreateEvent: typeof canCreateEvent;
 }
@@ -23,25 +26,13 @@ const AuthContext = createContext<AuthContextType | null>(null);
 function normalizeUser(legacyUser: any): User {
   const canonicalRole = adaptApiRoleToCanonical(legacyUser?.role || "STAFF");
 
-  let orgType: OrganizationType | undefined;
-  orgType = inferOrganizationTypeFromApiRole(
-    legacyUser?.role || "",
-    typeof window !== "undefined" ? localStorage.getItem("agritrace_token") : null,
-    legacyUser?.organizationType
-  );
-
+  let orgType: OrganizationType | undefined = legacyUser?.organizationType;
   if (!orgType) {
-    try {
-      const profile = authApi.getProfile();
-      const profileData = profile as any;
-      orgType = inferOrganizationTypeFromApiRole(
-        legacyUser?.role || "",
-        null,
-        profileData?.organizationType
-      );
-    } catch {
-      // Ignore profile fetch errors
-    }
+    orgType = inferOrganizationTypeFromApiRole(
+      legacyUser?.role || "",
+      typeof window !== "undefined" ? localStorage.getItem("agritrace_token") : null,
+      legacyUser?.organizationType
+    );
   }
 
   return {
@@ -68,6 +59,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   });
   const [loading, setLoading] = useState(false);
+  const [mustChangePassword, setMustChangePassword] = useState(() => {
+    return sessionStorage.getItem("agritrace_must_change_password") === "true";
+  });
+
+  const updateUser = useCallback((partial: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...partial };
+      sessionStorage.setItem("agritrace_user", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
@@ -75,10 +78,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const loginRequest: LoginRequest = { email, password };
       const res = await authApi.login(loginRequest);
       const normalized = normalizeUser(res.user);
+      normalized.mustChangePassword = res.mustChangePassword;
       setUser(normalized);
       setToken(res.accessToken);
       if (res.refreshToken) setRefreshToken(res.refreshToken);
       sessionStorage.setItem("agritrace_user", JSON.stringify(normalized));
+      if (res.mustChangePassword) {
+        setMustChangePassword(true);
+        sessionStorage.setItem("agritrace_must_change_password", "true");
+      }
+      return res.mustChangePassword ?? false;
     } finally {
       setLoading(false);
     }
@@ -93,9 +102,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(res.accessToken);
       if (res.refreshToken) setRefreshToken(res.refreshToken);
       sessionStorage.setItem("agritrace_user", JSON.stringify(normalized));
+      if (res.mustChangePassword) {
+        setMustChangePassword(true);
+        sessionStorage.setItem("agritrace_must_change_password", "true");
+      }
+      return res.mustChangePassword ?? false;
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  const clearMustChangePassword = useCallback(() => {
+    setMustChangePassword(false);
+    sessionStorage.removeItem("agritrace_must_change_password");
   }, []);
 
   const logout = useCallback(() => {
@@ -104,11 +123,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     removeToken();
     removeRefreshToken();
     sessionStorage.removeItem("agritrace_user");
+    sessionStorage.removeItem("agritrace_must_change_password");
     queryClient.clear();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn: !!user, login, register, logout, loading, canAccessRoute, canCreateEvent }}>
+    <AuthContext.Provider value={{
+      user, isLoggedIn: !!user, login, register, logout, updateUser, loading,
+      mustChangePassword, clearMustChangePassword,
+      canAccessRoute, canCreateEvent
+    }}>
       {children}
     </AuthContext.Provider>
   );

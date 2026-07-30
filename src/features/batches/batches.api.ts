@@ -35,6 +35,7 @@ export interface Batch {
   id: string;
   batchCode?: string;
   product: string;
+  productId?: string;
   productName?: string;
   categoryId?: number;
   category: string;
@@ -45,6 +46,7 @@ export interface Batch {
   harvestDate: string;
   quantity: number;
   unit?: string;
+  unitId?: string;
   weight: string;
   productionArea?: string;
   status: BatchStatus;

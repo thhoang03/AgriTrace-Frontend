@@ -1,6 +1,6 @@
 import { useSupplyChain } from "../supply-chain/supply-chain.queries";
 import { GitMerge, GitBranch, ArrowDown, AlertCircle } from "lucide-react";
-import type { SupplyChainNode } from "../supply-chain/supply-chain.types";
+import type { SupplyChainNode } from "../supply-chain/supply-chain.api";
 
 interface BatchLineageTabProps {
   batchId: string;

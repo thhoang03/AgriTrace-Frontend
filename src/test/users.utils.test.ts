@@ -34,6 +34,6 @@ describe("users utils", () => {
 
   it("collects role options and status summary", () => {
     expect(getRoleOptions(mockUsers)).toEqual(["ADMIN", "STAFF"]);
-    expect(getStatusSummary(mockUsers)).toEqual({ Active: 1, Inactive: 0});
+    expect(getStatusSummary(mockUsers)).toEqual({ Active: 1, Inactive: 0, Pending: 1 });
   });
 });

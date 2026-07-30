@@ -7,6 +7,7 @@ interface LoginResponse {
   user: any;
   accessToken: string;
   refreshToken: string;
+  mustChangePassword?: boolean;
 }
 
 export const authApi = {

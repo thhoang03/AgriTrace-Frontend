@@ -151,6 +151,7 @@ export function adaptLoginDataToResponse(data: LoginData) {
     user: adaptUserBasicToUser(data.user ?? {}),
     accessToken: data.accessToken ?? "",
     refreshToken: data.refreshToken ?? "",
+    mustChangePassword: (data as any).mustChangePassword ?? false,
   };
 }
 
@@ -185,7 +186,7 @@ const ROLE_TO_ORG_TYPE: Record<string, import("../features/auth/permissions").Or
   Distributor: "DISTRIBUTOR",
   RETAILER: "RETAILER",
   INSPECTOR: "INSPECTION",
-  ADMIN: "SYSTEM"
+  ADMIN: "SYSTEM",
 };
 
 export function inferOrganizationTypeFromApiRole(
@@ -193,24 +194,24 @@ export function inferOrganizationTypeFromApiRole(
   jwtClaim?: string | null,
   profileOrgType?: string | null
 ): import("../features/auth/permissions").OrganizationType | undefined {
-  const fromRole = ROLE_TO_ORG_TYPE[apiRole] ?? ROLE_TO_ORG_TYPE[apiRole.toUpperCase()];
+  if (profileOrgType) {
+    const normalized = profileOrgType.toUpperCase();
+    const validTypes: import("../features/auth/permissions").OrganizationType[] = [
+      "FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"
+    ];
+    const match = validTypes.find((t) => normalized === t || normalized.includes(t));
+    if (match) return match;
+  }
+
+  const fromRole = ROLE_TO_ORG_TYPE[apiRole] ?? ROLE_TO_ORG_TYPE[apiRole?.toUpperCase?.() || ""];
   if (fromRole) return fromRole;
 
   if (jwtClaim) {
     const normalized = jwtClaim.toUpperCase();
-    const orgTypes: import("../features/auth/permissions").OrganizationType[] = [
+    const validTypes: import("../features/auth/permissions").OrganizationType[] = [
       "FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"
     ];
-    const match = orgTypes.find((t) => normalized.includes(t));
-    if (match) return match;
-  }
-
-  if (profileOrgType) {
-    const normalized = profileOrgType.toUpperCase();
-    const orgTypes: import("../features/auth/permissions").OrganizationType[] = [
-      "FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"
-    ];
-    const match = orgTypes.find((t) => normalized.includes(t));
+    const match = validTypes.find((t) => normalized.includes(t));
     if (match) return match;
   }
 

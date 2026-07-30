@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import {
   Search,
   Plus,
@@ -10,14 +10,18 @@ import {
   Power,
   CheckCircle,
   AlertCircle,
+  Sparkles,
 } from "lucide-react";
+import { useAuth } from "../auth/auth.store";
+import { useOrganizationsList } from "../organizations/organizations.queries";
 import {
-  useCreateUser,
   useResetPassword,
   useUpdateUser,
   useToggleStatus,
   useUsers,
 } from "./users.queries";
+import { usersApi } from "./users.api";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   filterUsers,
   getOrgTypeOptions,
@@ -31,6 +35,7 @@ import type {
   UserRole,
   UserStatus,
 } from "./users.types";
+import type { Organization } from "../organizations/organizations.types";
 
 const BANNER_IMG =
   "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=1400&q=80";
@@ -47,6 +52,7 @@ const statusConfig: Record<
 > = {
   Active: { bg: "#E8F5E9", color: "#2E7D32", dot: "#4CAF50" },
   Inactive: { bg: "#F5F5F5", color: "#757575", dot: "#9E9E9E" },
+  Pending: { bg: "#FFF8E1", color: "#FFB300", dot: "#FF9800" },
 };
 
 const orgTypeColors: Record<string, { bg: string; color: string }> = {
@@ -63,9 +69,28 @@ const emptyUserForm: CreateUserRequest = {
   email: "",
   password: "",
   role: "STAFF",
+  organization: "",
+  organizationId: undefined,
 };
 
+function generatePassword(length = 12): string {
+  const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const lower = "abcdefghijklmnopqrstuvwxyz";
+  const digits = "0123456789";
+  const all = upper + lower + digits;
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += all[array[i] % all.length];
+  }
+  return password;
+}
+
 export function UsersListPage() {
+  const { user: currentUser } = useAuth();
+  const isAdmin = currentUser?.role === "ADMIN";
+
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "All">("All");
   const [orgTypeFilter, setOrgTypeFilter] = useState<string | "All">("All");
@@ -92,10 +117,17 @@ export function UsersListPage() {
     status: statusFilter === "All" ? undefined : statusFilter,
   });
 
-  const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const toggleStatus = useToggleStatus();
   const resetPassword = useResetPassword();
+  const qc = useQueryClient();
+  const [creating, setCreating] = useState(false);
+
+  const { data: orgsData } = useOrganizationsList();
+  const organizations = useMemo<Organization[]>(
+    () => orgsData?.data?.items ?? [],
+    [orgsData]
+  );
 
   const users = useMemo(() => data?.data?.items ?? [], [data]);
   const filtered = useMemo(
@@ -111,14 +143,23 @@ export function UsersListPage() {
     if (!form.fullName || !form.email || !form.password)
       return;
     try {
-      await createUser.mutateAsync(form);
-      showAlert("success", `User "${form.fullName}" created successfully`);
+
+      setCreating(true);
+      await usersApi.create(form as any);
+      qc.invalidateQueries({ queryKey: ["users"] });
       setForm(emptyUserForm);
       setShowAdd(false);
+      showAlert("success", `User "${form.fullName}" created successfully`);
     } catch (e: any) {
-      alert(e?.message || "Failed to create user");
+      showAlert("error", getApiErrorMessage(e));
+    } finally {
+      setCreating(false);
     }
   };
+
+  const handleAutoGeneratePassword = useCallback(() => {
+    setForm((prev) => ({ ...prev, password: generatePassword() }));
+  }, []);
 
 const handleResetPassword = async (user: UserItem) => {
   const password = window.prompt(
@@ -129,7 +170,7 @@ const handleResetPassword = async (user: UserItem) => {
     await resetPassword.mutateAsync({ id: user.id, newPassword: password });
     showAlert("success", `Password reset for "${user.fullName}" successfully`);
   } catch (e: any) {
-    alert(e?.message || "Failed to reset password");
+    showAlert("error", getApiErrorMessage(e));
   }
 };
 
@@ -442,7 +483,9 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
             style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-bold text-gray-900">Add New User</h3>
+              <h3 className="font-bold text-gray-900">
+                {isAdmin ? "Add New User" : "Mời nhân viên mới (Invite Staff)"}
+              </h3>
               <button
                 onClick={() => setShowAdd(false)}
                 className="p-1.5 rounded-lg hover:bg-gray-100"
@@ -451,71 +494,140 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
               </button>
             </div>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                    Full Name
-                  </label>
-                  <input
-                    value={form.fullName}
-                    onChange={(e) =>
-                      setForm({ ...form, fullName: e.target.value })
-                    }
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                    style={{ background: "#F8FAF8" }}
-                    placeholder="John Doe"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                    style={{ background: "#F8FAF8" }}
-                    placeholder="email@org.vn"
-                  />
-                </div>
-              </div>
+              {/* Full Name */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                  Password
+                  Họ và tên <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="password"
-                  value={form.password}
+                  value={form.fullName}
                   onChange={(e) =>
-                    setForm({ ...form, password: e.target.value })
+                    setForm({ ...form, fullName: e.target.value })
                   }
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
                   style={{ background: "#F8FAF8" }}
-                  placeholder="Minimum 8 characters"
+                  placeholder="Nguyễn Văn X"
                 />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) =>
+                    setForm({ ...form, email: e.target.value })
+                  }
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
+                  style={{ background: "#F8FAF8" }}
+                  placeholder="email@org.vn"
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Mật khẩu khởi tạo <span className="text-red-500">*</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={form.password}
+                    onChange={(e) =>
+                      setForm({ ...form, password: e.target.value })
+                    }
+                    className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
+                    style={{ background: "#F8FAF8" }}
+                    placeholder="Tối thiểu 6 ký tự"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAutoGeneratePassword}
+                    className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 flex items-center gap-1.5"
+                    title="Tự động tạo mật khẩu"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Tạo
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                  Role
+                  Organization
                 </label>
-                <select
-                  value={form.role}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      role: e.target.value as CreateUserRequest["role"],
-                    })
-                  }
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
-                >
-                  {["MANAGER", "STAFF"].map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
+                <input
+                  value={form.organization}
+                  onChange={(e) => setForm({ ...form, organization: e.target.value })}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
+                  style={{ background: "#F8FAF8" }}
+                  placeholder="Organization name"
+                />
               </div>
+              {/* ADMIN: Organization + Role */}
+              {isAdmin ? (
+                <>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                      Tổ chức (Organization) <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={form.organizationId ?? ""}
+                      onChange={(e) =>
+                        setForm({ ...form, organizationId: e.target.value || undefined })
+                      }
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
+                    >
+                      <option value="">-- Chọn tổ chức --</option>
+                      {organizations.map((org) => (
+                        <option key={org.organizationId} value={String(org.organizationId)}>
+                          {org.name} ({org.type})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                      Vai trò (Role) <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={form.role}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          role: e.target.value as CreateUserRequest["role"],
+                        })
+                      }
+                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
+                    >
+                      <option value="MANAGER">MANAGER</option>
+                      <option value="STAFF">STAFF</option>
+                    </select>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* MANAGER: Org read-only + Role fixed */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                      Tổ chức (Organization)
+                    </label>
+                    <div className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 bg-gray-50">
+                      {currentUser?.organizationName || "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                      Vai trò (Role)
+                    </label>
+                    <div className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 bg-gray-50">
+                      STAFF
+                    </div>
+                  </div>
+                </>
+              )}
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowAdd(false)}
@@ -528,7 +640,8 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90"
                   style={{ background: "#2E7D32" }}
                 >
-                  {createUser.isPending ? "Saving..." : "Add User"}
+
+                  {creating ? "Saving..." : isAdmin ? "Add User" : "Invite Staff"}
                 </button>
               </div>
             </div>
@@ -609,6 +722,17 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   </select>
                 </div>
               </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Organization
+                </label>
+                <input
+                  value={selectedUser.organization}
+                  onChange={(e) => setSelectedUser({ ...selectedUser, organization: e.target.value })}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
+                  style={{ background: "#F8FAF8" }}
+                />
+              </div>
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setSelectedUser(null)}
@@ -625,18 +749,21 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                           fullName: selectedUser.fullName,
                           role: selectedUser.role,
                           status: selectedUser.status,
+                          phone: selectedUser.phone,
+                          organization: selectedUser.organization,
                         },
                       });
                       showAlert("success", `User "${selectedUser.fullName}" updated successfully`);
                       setSelectedUser(null);
+                      showAlert("success", "User updated successfully");
                     } catch (e: any) {
-                      alert(e?.message || "Failed to update user");
+                      showAlert("error", getApiErrorMessage(e));
                     }
                   }}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90"
                   style={{ background: "#2E7D32" }}
                 >
-                  {updateUser.isPending ? "Saving..." : "Save"}
+                  {updateUser.status === 'pending' ? "Saving..." : "Save"}
                 </button>
               </div>
             </div>
