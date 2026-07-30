@@ -41,6 +41,7 @@ export interface SupplyChainEvent {
   previousHash?: string;
   currentHash?: string;
   metadata?: Record<string, unknown>;
+  inspectionId?: string;
 }
 
 export interface CreateEventRequest {

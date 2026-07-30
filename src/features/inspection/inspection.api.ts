@@ -1,77 +1,141 @@
-import { get, post, put } from "../../lib/api";
+import { get, post, put, del } from "../../lib/api";
 import type {
-  InspectionDetail,
-  InspectionPagedResponse,
-  CreateInspectionRequest as NewCreateInspectionRequest,
-  UpdateInspectionRequest as NewUpdateInspectionRequest,
-} from "../../types/mapping";
-import type { InspectionItem, CreateInspectionRequest, InspectionFilters } from "./inspection.types";
+  InspectionItem,
+  InspectionStatus,
+  CreateInspectionRequest,
+  ConcludeInspectionRequest,
+  InspectionFilters,
+  LabTest,
+  CreateLabTestRequest,
+} from "./inspection.types";
 
-function adaptInspectionFromDetail(item: InspectionDetail & Record<string, unknown>): InspectionItem {
+interface InspectionResponse {
+  inspectionId: string;
+  batchId: string;
+  batchCode?: string;
+  inspectorId: string;
+  inspectorName?: string;
+  inspectionType: number;
+  status: number;
+  overallResult?: string;
+  inspectionDate: string;
+  notes?: string;
+  createdAt: string;
+  labTests: LabTestResponse[];
+}
+
+interface LabTestResponse {
+  id: string;
+  testName: string;
+  measuredValue?: string;
+  unit?: string;
+  minStandardValue?: string;
+  maxStandardValue?: string;
+  isPassed: boolean;
+  remark?: string;
+  createdAt: string;
+}
+
+interface PagedResponse {
+  items: InspectionResponse[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+const STATUS_MAP: Record<number, InspectionStatus> = {
+  1: "Pending",
+  2: "Passed",
+  3: "Failed",
+};
+
+function adaptInspection(res: InspectionResponse): InspectionItem {
   return {
-    id: item.inspectionId ?? "",
-    batchId: item.batchId ?? "",
-    batchCode: item.batchCode ?? "",
-    product: (item.product as string) ?? "",
-    productImage: item.productImage as string | undefined,
-    result: (item.result === "PASS" ? "Pass" : item.result === "FAIL" ? "Fail" : "Pending") as InspectionItem["result"],
-    inspector: item.inspectorName ?? "",
-    inspectorId: item.inspectorId ?? "",
-    organization: (item.organization as string) ?? "",
-    date: item.createdAt?.split("T")[0] ?? "",
-    category: (item.category as InspectionItem["category"]) ?? "Quality",
-    score: typeof item.score === "number" ? item.score : 0,
-    notes: item.notes ?? "",
-    certificate: item.certificate as string | null,
-    tests: (item.tests as InspectionItem["tests"]) ?? [],
-    status: typeof item.status === "number" ? item.status : undefined,
+    id: res.inspectionId,
+    batchId: res.batchId,
+    batchCode: res.batchCode ?? "",
+    inspectorId: res.inspectorId,
+    inspector: res.inspectorName ?? "",
+    inspectionType: res.inspectionType as InspectionItem["inspectionType"],
+    status: STATUS_MAP[res.status] ?? "Pending",
+    overallResult: res.overallResult,
+    inspectionDate: res.inspectionDate?.split("T")[0] ?? "",
+    notes: res.notes ?? "",
+    createdAt: res.createdAt,
+    labTests: (res.labTests ?? []).map(adaptLabTest),
+  };
+}
+
+function adaptLabTest(lt: LabTestResponse): LabTest {
+  return {
+    id: lt.id,
+    inspectionId: "",
+    testName: lt.testName,
+    measuredValue: lt.measuredValue,
+    unit: lt.unit,
+    minStandardValue: lt.minStandardValue,
+    maxStandardValue: lt.maxStandardValue,
+    isPassed: lt.isPassed,
+    remark: lt.remark,
+    createdAt: lt.createdAt,
   };
 }
 
 export const inspectionApi = {
   getAll: async (filters?: InspectionFilters) => {
-    const response = await get<InspectionPagedResponse>("/inspections", {
-      params: {
-        page: filters?.page,
-        pageSize: filters?.limit,
-      }
+    const response = await get<PagedResponse>("/inspections", {
+      params: { page: filters?.page, pageSize: filters?.limit },
     });
-    const pagedData = response.data as any;
-    return {
-      data: pagedData.items?.map(adaptInspectionFromDetail) ?? [],
-    };
+    const data = response.data as PagedResponse;
+    return { data: data.items?.map(adaptInspection) ?? [] };
   },
 
   getByBatchId: async (batchId: string) => {
-    const response = await get<InspectionPagedResponse>(`/batches/${batchId}/inspections`, {
-      params: { pageSize: 100 }
+    const response = await get<PagedResponse>(`/batches/${batchId}/inspections`, {
+      params: { pageSize: 100 },
     });
-    const pagedData = response.data as any;
-    return {
-      data: pagedData.items?.map(adaptInspectionFromDetail) ?? [],
-    };
+    const data = response.data as PagedResponse;
+    return { data: data.items?.map(adaptInspection) ?? [] };
   },
 
   getById: async (id: string) => {
-    const response = await get<InspectionDetail>(`/inspections/${id}`);
-    return { data: adaptInspectionFromDetail(response.data) };
+    const response = await get<InspectionResponse>(`/inspections/${id}`);
+    const data = response.data as InspectionResponse;
+    return { data: adaptInspection(data) };
   },
 
-  create: async (batchId: string, data: CreateInspectionRequest) => {
-    const newRequest: NewCreateInspectionRequest = {
-      result: data.result === "Pass" ? "PASS" : data.result === "Fail" ? "FAIL" : "FAIL",
-      notes: data.notes,
-    };
-    const response = await post<{ inspectionId: string }>(`/batches/${batchId}/inspections`, newRequest);
-    const createdData = response.data as any;
-    return { data: { inspectionId: createdData.inspectionId ?? "" } };
+  create: async (data: CreateInspectionRequest) => {
+    const response = await post<{ inspectionId: string }>(
+      `/batches/${data.batchId}/inspections`,
+      {
+        inspectionType: data.inspectionType,
+        inspectionDate: data.inspectionDate,
+        notes: data.notes,
+      }
+    );
+    const result = response.data as any;
+    return { data: { inspectionId: result.inspectionId ?? "" } };
   },
 
-  update: async (id: string, data: Partial<CreateInspectionRequest> & { status?: number; score?: number; notes?: string }) => {
-    const newRequest: NewUpdateInspectionRequest = {
-      result: data.result === "Pass" ? "PASS" : data.result === "Fail" ? "FAIL" : "FAIL",
+  conclude: async (data: ConcludeInspectionRequest) => {
+    return put<void>(`/inspections/${data.id}`, {
+      overallResult: data.overallResult,
       notes: data.notes,
-    };
-    return put<void>(`/inspections/${id}`, newRequest);
+    });
+  },
+
+  addLabTest: async (inspectionId: string, data: CreateLabTestRequest) => {
+    return post<LabTestResponse>(`/inspections/${inspectionId}/lab-tests`, data);
+  },
+
+  getLabTests: async (inspectionId: string) => {
+    const response = await get<LabTestResponse[]>(`/inspections/${inspectionId}/lab-tests`);
+    const data = response.data as LabTestResponse[];
+    return { data: (data ?? []).map(adaptLabTest) };
+  },
+
+  removeLabTest: async (labTestId: string) => {
+    return del(`/lab-tests/${labTestId}`);
   },
 };

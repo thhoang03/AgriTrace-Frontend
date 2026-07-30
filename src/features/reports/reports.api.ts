@@ -1,34 +1,11 @@
 import { get, post } from "../../lib/api";
-import type { ApiResponse } from "../../types/mapping";
+import type { GenerateReportRequest, ReportMetadata, ReportType, ReportFormat } from "./reports.types";
 
-// Legacy types for backward compatibility
-export type ReportType = "OVERVIEW" | "BATCH" | "INSPECTION" | "RECALL" | "ANALYTICS";
-export type ReportFormat = "PDF" | "EXCEL" | "CSV";
-
-export interface GenerateReportRequest {
-  type: ReportType;
-  format: ReportFormat;
-  dateFrom?: string;
-  dateTo?: string;
-  organizationId?: number;
-}
-
-export interface ReportMetadata {
-  id: string;
-  type: ReportType;
-  format: ReportFormat;
-  generatedAt: string;
-  generatedBy: string;
-  url: string;
-  size: number;
-}
-
-// Adapter functions
 function adaptReportFromItem(item: any): ReportMetadata {
   return {
     id: item.id ?? item.reportId ?? "",
-    type: item.type ?? "OVERVIEW",
-    format: item.format ?? "PDF",
+    type: item.type ?? "OVERVIEW" as ReportType,
+    format: item.format ?? "PDF" as ReportFormat,
     generatedAt: item.generatedAt ?? item.createdAt ?? "",
     generatedBy: item.generatedBy ?? "",
     url: item.url ?? "",
@@ -44,8 +21,8 @@ export const reportsApi = {
 
   list: async () => {
     const response = await get<any>("/reports");
-    const data = response.data as any;
-    const items = Array.isArray(data) ? data : data?.items ?? [];
+    const raw = response.data as any;
+    const items = Array.isArray(raw) ? raw : raw?.items ?? raw?.data ?? [];
     return { data: items.map(adaptReportFromItem) as ReportMetadata[] };
   },
 };

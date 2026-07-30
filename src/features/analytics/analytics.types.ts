@@ -1,16 +1,10 @@
 export interface AnalyticsOverview {
-  totalProducts: number;
   totalBatches: number;
   totalOrganizations: number;
   totalEvents: number;
   totalRecalls: number;
   activeBatches: number;
   recalledBatches: number;
-  todayHarvest: number;
-  inProcessing: number;
-  inTransport: number;
-  atRetail: number;
-  recallAlerts: number;
   monthlyProduction: MonthlyProductionData[];
   batchStatus: BatchStatusData[];
   inspectionResults: InspectionData[];

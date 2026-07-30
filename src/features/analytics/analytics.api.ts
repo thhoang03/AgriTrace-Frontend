@@ -1,29 +1,17 @@
 import { get } from "../../lib/api";
-import type {
-  OverviewData,
-  BatchDistributionData,
-  ProcessingTimeData,
-  TracebackData,
-} from "../../types/mapping";
+import type { ApiResponse } from "../../types/mapping";
 
-// Legacy types for backward compatibility
-export interface AnalyticsOverview {
-  totalProducts?: number;
-  totalBatches?: number;
-  totalOrganizations?: number;
-  totalEvents?: number;
-  totalRecalls?: number;
-  activeBatches?: number;
-  recalledBatches?: number;
-  todayHarvest?: number;
-  inProcessing?: number;
-  inTransport?: number;
-  atRetail?: number;
-  recallAlerts?: number;
-  monthlyProduction?: MonthlyProductionData[];
-  batchStatus?: BatchStatusData[];
-  inspectionResults?: InspectionData[];
-  recallTrend?: RecallTrendData[];
+export interface OverviewResponse {
+  totalBatches: number;
+  totalOrganizations: number;
+  totalEvents: number;
+  totalRecalls: number;
+  activeBatches: number;
+  recalledBatches: number;
+  monthlyProduction: MonthlyProductionData[];
+  batchStatus: BatchStatusData[];
+  inspectionResults: InspectionData[];
+  recallTrend: RecallTrendData[];
 }
 
 export interface MonthlyProductionData {
@@ -49,44 +37,52 @@ export interface RecallTrendData {
   recalls: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface BatchDistribution {
-  // Legacy - content varies by use
-  [key: string]: any;
+export interface BatchDistributionResponse {
+  items: BatchDistributionItemResponse[];
+  totalCount: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ProcessingTime {
-  // Legacy - content varies by use
-  [key: string]: any;
+export interface BatchDistributionItemResponse {
+  status: number;
+  statusName: string;
+  count: number;
 }
 
-// Adapter functions
-function adaptOverviewFromData(data: any): AnalyticsOverview {
-  return {
-    totalProducts: data.totalBatches ?? 0,
-    todayHarvest: data.activeBatches ?? 0,
-    inProcessing: 0,
-    inTransport: 0,
-    atRetail: 0,
-    recallAlerts: data.totalRecalls ?? 0,
-    totalBatches: data.totalBatches ?? 0,
-    totalOrganizations: data.totalOrganizations ?? 0,
-    totalEvents: data.totalEvents ?? 0,
-    totalRecalls: data.totalRecalls ?? 0,
-    activeBatches: data.activeBatches ?? 0,
-    recalledBatches: data.recalledBatches ?? 0,
-    monthlyProduction: [],
-    batchStatus: [],
-    inspectionResults: [],
-    recallTrend: [],
-  };
+export interface ProcessingTimeResponse {
+  averageProcessingHours: number;
+  byEventType: ProcessingTimeByEventTypeResponse[];
+}
+
+export interface ProcessingTimeByEventTypeResponse {
+  eventTypeCode: string | null;
+  averageHours: number;
+}
+
+export interface TracebackResponse {
+  batchId: string;
+  batchCode: string;
+  affectedBatches: AffectedBatchResponse[];
+  relatedOrganizations: RelatedOrganizationResponse[];
+}
+
+export interface AffectedBatchResponse {
+  batchId: string;
+  batchCode: string;
+  relationship: string;
+}
+
+export interface RelatedOrganizationResponse {
+  organizationId: string;
+  name: string;
+  type: string | null;
 }
 
 export const analyticsApi = {
   getOverview: async () => {
-    const response = await get<OverviewData>("/analytics/overview");
-    return { data: adaptOverviewFromData(response.data) };
+    const response = await get<ApiResponse>("/analytics/overview");
+    const raw = response.data as any;
+    const data = raw?.data ?? raw;
+    return { data: data as OverviewResponse };
   },
 
   getBatchDistribution: async (params?: {
@@ -94,8 +90,10 @@ export const analyticsApi = {
     fromDate?: string;
     toDate?: string;
   }) => {
-    const response = await get<BatchDistributionData>("/analytics/batch-distribution", { params });
-    return { data: (response.data as any) as BatchDistribution };
+    const response = await get<ApiResponse>("/analytics/batch-distribution", { params });
+    const raw = response.data as any;
+    const data = raw?.data ?? raw;
+    return { data: data as BatchDistributionResponse };
   },
 
   getProcessingTime: async (params?: {
@@ -104,12 +102,16 @@ export const analyticsApi = {
     fromDate?: string;
     toDate?: string;
   }) => {
-    const response = await get<ProcessingTimeData>("/analytics/processing-time", { params });
-    return { data: (response.data as any) as ProcessingTime };
+    const response = await get<ApiResponse>("/analytics/processing-time", { params });
+    const raw = response.data as any;
+    const data = raw?.data ?? raw;
+    return { data: data as ProcessingTimeResponse };
   },
 
   getTraceback: async (batchId: string) => {
-    const response = await get<TracebackData>(`/analytics/traceback/${batchId}`);
-    return { data: response.data as any };
+    const response = await get<ApiResponse>(`/analytics/traceback/${batchId}`);
+    const raw = response.data as any;
+    const data = raw?.data ?? raw;
+    return { data: data as TracebackResponse };
   },
 };

@@ -1,7 +1,7 @@
 const metaEnv = (import.meta as any).env ?? {};
 
 export const env = {
-  apiBaseUrl: metaEnv.VITE_API_BASE_URL ?? "/api/v1",
+  apiBaseUrl: metaEnv.VITE_API_BASE_URL || "http://localhost:5103/api/v1",
   appName: "AgriTrace Vietnam",
   version: "1.0.0",
 };

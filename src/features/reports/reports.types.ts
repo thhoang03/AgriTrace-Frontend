@@ -1,12 +1,12 @@
-export type ReportFormat = "pdf" | "csv" | "excel";
-export type ReportType = "batch_summary" | "inspection_log" | "recall_report" | "supply_chain_audit" | "user_activity";
+export type ReportFormat = "PDF" | "EXCEL" | "CSV";
+export type ReportType = "OVERVIEW" | "BATCH" | "INSPECTION" | "RECALL" | "ANALYTICS";
 
 export interface GenerateReportRequest {
   type: ReportType;
   format: ReportFormat;
   dateFrom?: string;
   dateTo?: string;
-  filters?: Record<string, string>;
+  organizationId?: string;
 }
 
 export interface ReportMetadata {
