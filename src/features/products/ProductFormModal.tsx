@@ -2,26 +2,24 @@ import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { useCategoriesList } from "../categories/categories.queries";
 import { useCreateProduct, useUpdateProduct } from "./products.queries";
-import type { CreateProductRequest, UpdateProductRequest } from "./products.types";
 
 interface ProductFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  productId?: number | null;
+  productId?: string;
   initialData?: {
     name?: string;
-    categoryId?: number;
+    categoryId?: string;
     unit?: string;
-    organizationId?: number;
+    organizationId?: string;
   };
 }
 
 export function ProductFormModal({ isOpen, onClose, productId, initialData }: ProductFormModalProps) {
   const [formData, setFormData] = useState({
     name: "",
-    categoryId: 0,
+    categoryId: "",
     unit: "kg",
-    organizationId: 1,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -36,150 +34,158 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
     if (initialData) {
       setFormData({
         name: initialData.name || "",
-        categoryId: initialData.categoryId || 0,
+        categoryId: initialData.categoryId || (categories.length > 0 ? String(categories[0].id) : ""),
         unit: initialData.unit || "kg",
-        organizationId: initialData.organizationId || 1,
+      });
+    } else {
+      setFormData({
+        name: "",
+        categoryId: categories.length > 0 ? String(categories[0].id) : "",
+        unit: "kg",
       });
     }
-  }, [initialData]);
+  }, [initialData, isOpen, categoriesData]);
+
+  if (!isOpen) return null;
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-
     if (!formData.name.trim()) {
       newErrors.name = "Product name is required";
-    }
-    if (!formData.categoryId) {
-      newErrors.categoryId = "Category is required";
     }
     if (!formData.unit.trim()) {
       newErrors.unit = "Unit is required";
     }
-    if (!formData.organizationId) {
-      newErrors.organizationId = "Organization is required";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validate()) return;
 
     try {
       if (isEdit && productId) {
         await updateProduct.mutateAsync({
           id: productId,
-          data: formData as UpdateProductRequest,
+          data: {
+            name: formData.name,
+            categoryId: formData.categoryId || undefined,
+            unit: formData.unit,
+          },
         });
       } else {
-        await createProduct.mutateAsync(formData as CreateProductRequest);
+        await createProduct.mutateAsync({
+          name: formData.name,
+          categoryId: formData.categoryId || undefined,
+          unit: formData.unit,
+        });
       }
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving product:", error);
+      const errData = error?.response?.data;
+      const errMsg = errData?.detail || errData?.data || errData?.message || error?.message || "Failed to save product";
+      setErrors({ submit: errMsg });
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {isEdit ? "Edit Product" : "Create Product"}
-          </h3>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative">
+        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
+          <h2 className="text-xl font-bold text-gray-900">
+            {isEdit ? "Edit Product" : "Create New Product"}
+          </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+            className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {errors.submit && (
+          <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-xl border border-red-200">
+            {errors.submit}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Product Name *</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Product Name <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Enter product name"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400"
-              style={{ background: "#F8FAF8" }}
+              placeholder="e.g. Organic Jasmine Rice"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100"
             />
-            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Category *</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Category
+            </label>
             <select
               value={formData.categoryId}
-              onChange={(e) => setFormData({ ...formData, categoryId: parseInt(e.target.value) })}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400 bg-white"
+              onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100"
             >
-              <option value={0}>Select a category</option>
-              {categories.map((cat: any) => (
-                <option key={cat.categoryId} value={cat.categoryId}>
-                  {cat.name}
-                </option>
-              ))}
+              <option value="">-- Select Category --</option>
+              {categories.map((cat: any) => {
+                const catId = String(cat.id || cat.categoryId || "");
+                return (
+                  <option key={catId} value={catId}>
+                    {cat.name}
+                  </option>
+                );
+              })}
             </select>
-            {errors.categoryId && <p className="text-red-500 text-xs mt-1">{errors.categoryId}</p>}
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Unit *</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              Unit of Measurement <span className="text-red-500">*</span>
+            </label>
             <select
               value={formData.unit}
               onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400 bg-white"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100"
             >
-              <option value="kg">Kilogram (kg)</option>
-              <option value="g">Gram (g)</option>
-              <option value="ton">Ton</option>
-              <option value="lb">Pound (lb)</option>
-              <option value="piece">Piece</option>
-              <option value="box">Box</option>
+              <option value="kg">kg (Kilogram)</option>
+              <option value="ton">ton (Metric Ton)</option>
+              <option value="box">box</option>
+              <option value="bag">bag</option>
+              <option value="crate">crate</option>
+              <option value="pack">pack</option>
+              <option value="liter">liter</option>
             </select>
-            {errors.unit && <p className="text-red-500 text-xs mt-1">{errors.unit}</p>}
+            {errors.unit && <p className="text-xs text-red-500 mt-1">{errors.unit}</p>}
           </div>
 
-          <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Organization ID *</label>
-            <input
-              type="number"
-              value={formData.organizationId}
-              onChange={(e) => setFormData({ ...formData, organizationId: parseInt(e.target.value) })}
-              placeholder="Enter organization ID"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400"
-              style={{ background: "#F8FAF8" }}
-            />
-            {errors.organizationId && <p className="text-red-500 text-xs mt-1">{errors.organizationId}</p>}
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={createProduct.isPending || updateProduct.isPending}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90 disabled:opacity-50"
               style={{ background: "#2E7D32" }}
             >
               {createProduct.isPending || updateProduct.isPending
                 ? "Saving..."
                 : isEdit
-                ? "Update"
-                : "Create"}
+                ? "Update Product"
+                : "Create Product"}
             </button>
           </div>
         </form>

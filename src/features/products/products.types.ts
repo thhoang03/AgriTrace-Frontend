@@ -1,31 +1,39 @@
 export interface ProductCategoryRef {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface Product {
-  productId: number;
+  id: string;
+  productId?: string;
   name: string;
-  categoryId: number;
+  categoryId?: string;
   categoryName?: string;
   category?: ProductCategoryRef;
   unit: string;
-  organizationId: number;
+  unitId?: string;
+  organizationId?: string;
+  organizationName?: string;
   isActive: boolean;
+  status?: string;
 }
 
 export interface ProductListItem {
-  productId: number;
+  id: string;
+  productId?: string;
   name: string;
-  categoryId: number;
+  categoryId?: string;
   categoryName: string;
   unit: string;
-  organizationId: number;
+  unitId?: string;
+  organizationId?: string;
+  organizationName?: string;
   isActive: boolean;
+  status?: string;
 }
 
 export interface ProductImage {
-  imageId: number;
+  imageId: string;
   imageUrl: string;
   url: string;
   isPrimary: boolean;
@@ -35,19 +43,23 @@ export interface ProductImage {
 
 export interface CreateProductRequest {
   name: string;
-  categoryId: number;
-  unit: string;
-  organizationId: number;
+  categoryId?: string;
+  unit?: string;
+  unitId?: string;
+  organizationId?: string;
 }
 
 export interface UpdateProductRequest {
   name?: string;
-  categoryId?: number;
+  categoryId?: string;
   unit?: string;
+  unitId?: string;
+  organizationId?: string;
 }
 
 export interface UpdateProductStatusRequest {
-  isActive: boolean;
+  status: string;
+  isActive?: boolean;
 }
 
 export interface ProductsListResponse {
@@ -59,8 +71,8 @@ export interface ProductsListResponse {
 }
 
 export interface ProductFilters {
-  organizationId?: number;
-  categoryId?: number;
+  organizationId?: string;
+  categoryId?: string;
   search?: string;
   page?: number;
   pageSize?: number;

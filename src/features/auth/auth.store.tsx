@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { authApi } from "./auth.api";
-import { setToken, removeToken } from "../../lib/api";
+import { setToken, removeToken, setRefreshToken, removeRefreshToken } from "../../lib/api";
 import { queryClient } from "../../app/query-client";
 import type { User, LoginRequest } from "./auth.types";
 import type { OrganizationType } from "./permissions";
@@ -11,6 +11,7 @@ interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  register: (data: any) => Promise<boolean>;
   logout: () => void;
   updateUser: (partial: Partial<User>) => void;
   loading: boolean;
@@ -80,6 +81,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       normalized.mustChangePassword = res.mustChangePassword;
       setUser(normalized);
       setToken(res.accessToken);
+      if (res.refreshToken) setRefreshToken(res.refreshToken);
+      sessionStorage.setItem("agritrace_user", JSON.stringify(normalized));
+      if (res.mustChangePassword) {
+        setMustChangePassword(true);
+        sessionStorage.setItem("agritrace_must_change_password", "true");
+      }
+      return res.mustChangePassword ?? false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const register = useCallback(async (data: any) => {
+    setLoading(true);
+    try {
+      const res = await authApi.register(data);
+      const normalized = normalizeUser(res.user);
+      setUser(normalized);
+      setToken(res.accessToken);
+      if (res.refreshToken) setRefreshToken(res.refreshToken);
       sessionStorage.setItem("agritrace_user", JSON.stringify(normalized));
       if (res.mustChangePassword) {
         setMustChangePassword(true);
@@ -100,6 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     authApi.logout().catch(() => {});
     setUser(null);
     removeToken();
+    removeRefreshToken();
     sessionStorage.removeItem("agritrace_user");
     sessionStorage.removeItem("agritrace_must_change_password");
     queryClient.clear();
@@ -107,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      user, isLoggedIn: !!user, login, logout, updateUser, loading,
+      user, isLoggedIn: !!user, login, register, logout, updateUser, loading,
       mustChangePassword, clearMustChangePassword,
       canAccessRoute, canCreateEvent
     }}>

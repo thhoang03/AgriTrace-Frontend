@@ -496,14 +496,14 @@ export function BatchDetailPage() {
             </div>
             <div className="divide-y divide-gray-50">
               {[
-                { action: "Batch Created", user: "Trần Văn Bình", ip: "203.162.4.191", time: "2024-06-15 06:25:33", type: "create" },
-                { action: "Processing Event Added", user: "Nguyễn Văn Công", ip: "203.162.4.192", time: "2024-06-16 08:00:12", type: "update" },
-                { action: "Packaging Event Added", user: "Lê Thị Lan", ip: "203.162.4.193", time: "2024-06-16 14:32:05", type: "update" },
-                { action: "Quality Inspection Passed", user: "Lý Thị Ngọc", ip: "203.162.4.194", time: "2024-06-16 16:45:22", type: "inspect" },
+                { action: "Batch Created", user: "Tran Van Binh", ip: "203.162.4.191", time: "2024-06-15 06:25:33", type: "create" },
+                { action: "Processing Event Added", user: "Nguyen Van Cong", ip: "203.162.4.192", time: "2024-06-16 08:00:12", type: "update" },
+                { action: "Packaging Event Added", user: "Le Thi Lan", ip: "203.162.4.193", time: "2024-06-16 14:32:05", type: "update" },
+                { action: "Quality Inspection Passed", user: "Ly Thi Ngoc", ip: "203.162.4.194", time: "2024-06-16 16:45:22", type: "inspect" },
                 { action: "QR Code Generated", user: "System", ip: "Internal", time: "2024-06-16 16:50:00", type: "generate" },
-                { action: "Transport Event Added", user: "Phạm Văn Đức", ip: "203.162.4.195", time: "2024-06-17 04:02:18", type: "update" },
-                { action: "Distribution Confirmed", user: "Trần Thị Bảo", ip: "203.162.4.196", time: "2024-06-17 11:15:44", type: "update" },
-                { action: "Retail Arrival Logged", user: "Nguyễn Thị Kim", ip: "203.162.4.197", time: "2024-06-18 07:05:33", type: "update" },
+                { action: "Transport Event Added", user: "Pham Van Duc", ip: "203.162.4.195", time: "2024-06-17 04:02:18", type: "update" },
+                { action: "Distribution Confirmed", user: "Tran Thi Bao", ip: "203.162.4.196", time: "2024-06-17 11:15:44", type: "update" },
+                { action: "Retail Arrival Logged", user: "Nguyen Thi Kim", ip: "203.162.4.197", time: "2024-06-18 07:05:33", type: "update" },
               ].map(({ action, user, ip, time, type }) => {
                 const style = auditTypeStyle[type] ?? auditTypeStyle["update"];
                 return (

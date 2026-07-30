@@ -131,7 +131,6 @@ export function HomePage() {
             <a href="#generator" className="hover:text-green-700 transition-colors">{lang === "vi" ? "Tạo QR" : "QR Generator"}</a>
             <a href="#contact" className="hover:text-green-700 transition-colors">{lang === "vi" ? "Liên hệ" : "Contact"}</a>
           </div>
-
           {/* Right Controls */}
           <div className="flex items-center gap-3">
             {/* Language Switcher */}
@@ -147,7 +146,7 @@ export function HomePage() {
               <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
 
-            {/* Login / Dashboard Button */}
+            {/* Login / Dashboard / Register Buttons */}
             {isLoggedIn ? (
               <button
                 onClick={() => navigate("/app/dashboard")}
@@ -158,13 +157,21 @@ export function HomePage() {
                 <span>{lang === "vi" ? "Trang Quản Lý" : "Dashboard"}</span>
               </button>
             ) : (
-              <button
-                onClick={() => navigate("/login")}
-                className="px-5 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-md hover:shadow-lg hover:opacity-90"
-                style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)" }}
-              >
-                {lang === "vi" ? "Đăng nhập" : "Login"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => navigate("/login")}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold text-gray-700 border border-gray-200 bg-white hover:bg-gray-50 transition-all"
+                >
+                  {lang === "vi" ? "Đăng Nhập" : "Sign In"}
+                </button>
+                <button
+                  onClick={() => navigate("/register")}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-md hover:shadow-lg hover:opacity-90"
+                  style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)" }}
+                >
+                  {lang === "vi" ? "Đăng Ký" : "Sign Up"}
+                </button>
+              </div>
             )}
           </div>
         </div>
