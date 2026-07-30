@@ -23,6 +23,7 @@ export type OrganizationDetail = components["schemas"]["OrganizationDetail"];
 export type OrganizationListItem = components["schemas"]["OrganizationListItem"];
 export type OrganizationPagedResponse = components["schemas"]["OrganizationPagedResponse"];
 export type StatusRequest = components["schemas"]["StatusRequest"];
+export type ActiveStatusRequest = components["schemas"]["ActiveStatusRequest"];
 
 // Category types
 export type CategoryRequest = components["schemas"]["CategoryRequest"];
@@ -198,26 +199,40 @@ export function adaptApiRoleToCanonical(apiRole: string): UserRole {
   return "STAFF";
 }
 
-const ROLE_TO_ORG_TYPE: Record<string, import("./permissions").OrganizationType> = {
-  ADMIN: "SYSTEM"
+const ROLE_TO_ORG_TYPE: Record<string, import("../features/auth/permissions").OrganizationType> = {
+  FARMER: "FARM",
+  Processor: "PROCESSOR",
+  Distributor: "DISTRIBUTOR",
+  RETAILER: "RETAILER",
+  INSPECTOR: "INSPECTION",
+  ADMIN: "SYSTEM",
 };
 
 export function inferOrganizationTypeFromApiRole(
   apiRole: string,
   jwtClaim?: string | null,
   profileOrgType?: string | null
-): import("./permissions").OrganizationType | undefined {
+): import("../features/auth/permissions").OrganizationType | undefined {
   if (profileOrgType) {
     const normalized = profileOrgType.toUpperCase();
-    const validTypes: import("./permissions").OrganizationType[] = [
+    const validTypes: import("../features/auth/permissions").OrganizationType[] = [
       "FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"
     ];
     const match = validTypes.find((t) => normalized === t || normalized.includes(t));
     if (match) return match;
   }
 
-  const fromRole = ROLE_TO_ORG_TYPE[apiRole] ?? ROLE_TO_ORG_TYPE[apiRole.toUpperCase()];
+  const fromRole = ROLE_TO_ORG_TYPE[apiRole] ?? ROLE_TO_ORG_TYPE[apiRole?.toUpperCase?.() || ""];
   if (fromRole) return fromRole;
+
+  if (jwtClaim) {
+    const normalized = jwtClaim.toUpperCase();
+    const validTypes: import("../features/auth/permissions").OrganizationType[] = [
+      "FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"
+    ];
+    const match = validTypes.find((t) => normalized.includes(t));
+    if (match) return match;
+  }
 
   return undefined;
 }

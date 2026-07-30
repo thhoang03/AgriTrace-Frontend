@@ -68,7 +68,6 @@ const emptyUserForm: CreateUserRequest = {
   fullName: "",
   email: "",
   password: "",
-  phone: "",
   role: "STAFF",
   organization: "",
   organizationId: undefined,
@@ -567,7 +566,6 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   placeholder="Organization name"
                 />
               </div>
-
               {/* ADMIN: Organization + Role */}
               {isAdmin ? (
                 <>
@@ -630,7 +628,6 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   </div>
                 </>
               )}
-
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowAdd(false)}

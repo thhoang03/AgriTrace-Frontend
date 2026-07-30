@@ -66,8 +66,8 @@ function CategorySelect({
       className={className}
       style={{ appearance: "auto" }}
     >
-      <option value="">-- Chọn danh mục --</option>
-      {isLoading && <option disabled>Đang tải...</option>}
+      <option value="">-- Select category --</option>
+      {isLoading && <option disabled>Loading...</option>}
       {categories
         .filter((c) => c.isActive)
         .map((c) => (
@@ -107,8 +107,8 @@ function ProductSelect({
       className={className}
       style={{ appearance: "auto" }}
     >
-      <option value="">-- Chọn sản phẩm --</option>
-      {isLoading && <option disabled>Đang tải...</option>}
+      <option value="">-- Select product --</option>
+      {isLoading && <option disabled>Loading...</option>}
       {products
         .filter((c: any) => c.isActive)
         .map((c: any) => (

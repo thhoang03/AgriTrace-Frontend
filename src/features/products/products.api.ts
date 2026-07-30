@@ -1,140 +1,56 @@
 import { get, post, put, patch, del } from "../../lib/api";
 import type {
-  ProductListItem,
   ProductDetail,
   ProductPagedResponse,
   ProductRequest,
-  ImageItem,
   ImageListData,
   ImageCreatedData,
-  ActiveStatusRequest,
 } from "../../types/mapping";
+import type {
+  Product,
+  ProductListItem as FeProductListItem,
+  ProductImage,
+  CreateProductRequest,
+  UpdateProductRequest,
+  UpdateProductStatusRequest,
+  ProductFilters,
+} from "./products.types";
 
-// Legacy types for backward compatibility
-export interface ProductCategoryRef {
-  id: number;
-  name: string;
-}
-
-export interface Product {
-  productId: number;
-  name: string;
-  categoryId: number;
-  categoryName?: string;
-  category?: ProductCategoryRef;
-  unit: string;
-  unitId?: string;
-  organizationId: number;
-  isActive: boolean;
-}
-
-export interface ProductListItem {
-  productId: number;
-  name: string;
-  categoryId: number;
-  categoryName: string;
-  unit: string;
-  unitId?: string;
-  organizationId: number;
-  isActive: boolean;
-}
-
-export interface ProductImage {
-  imageId: number;
-  imageUrl: string;
-  url: string;
-  isPrimary: boolean;
-  fileName?: string;
-  uploadedAt?: string;
-}
-
-export interface CreateProductRequest {
-  name: string;
-  categoryId: number;
-  unit: string;
-  organizationId: number;
-}
-
-export interface UpdateProductRequest {
-  name?: string;
-  categoryId?: number;
-  unit?: string;
-}
-
-export interface UpdateProductStatusRequest {
-  isActive: boolean;
-}
-
-export interface ProductsListResponse {
-  items: ProductListItem[];
-  totalCount: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
-
-export interface ProductFilters {
-  organizationId?: number;
-  categoryId?: number;
-  search?: string;
-  page?: number;
-  pageSize?: number;
-}
-
-// Adapter functions
-function adaptProductFromListItem(item: any): ProductListItem {
+function adaptProductFromListItem(item: any): FeProductListItem {
+  const isAct = item.status === "Active" || (item.status !== "Inactive" && item.isDeleted !== true && item.isActive !== false);
+  const idStr = String(item.id || item.productId || "");
   return {
-    productId: item.productId ?? 0,
+    id: idStr,
+    productId: idStr,
     name: item.name ?? "",
-    categoryId: item.categoryId ?? 0,
+    categoryId: item.categoryId ? String(item.categoryId) : undefined,
     categoryName: item.categoryName ?? "",
     unit: item.unit ?? "",
-    unitId: item.unitId ?? "",
-    organizationId: item.organizationId ?? 0,
-    isActive: item.isActive ?? true,
+    unitId: item.unitId ? String(item.unitId) : undefined,
+    organizationId: item.organizationId ? String(item.organizationId) : undefined,
+    organizationName: item.organizationName ?? "",
+    isActive: isAct,
+    status: isAct ? "Active" : "Inactive",
   };
 }
 
 function adaptProductFromDetail(item: any): Product {
+  const isAct = item.status === "Active" || item.isActive === true || item.isActive === undefined;
+  const idStr = String(item.id || item.productId || "");
   return {
-    productId: item.productId ?? 0,
+    id: idStr,
+    productId: idStr,
     name: item.name ?? "",
-    categoryId: item.category?.id ?? item.categoryId ?? 0,
+    categoryId: item.category?.id ? String(item.category.id) : (item.categoryId ? String(item.categoryId) : undefined),
     categoryName: item.category?.name ?? item.categoryName ?? "",
-    category: item.category ? { id: item.category.id, name: item.category.name } : { id: item.categoryId ?? 0, name: item.categoryName ?? "" },
+    category: item.category ? { id: String(item.category.id), name: item.category.name } : undefined,
     unit: item.unit ?? "",
-    unitId: item.unitId ?? "",
-    organizationId: item.organizationId ?? 0,
-    isActive: item.isActive ?? true,
+    unitId: item.unitId ? String(item.unitId) : undefined,
+    organizationId: item.organizationId ? String(item.organizationId) : undefined,
+    organizationName: item.organizationName ?? "",
+    isActive: isAct,
+    status: item.status ?? (isAct ? "Active" : "Inactive"),
   };
-}
-
-function adaptImageFromItem(item: any): ProductImage {
-  return {
-    imageId: Number(item.imageId ?? 0),
-    imageUrl: item.url ?? "",
-    url: item.url ?? "",
-    isPrimary: item.isPrimary ?? false,
-    fileName: item.fileName ?? item.url?.split("/").pop(),
-    uploadedAt: item.uploadedAt ?? "",
-  };
-}
-
-function adaptCreateToRequest(legacy: CreateProductRequest): ProductRequest {
-  return {
-    name: legacy.name,
-    categoryId: legacy.categoryId,
-    unit: legacy.unit,
-    organizationId: legacy.organizationId,
-  };
-}
-
-function adaptUpdateToRequest(legacy: UpdateProductRequest): Partial<ProductRequest> {
-  const req: Partial<ProductRequest> = {};
-  if (legacy.name !== undefined) req.name = legacy.name;
-  if (legacy.categoryId !== undefined) req.categoryId = legacy.categoryId;
-  if (legacy.unit !== undefined) req.unit = legacy.unit;
-  return req;
 }
 
 export const productsApi = {
@@ -151,7 +67,7 @@ export const productsApi = {
     const pagedData = response.data as any;
     return {
       data: {
-        items: pagedData.items?.map(adaptProductFromListItem) ?? [],
+        items: (pagedData.items ?? []).map(adaptProductFromListItem),
         totalCount: pagedData.totalCount ?? 0,
         page: pagedData.page ?? 1,
         pageSize: pagedData.pageSize ?? 20,
@@ -160,86 +76,76 @@ export const productsApi = {
     };
   },
 
-  getProduct: async (id: number) => {
+  getProduct: async (id: string) => {
     const response = await get<ProductDetail>(`/products/${id}`);
     return { data: adaptProductFromDetail(response.data) };
   },
 
   createProduct: async (data: CreateProductRequest) => {
-    const newRequest = adaptCreateToRequest(data);
-    const response = await post<{ productId: number }>("/products", newRequest);
-    return { data: { productId: (response.data as any).productId ?? 0 } };
+    const payload: ProductRequest = {
+      name: data.name,
+      categoryId: data.categoryId || undefined,
+      unit: data.unit,
+      unitId: data.unitId || undefined,
+      organizationId: data.organizationId || undefined,
+    };
+    const response = await post<{ id?: string; productId?: string }>("/products", payload);
+    const createdId = (response.data as any)?.id || (response.data as any)?.productId || "";
+    return { data: { productId: createdId, id: createdId } };
   },
 
-  updateProduct: async (id: number, data: UpdateProductRequest) => {
-    const newRequest = adaptUpdateToRequest(data);
-    return put<void>(`/products/${id}`, newRequest);
+  updateProduct: async (id: string, data: UpdateProductRequest) => {
+    const payload: ProductRequest = {
+      name: data.name || "",
+      categoryId: data.categoryId || undefined,
+      unit: data.unit,
+      unitId: data.unitId || undefined,
+      organizationId: data.organizationId || undefined,
+    };
+    return put<void>(`/products/${id}`, payload);
   },
 
-  updateProductStatus: async (id: number, data: UpdateProductStatusRequest) => {
-    return patch<void>(`/products/${id}/status`, data as ActiveStatusRequest);
+  updateProductStatus: async (id: string, data: UpdateProductStatusRequest) => {
+    const newStatus = data.status || (data.isActive ? "Active" : "Inactive");
+    return patch<void>(`/products/${id}/status`, { status: newStatus });
   },
 
-  deleteProduct: async (id: number) => del(`/products/${id}`),
+  deleteProduct: async (id: string) => del<void>(`/products/${id}`),
 
-  getProductImages: async (productId: number) => {
+  getProductImages: async (productId: string) => {
     const response = await get<ImageListData>(`/products/${productId}/images`);
     const imageData = response.data as any;
-    return { data: (imageData.items ?? []).map(adaptImageFromItem) as ProductImage[] };
+    return { data: (imageData.items ?? []).map((item: any) => ({
+      imageId: String(item.imageId || item.id || ""),
+      imageUrl: item.url ?? "",
+      url: item.url ?? "",
+      isPrimary: item.isPrimary ?? false,
+      fileName: item.fileName ?? item.url?.split("/").pop(),
+      uploadedAt: item.uploadedAt ?? "",
+    })) as ProductImage[] };
   },
 
-  uploadProductImage: async (productId: number, formData: FormData) => {
+  uploadProductImage: async (productId: string, formData: FormData) => {
     const response = await post<ImageCreatedData>(`/products/${productId}/images`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return { data: { imageId: Number((response.data as any).imageId ?? 0) } };
+    return { data: { imageId: String((response.data as any).imageId || (response.data as any).id || "") } };
   },
 
-  deleteProductImage: async (imageId: number) => del(`/products/images/${imageId}`),
+  deleteProductImage: async (imageId: string) => del(`/products/images/${imageId}`),
 
-  // Legacy API methods (maintain backward compatibility)
-  getAll: async (filters?: ProductFilters) => {
-    return productsApi.getProducts(filters);
-  },
-
-  getById: async (id: number | string) => {
-    return productsApi.getProduct(Number(id));
-  },
-
-  create: async (data: CreateProductRequest) => {
-    return productsApi.createProduct(data);
-  },
-
-  update: async (id: number | string, data: UpdateProductRequest) => {
-    return productsApi.updateProduct(Number(id), data);
-  },
-
-  updateStatus: async (id: number | string, data: UpdateProductStatusRequest) => {
-    return productsApi.updateProductStatus(Number(id), data);
-  },
-
-  delete: async (id: number | string) => productsApi.deleteProduct(Number(id)),
-
-  getImages: async (id: number | string) => {
-    return productsApi.getProductImages(Number(id));
-  },
-
-  uploadImage: async (id: number | string, file: File) => {
+  // Legacy alias methods
+  getAll: async (filters?: ProductFilters) => productsApi.getProducts(filters),
+  getById: async (id: string) => productsApi.getProduct(id),
+  create: async (data: CreateProductRequest) => productsApi.createProduct(data),
+  update: async (id: string, data: UpdateProductRequest) => productsApi.updateProduct(id, data),
+  updateStatus: async (id: string, data: UpdateProductStatusRequest) => productsApi.updateProductStatus(id, data),
+  delete: async (id: string) => productsApi.deleteProduct(id),
+  getImages: async (id: string) => productsApi.getProductImages(id),
+  uploadImage: async (id: string, file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    const response = await post<ImageCreatedData>(`/products/${id}/images`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    const imgData = response.data as any;
-    return {
-      data: {
-        imageId: Number(imgData.imageId ?? 0),
-        imageUrl: imgData.url ?? "",
-        url: imgData.url ?? "",
-        isPrimary: false,
-      } as ProductImage
-    };
+    return productsApi.uploadProductImage(id, formData);
   },
-
-  deleteImage: async (imageId: number | string) => del(`/products/images/${imageId}`),
+  deleteImage: async (imageId: string) => productsApi.deleteProductImage(imageId),
 };

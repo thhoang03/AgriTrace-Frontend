@@ -70,22 +70,22 @@ export function OrganizationsPage() {
   };
 
   const handleSave = async () => {
-    if (!form.name.trim() || !form.address.trim()) { setError("Vui lòng điền đầy đủ thông tin"); return; }
+    if (!form.name.trim() || !form.address.trim()) { setError("Please fill in all required fields"); return; }
     setSaving(true);
     setError("");
     try {
       if (editing) {
         await organizationsApi.update(editing.organizationId, form);
         setOrgs((prev) => prev.map((o) => o.organizationId === editing.organizationId ? { ...o, ...form } : o));
-        showAlert("success", `Đã cập nhật "${form.name}" thành công`);
+        showAlert("success", `"${form.name}" updated successfully`);
       } else {
         const res = await organizationsApi.create(form);
         setOrgs((prev) => [...prev, { organizationId: res.data.organizationId, status: "ACTIVE", ...form }]);
-        showAlert("success", `Đã thêm "${form.name}" thành công`);
+        showAlert("success", `"${form.name}" added successfully`);
       }
       setShowModal(false);
     } catch (e: any) {
-      setError(e.message || "Có lỗi xảy ra");
+      setError(e.message || "An error occurred");
     } finally {
       setSaving(false);
     }
@@ -99,25 +99,25 @@ export function OrganizationsPage() {
       if (detail?.organizationId === org.organizationId) setDetail({ ...detail, status: newStatus });
       showAlert(
         newStatus === "ACTIVE" ? "success" : "error",
-        `"${org.name}" đã được ${newStatus === "ACTIVE" ? "kích hoạt" : "vô hiệu hóa"}`
+        `"${org.name}" has been ${newStatus === "ACTIVE" ? "activated" : "deactivated"}`
       );
     } catch (e: any) {
-      showAlert("error", e.message || "Cập nhật trạng thái thất bại");
+      showAlert("error", e.message || "Failed to update status");
     }
   };
 
   const handleInviteStaff = async () => {
-    if (!inviteEmail.trim()) { showAlert("error", "Vui lòng nhập email"); return; }
+    if (!inviteEmail.trim()) { showAlert("error", "Please enter an email address"); return; }
     if (!detail) return;
     setInviting(true);
     setError("");
     try {
       await organizationsApi.inviteStaff(detail.organizationId, inviteEmail.trim());
-      showAlert("success", `Đã gửi lời mời đến ${inviteEmail}`);
+      showAlert("success", `Invitation sent to ${inviteEmail}`);
       setInviteEmail("");
       setShowInviteModal(false);
     } catch (e: any) {
-      setError(e.message || "Gửi lời mời thất bại");
+      setError(e.message || "Failed to send invitation");
     } finally {
       setInviting(false);
     }
@@ -267,7 +267,7 @@ export function OrganizationsPage() {
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">Organization Name</label>
-                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="Tên tổ chức" />
+                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="Organization name" />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">Type</label>
@@ -277,7 +277,7 @@ export function OrganizationsPage() {
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">Address</label>
-                <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="Địa chỉ" />
+                <input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="Address" />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
               <div className="flex gap-3 pt-2">

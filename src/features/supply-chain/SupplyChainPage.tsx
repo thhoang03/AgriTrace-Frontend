@@ -12,6 +12,7 @@ import type { EventType } from "../auth/permissions";
 import { QrScannerButton } from "./QrScannerButton";
 
 
+
 const ALL_EVENT_TYPES: { value: EventType; label: string; emoji: string; color: string }[] = [
   { value: "HARVEST", label: "Harvest", emoji: "🌾", color: "#2E7D32" },
   { value: "RECEIVE", label: "Receive", emoji: "📥", color: "#1565C0" },
