@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { Plus, Hash, CheckCircle, MapPin, Thermometer, Droplets, ChevronDown, ChevronUp, X, AlertCircle, Search, Clock, LocateFixed } from "lucide-react";
+import {
+  Plus, Hash, CheckCircle, MapPin, Thermometer, Droplets, ChevronDown, ChevronUp, X, AlertCircle, Search, Clock, LocateFixed, FileText,
+} from "lucide-react";
 import { useEvents, useCreateEvent, useEventTypes, useRecentBatches } from "./supply-chain.queries";
 import type { CreateEventRequest, SupplyChainEvent } from "./supply-chain.api";
 import { useAuth } from "../auth/auth.store";
@@ -50,6 +53,7 @@ function formatEventTime(eventTime?: string): { date: string; time: string } {
 }
 
 export function SupplyChainPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
   const orgType = user?.organizationType;
@@ -401,6 +405,16 @@ export function SupplyChainPage() {
                                             <span>👤 {event.performedByName}</span>
                                           )}
                                         </div>
+                                      )}
+                                      {event.inspectionId && (
+                                        <button
+                                          onClick={() => navigate(`/app/inspections/${event.inspectionId}`)}
+                                          className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-green-200 text-green-700 hover:bg-green-50 transition-colors"
+                                          style={{ background: "#E8F5E9" }}
+                                        >
+                                          <FileText className="w-3.5 h-3.5" />
+                                          View Inspection
+                                        </button>
                                       )}
                                       {(temperature || humidity) && (
                                         <div className="flex gap-4">

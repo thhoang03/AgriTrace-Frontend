@@ -70,8 +70,27 @@ export type MergeBatchData = components["schemas"]["MergeBatchData"];
 // Inspection types
 export type CreateInspectionRequest = components["schemas"]["CreateInspectionRequest"];
 export type UpdateInspectionRequest = components["schemas"]["UpdateInspectionRequest"];
-export type InspectionDetail = components["schemas"]["InspectionDetail"];
-export type InspectionPagedResponse = components["schemas"]["InspectionPagedResponse"];
+
+// Manually defined because swagger doesn't expose these schemas (wrapped in ApiResponse)
+export interface InspectionDetail {
+  inspectionId: string;
+  batchId: string;
+  batchCode?: string | null;
+  inspectorId: string;
+  inspectorName?: string | null;
+  status: number;
+  result?: string | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface InspectionPagedResponse {
+  items: InspectionDetail[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
 
 // Certificate types
 export type CreateCertificateRequest = components["schemas"]["CreateCertificateRequest"];

@@ -3702,6 +3702,8 @@ export interface components {
             eventTypeId: string;
             eventData?: string | null;
             location?: string | null;
+            /** Format: uuid */
+            inspectionId?: string | null;
         };
         /** @description Request body for creating a new quality inspection on a batch. */
         CreateInspectionRequest: {

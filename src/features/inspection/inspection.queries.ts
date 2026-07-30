@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { inspectionApi } from "./inspection.api";
-import type { CreateInspectionRequest, InspectionFilters, InspectionItem } from "./inspection.types";
+import type {
+  CreateInspectionRequest,
+  ConcludeInspectionRequest,
+  InspectionFilters,
+  CreateLabTestRequest,
+} from "./inspection.types";
 
 const QUERY_KEY = "inspections";
 
@@ -30,16 +35,32 @@ export function useBatchInspections(batchId: string) {
 export function useCreateInspection() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: CreateInspectionRequest) => inspectionApi.create(data.batchId, data),
+    mutationFn: (data: CreateInspectionRequest) => inspectionApi.create(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 }
 
-export function useUpdateInspection() {
+export function useConcludeInspection() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: { id: string } & Partial<CreateInspectionRequest> & { status?: InspectionItem["status"]; score?: number; notes?: string }) =>
-      inspectionApi.update(data.id, data),
+    mutationFn: (data: ConcludeInspectionRequest) => inspectionApi.conclude(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  });
+}
+
+export function useAddLabTest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { inspectionId: string } & CreateLabTestRequest) =>
+      inspectionApi.addLabTest(data.inspectionId, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  });
+}
+
+export function useRemoveLabTest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (labTestId: string) => inspectionApi.removeLabTest(labTestId),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 }
