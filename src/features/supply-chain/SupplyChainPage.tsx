@@ -6,11 +6,11 @@ import { canCreateEvent, getAllowedEventTypes } from "../auth/permissions";
 import type { EventType } from "../auth/permissions";
 
 const batches = [
-  { id: "BTH-2024-001", product: "Organic Dragon Fruit", farm: "Binh Thuan Dragon Fruit Farm", farmer: "Trần Văn Bình", status: "At Retail", weight: "2,400 kg" },
-  { id: "BTH-2024-002", product: "Premium Jasmine Rice", farm: "Mekong Delta Rice Cooperative", farmer: "Nguyễn Thị Mai", status: "Distributed", weight: "5,000 kg" },
-  { id: "BTH-2024-003", product: "Robusta Coffee", farm: "Dak Lak Highland Coffee Estate", farmer: "Lê Minh Tuấn", status: "Processing", weight: "800 kg" },
-  { id: "BTH-2024-004", product: "Longan Fruit", farm: "Hung Yen Longan Cooperative", farmer: "Phạm Thị Hoa", status: "In Transit", weight: "1,200 kg" },
-  { id: "BTH-2024-005", product: "Bitter Melon", farm: "Da Lat Vegetable Farm", farmer: "Đặng Văn Hùng", status: "Packaged", weight: "600 kg" },
+  { id: "BTH-2024-001", product: "Organic Dragon Fruit", farm: "Binh Thuan Dragon Fruit Farm", farmer: "Tran Van Binh", status: "At Retail", weight: "2,400 kg" },
+  { id: "BTH-2024-002", product: "Premium Jasmine Rice", farm: "Mekong Delta Rice Cooperative", farmer: "Nguyen Thi Mai", status: "Distributed", weight: "5,000 kg" },
+  { id: "BTH-2024-003", product: "Robusta Coffee", farm: "Dak Lak Highland Coffee Estate", farmer: "Le Minh Tuan", status: "Processing", weight: "800 kg" },
+  { id: "BTH-2024-004", product: "Longan Fruit", farm: "Hung Yen Longan Cooperative", farmer: "Pham Thi Hoa", status: "In Transit", weight: "1,200 kg" },
+  { id: "BTH-2024-005", product: "Bitter Melon", farm: "Da Lat Vegetable Farm", farmer: "Dang Van Hung", status: "Packaged", weight: "600 kg" },
 ];
 
 const ALL_EVENT_TYPES: { value: EventType; label: string; emoji: string; color: string }[] = [

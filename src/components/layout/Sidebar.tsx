@@ -22,7 +22,6 @@ import { canAccessRoute } from "../../features/auth/permissions";
 
 const navItems = [
   { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/app/products", icon: ShoppingBag, label: "Products" },
   { to: "/app/batches", icon: Package, label: "Batch Management" },
   { to: "/app/batches/new", icon: Package, label: "New Batch" },
   { to: "/app/supply-chain", icon: Truck, label: "Supply Chain" },
@@ -58,7 +57,7 @@ export function Sidebar() {
   const filteredAdminItems = adminItems.filter((item) => canAccessRoute(role, item.to, user?.organizationType));
   const encodedName = encodeURIComponent(user?.name);
   const apiUrl = `https://ui-avatars.com/api/?name=${encodedName}&background=random&color=fff&rounded=true&size=128`;
-                    
+
   return (
     <aside className="flex flex-col h-full" style={{ background: "linear-gradient(180deg, #1B5E20 0%, #2E7D32 60%, #388E3C 100%)" }}>
       <div className="flex items-center gap-3 px-6 py-5 border-b border-white/10">
@@ -85,10 +84,9 @@ export function Sidebar() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${
-                isActive
-                  ? "bg-white/15 text-white"
-                  : "text-green-100 hover:bg-white/10 hover:text-white"
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${isActive
+                ? "bg-white/15 text-white"
+                : "text-green-100 hover:bg-white/10 hover:text-white"
               }`
             }
           >
@@ -112,10 +110,9 @@ export function Sidebar() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${
-                isActive
-                  ? "bg-white/15 text-white"
-                  : "text-green-100 hover:bg-white/10 hover:text-white"
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${isActive
+                ? "bg-white/15 text-white"
+                : "text-green-100 hover:bg-white/10 hover:text-white"
               }`
             }
           >
@@ -129,7 +126,7 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
-        
+
       <div className="p-4 border-t border-white/10">
         <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.08)" }}>
           <img

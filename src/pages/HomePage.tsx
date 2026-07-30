@@ -75,15 +75,21 @@ export function HomePage() {
           </div>
           <div className="ml-auto flex items-center gap-3">
             <select className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 outline-none bg-white">
-              <option value="vi">🇻🇳 Tiếng Việt</option>
+              <option value="vi">🇻🇳 Vietnamese</option>
               <option value="en">🇬🇧 English</option>
             </select>
             <button
               onClick={() => navigate("/login")}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
+              className="px-4 py-2 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all bg-white"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => navigate("/register")}
+              className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 shadow-sm flex items-center gap-1.5"
               style={{ background: "#2E7D32" }}
             >
-              Login
+              Sign Up
             </button>
           </div>
         </div>
@@ -243,7 +249,7 @@ export function HomePage() {
                 { icon: Phone, text: "+84 24 3722 1234" },
                 { icon: Mail, text: "agritrace@mard.gov.vn" },
                 { icon: Globe, text: "www.traceviet.gov.vn" },
-                { icon: MapPin, text: "2 Ngọc Hà, Ba Đình, Hà Nội" },
+                { icon: MapPin, text: "2 Ngoc Ha, Ba Dinh, Hanoi" },
               ].map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-center gap-2 text-green-300 text-sm py-1">
                   <Icon className="w-3.5 h-3.5" /> {text}

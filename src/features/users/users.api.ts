@@ -104,8 +104,10 @@ export const usersApi = {
 
   create: async (data: CreateUserRequest) => {
     const newRequest = adaptCreateUserRequest(data);
-    const response = await post<{ userId: number }>("/users", newRequest);
-    return { data: { id: String(response.data.userId) } };
+    const response = await post<any>("/users", newRequest);
+    const resData = response.data;
+    const createdId = String(resData?.userId ?? resData?.id ?? resData ?? "");
+    return { data: { id: createdId } };
   },
 
   update: async (id: string, data: UpdateUserRequest) => {

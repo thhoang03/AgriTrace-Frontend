@@ -27,7 +27,7 @@ export function ProfilePage() {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e: any) {
-      setSaveError(e.message || "Lưu thất bại");
+      setSaveError(e.message || "Save failed");
     }
   };
 
@@ -40,12 +40,12 @@ export function ProfilePage() {
         newPassword: newPwdRef.current?.value || "",
         confirmNewPassword: confirmPwdRef.current?.value || "",
       });
-      setPwdMsg("Đổi mật khẩu thành công!");
+      setPwdMsg("Password changed successfully!");
       if (currentPwdRef.current) currentPwdRef.current.value = "";
       if (newPwdRef.current) newPwdRef.current.value = "";
       if (confirmPwdRef.current) confirmPwdRef.current.value = "";
     } catch (e: any) {
-      setPwdError(e.message || "Đổi mật khẩu thất bại");
+      setPwdError(e.message || "Password change failed");
     }
   };
 
@@ -210,7 +210,7 @@ export function ProfilePage() {
             <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>Language</h4>
               <select className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white">
-                <option value="vi">🇻🇳 Tiếng Việt</option>
+                <option value="vi">🇻🇳 Vietnamese</option>
                 <option value="en">🇬🇧 English</option>
               </select>
             </div>

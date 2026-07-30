@@ -16,11 +16,16 @@ export const authApi = {
     return adaptLoginDataToResponse(response.data);
   },
 
+  register: async (data: any) => {
+    const response = await post<LoginData>("/auth/register", data);
+    return adaptLoginDataToResponse(response.data);
+  },
+
   logout: () => post<void>("/auth/logout"),
 
-  getProfile: () => get<UserBasic>("/auth/profile"),
+  getProfile: () => get<UserBasic>("/auth/me"),
 
-  refreshToken: () => post<{ accessToken: string }>("/auth/refresh-token"),
+  refreshToken: (refreshToken?: string) => post<{ accessToken: string; refreshToken: string }>("/auth/refresh-token", { refreshToken }),
 
   changePassword: (data: ChangePasswordRequest) =>
     put<void>("/auth/change-password", {

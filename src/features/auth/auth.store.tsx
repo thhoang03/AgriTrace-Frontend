@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { authApi } from "./auth.api";
-import { setToken, removeToken } from "../../lib/api";
+import { setToken, removeToken, setRefreshToken, removeRefreshToken } from "../../lib/api";
 import { queryClient } from "../../app/query-client";
 import type { User, LoginRequest } from "./auth.types";
 import type { OrganizationType } from "./permissions";
@@ -11,6 +11,7 @@ interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (data: any) => Promise<void>;
   logout: () => void;
   loading: boolean;
   canAccessRoute: typeof canAccessRoute;
@@ -76,6 +77,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const normalized = normalizeUser(res.user);
       setUser(normalized);
       setToken(res.accessToken);
+      if (res.refreshToken) setRefreshToken(res.refreshToken);
+      sessionStorage.setItem("agritrace_user", JSON.stringify(normalized));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const register = useCallback(async (data: any) => {
+    setLoading(true);
+    try {
+      const res = await authApi.register(data);
+      const normalized = normalizeUser(res.user);
+      setUser(normalized);
+      setToken(res.accessToken);
+      if (res.refreshToken) setRefreshToken(res.refreshToken);
       sessionStorage.setItem("agritrace_user", JSON.stringify(normalized));
     } finally {
       setLoading(false);
@@ -86,12 +102,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     authApi.logout().catch(() => {});
     setUser(null);
     removeToken();
+    removeRefreshToken();
     sessionStorage.removeItem("agritrace_user");
     queryClient.clear();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn: !!user, login, logout, loading, canAccessRoute, canCreateEvent }}>
+    <AuthContext.Provider value={{ user, isLoggedIn: !!user, login, register, logout, loading, canAccessRoute, canCreateEvent }}>
       {children}
     </AuthContext.Provider>
   );

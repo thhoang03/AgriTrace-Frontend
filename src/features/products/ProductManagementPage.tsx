@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Search, Filter, Plus, Eye, Edit2, Trash2,
+  Search, Plus, Eye, Edit2, Trash2, Power, RotateCcw,
   ChevronLeft, ChevronRight, X, SlidersHorizontal, Package,
 } from "lucide-react";
 import { useProductsList, useDeleteProduct, useUpdateProductStatus } from "./products.queries";
@@ -17,8 +17,8 @@ export function ProductManagementPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState<number | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
+  const [showEditModal, setShowEditModal] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
   const perPage = 10;
 
   const deleteProduct = useDeleteProduct();
@@ -41,7 +41,24 @@ export function ProductManagementPage() {
     return statusFilter === "Active" ? p.isActive : !p.isActive;
   });
 
-  const handleDelete = async (id: number) => {
+  const handleToggleStatus = async (product: any) => {
+    const prodId = product.id || product.productId;
+    const nextStatus = product.isActive ? "Inactive" : "Active";
+    try {
+      if (product.isActive) {
+        await deleteProduct.mutateAsync(prodId);
+      } else {
+        await updateProductStatus.mutateAsync({
+          id: prodId,
+          data: { status: "Active" },
+        });
+      }
+    } catch (error) {
+      console.error("Error toggling product status:", error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
     try {
       await deleteProduct.mutateAsync(id);
       setShowDeleteModal(null);
@@ -150,58 +167,71 @@ export function ProductManagementPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredProducts.map((product: any) => (
-                      <tr key={product.productId} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">#{product.productId}</td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: "#E8F5E9" }}>
-                              <Package className="w-5 h-5" style={{ color: "#2E7D32" }} />
+                    {filteredProducts.map((product: any) => {
+                      const prodId = product.id || product.productId;
+                      return (
+                        <tr key={prodId} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 text-xs font-medium text-gray-500 font-mono">{String(prodId).slice(0, 8)}...</td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: "#E8F5E9" }}>
+                                <Package className="w-5 h-5" style={{ color: "#2E7D32" }} />
+                              </div>
+                              <span className="text-sm font-medium text-gray-900">{product.name}</span>
                             </div>
-                            <span className="text-sm font-medium text-gray-900">{product.name}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{product.categoryName}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{product.unit}</td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                              product.isActive
-                                ? "text-green-700"
-                                : "text-gray-600"
-                            }`}
-                            style={{ background: product.isActive ? "#E8F5E9" : "#F5F5F5" }}
-                          >
-                            {product.isActive ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              onClick={() => navigate(`/app/products/${product.productId}`)}
-                              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
-                              title="View"
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{product.categoryName}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{product.unit}</td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                product.isActive
+                                  ? "text-green-700"
+                                  : "text-gray-600"
+                              }`}
+                              style={{ background: product.isActive ? "#E8F5E9" : "#F5F5F5" }}
                             >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => setShowEditModal(product.productId)}
-                              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
-                              title="Edit"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => setShowDeleteModal(product.productId)}
-                              className="p-2 rounded-lg hover:bg-red-50 transition-colors text-gray-500 hover:text-red-600"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                              {product.isActive ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => navigate(`/app/products/${prodId}`)}
+                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                                title="View"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => setShowEditModal(prodId)}
+                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                                title="Edit"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              {product.isActive ? (
+                                <button
+                                  onClick={() => setShowDeleteModal(prodId)}
+                                  className="p-2 rounded-lg hover:bg-red-50 transition-colors text-red-500 hover:text-red-700"
+                                  title="Ngưng hoạt động (Deactivate)"
+                                >
+                                  <Power className="w-4 h-4" />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleToggleStatus(product)}
+                                  className="p-2 rounded-lg hover:bg-green-50 transition-colors text-green-600 hover:text-green-800"
+                                  title="Kích hoạt lại (Activate)"
+                                >
+                                  <Power className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -241,21 +271,21 @@ export function ProductManagementPage() {
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Product</h3>
-            <p className="text-sm text-gray-600 mb-6">Are you sure you want to delete this product? This action cannot be undone.</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Ngưng hoạt động sản phẩm</h3>
+            <p className="text-sm text-gray-600 mb-6">Bạn có chắc chắn muốn chuyển sản phẩm này sang trạng thái **Ngưng hoạt động (Inactive)** không?</p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteModal(null)}
                 className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
               >
-                Cancel
+                Hủy bỏ
               </button>
               <button
                 onClick={() => handleDelete(showDeleteModal)}
                 disabled={deleteProduct.isPending}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
               >
-                {deleteProduct.isPending ? "Deleting..." : "Delete"}
+                {deleteProduct.isPending ? "Đang xử lý..." : "Ngưng hoạt động"}
               </button>
             </div>
           </div>
@@ -272,8 +302,8 @@ export function ProductManagementPage() {
       <ProductFormModal
         isOpen={showEditModal !== null}
         onClose={() => setShowEditModal(null)}
-        productId={showEditModal}
-        initialData={showEditModal ? filteredProducts.find((p: any) => p.productId === showEditModal) : undefined}
+        productId={showEditModal || undefined}
+        initialData={showEditModal ? filteredProducts.find((p: any) => (p.id || p.productId) === showEditModal) : undefined}
       />
     </div>
   );

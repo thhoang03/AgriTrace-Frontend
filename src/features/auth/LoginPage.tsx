@@ -23,7 +23,12 @@ export function LoginPage() {
       await login(form.email, form.password);
       navigate("/app/dashboard");
     } catch (err: any) {
-      setError(err.message || "Đăng nhập thất bại");
+      const apiMsg =
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.message ||
+        "Login failed. Please check your credentials.";
+      setError(apiMsg);
     } finally {
       setLoading(false);
     }
@@ -176,8 +181,19 @@ export function LoginPage() {
           </button>
         </form>
 
+        <div className="mt-6 p-4 rounded-xl border border-green-200 bg-green-50/60 text-center space-y-2">
+          <p className="text-xs text-gray-600">Don't have an account or want to register a new Organization?</p>
+          <button
+            type="button"
+            onClick={() => navigate("/register")}
+            className="w-full py-2.5 rounded-lg border border-green-700 text-green-800 font-semibold text-xs bg-white hover:bg-green-700 hover:text-white transition-all shadow-sm flex items-center justify-center gap-1.5"
+          >
+            🌱 Register Account / New Organization
+          </button>
+        </div>
+
         <p className="text-center text-xs text-gray-400 mt-6">
-          © 2024 Ministry of Agriculture and Rural Development · Vietnam
+          © 2026 Ministry of Agriculture and Rural Development · Vietnam
         </p>
       </div>
     </div>

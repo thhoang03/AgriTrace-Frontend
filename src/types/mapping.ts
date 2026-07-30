@@ -23,6 +23,7 @@ export type OrganizationDetail = components["schemas"]["OrganizationDetail"];
 export type OrganizationListItem = components["schemas"]["OrganizationListItem"];
 export type OrganizationPagedResponse = components["schemas"]["OrganizationPagedResponse"];
 export type StatusRequest = components["schemas"]["StatusRequest"];
+export type ActiveStatusRequest = components["schemas"]["ActiveStatusRequest"];
 
 // Category types
 export type CategoryRequest = components["schemas"]["CategoryRequest"];
@@ -178,7 +179,7 @@ export function adaptApiRoleToCanonical(apiRole: string): UserRole {
   return "STAFF";
 }
 
-const ROLE_TO_ORG_TYPE: Record<string, import("./permissions").OrganizationType> = {
+const ROLE_TO_ORG_TYPE: Record<string, import("../features/auth/permissions").OrganizationType> = {
   FARMER: "FARM",
   Processor: "PROCESSOR",
   Distributor: "DISTRIBUTOR",
@@ -191,13 +192,13 @@ export function inferOrganizationTypeFromApiRole(
   apiRole: string,
   jwtClaim?: string | null,
   profileOrgType?: string | null
-): import("./permissions").OrganizationType | undefined {
+): import("../features/auth/permissions").OrganizationType | undefined {
   const fromRole = ROLE_TO_ORG_TYPE[apiRole] ?? ROLE_TO_ORG_TYPE[apiRole.toUpperCase()];
   if (fromRole) return fromRole;
 
   if (jwtClaim) {
     const normalized = jwtClaim.toUpperCase();
-    const orgTypes: import("./permissions").OrganizationType[] = [
+    const orgTypes: import("../features/auth/permissions").OrganizationType[] = [
       "FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"
     ];
     const match = orgTypes.find((t) => normalized.includes(t));
@@ -206,7 +207,7 @@ export function inferOrganizationTypeFromApiRole(
 
   if (profileOrgType) {
     const normalized = profileOrgType.toUpperCase();
-    const orgTypes: import("./permissions").OrganizationType[] = [
+    const orgTypes: import("../features/auth/permissions").OrganizationType[] = [
       "FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"
     ];
     const match = orgTypes.find((t) => normalized.includes(t));

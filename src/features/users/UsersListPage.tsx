@@ -62,7 +62,6 @@ const emptyUserForm: CreateUserRequest = {
   fullName: "",
   email: "",
   password: "",
-  phone: "",
   role: "STAFF",
 };
 
@@ -464,7 +463,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                     }
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
                     style={{ background: "#F8FAF8" }}
-                    placeholder="Nguyễn Văn X"
+                    placeholder="John Doe"
                   />
                 </div>
                 <div>
@@ -498,40 +497,24 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   placeholder="Minimum 8 characters"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                    Role
-                  </label>
-                  <select
-                    value={form.role}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        role: e.target.value as CreateUserRequest["role"],
-                      })
-                    }
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
-                  >
-                    {["MANAGER", "STAFF"].map((r) => (
-                      <option key={r} value={r}>{r}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                    Phone
-                  </label>
-                  <input
-                    value={form.phone}
-                    onChange={(e) =>
-                      setForm({ ...form, phone: e.target.value })
-                    }
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                    style={{ background: "#F8FAF8" }}
-                    placeholder="+84 900 000 000"
-                  />
-                </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Role
+                </label>
+                <select
+                  value={form.role}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      role: e.target.value as CreateUserRequest["role"],
+                    })
+                  }
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
+                >
+                  {["MANAGER", "STAFF"].map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
               </div>
               <div className="flex gap-3 pt-2">
                 <button

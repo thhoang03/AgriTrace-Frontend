@@ -277,7 +277,7 @@ export const batchesApi = {
   delete: async (id: string) => del(`/batches/${id}`),
 
   getTimeline: async (batchId: string) => {
-    const response = await get<any>(`/batches/${batchId}/timeline`);
+    const response = await get<any>(`/batches/${batchId}/events`);
     const data = response.data as any;
     const items = Array.isArray(data) ? data : data?.items ?? [];
     return { data: items.map(adaptEventFromItem) as TimelineEvent[] };
