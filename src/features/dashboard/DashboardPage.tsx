@@ -30,7 +30,7 @@ export function DashboardPage() {
   const timeGreeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 17 ? "Good afternoon" : "Good evening";
 
   const statCards = analyticsData?.data ? [
-    { label: "Total Products", value: (analyticsData.data.totalBatches ?? 0).toLocaleString(), change: "+12%", up: true, icon: Package, color: "#2E7D32", bg: "#E8F5E9" },
+    { label: "Total Batches", value: (analyticsData.data.totalBatches ?? 0).toLocaleString(), change: "+12%", up: true, icon: Package, color: "#2E7D32", bg: "#E8F5E9" },
     { label: "Today's Harvest", value: (analyticsData.data.todayHarvest ?? 0).toLocaleString(), change: "+8%", up: true, icon: Leaf, color: "#1976D2", bg: "#E3F2FD" },
     { label: "In Processing", value: (analyticsData.data.inProcessing ?? 0).toLocaleString(), change: "-3%", up: false, icon: Cog, color: "#F57C00", bg: "#FFF3E0" },
     { label: "In Transport", value: (analyticsData.data.inTransport ?? 0).toLocaleString(), change: "+5%", up: true, icon: Truck, color: "#7B1FA2", bg: "#F3E5F5" },

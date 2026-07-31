@@ -116,7 +116,7 @@ export function RecallPage() {
         error?.response?.data?.detail ||
         error?.response?.data?.title ||
         error?.message ||
-        "Tạo yêu cầu thu hồi thất bại. Vui lòng kiểm tra lại.";
+        "Failed to create recall request. Please check again.";
       setCreateError(msg);
     }
   };
@@ -150,7 +150,7 @@ export function RecallPage() {
               onClick={() => setShowQrModal(true)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-700 bg-white transition-all hover:bg-red-50 shadow-md"
             >
-              <QrCode className="w-4 h-4 text-red-600" /> Quét QR Lô Hàng
+              <QrCode className="w-4 h-4 text-red-600" /> Scan Batch QR
             </button>
             {canRecall && (
               <button
@@ -233,13 +233,13 @@ export function RecallPage() {
                 onClick={() => setShowQrModal(true)}
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 flex items-center gap-1.5"
               >
-                <QrCode className="w-4 h-4" /> Quét QR Lô Hàng
+                <QrCode className="w-4 h-4" /> Scan Batch QR
               </button>
               <button
                 onClick={() => setShowCreate(true)}
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-red-600 hover:bg-red-700 flex items-center gap-1.5"
               >
-                <Plus className="w-4 h-4" /> Tạo Thu Hồi Lô Hàng
+                <Plus className="w-4 h-4" /> Create Recall
               </button>
             </div>
           </div>
@@ -268,7 +268,7 @@ export function RecallPage() {
                         <td className="px-5 py-4">
                           <div className="font-semibold text-gray-900 text-sm flex items-center gap-1.5">
                             <Box className="w-4 h-4 text-red-600" />
-                            {recall.batchCode || "Lô Hàng"}
+                            {recall.batchCode || "Batch"}
                           </div>
                           <code className="text-xs font-mono text-gray-500">{recall.batchId}</code>
                         </td>
@@ -318,8 +318,8 @@ export function RecallPage() {
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-base">Tạo Yêu Cầu Thu Hồi Lô Hàng</h3>
-                  <p className="text-xs text-gray-500">Quét QR hoặc chọn lô hàng cần thu hồi khẩn cấp</p>
+                  <h3 className="font-bold text-gray-900 text-base">Create Product Safety Recall</h3>
+                  <p className="text-xs text-gray-500">Scan QR code or select a batch requiring urgent recall</p>
                 </div>
               </div>
               <button onClick={() => setShowCreate(false)} className="p-1.5 rounded-lg hover:bg-gray-100">
@@ -332,14 +332,14 @@ export function RecallPage() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                    Chọn / Quét Lô Hàng Thu Hồi *
+                    Select / Scan Recall Batch *
                   </label>
                   <button
                     type="button"
                     onClick={() => setShowQrModal(true)}
                     className="text-xs font-semibold text-red-600 hover:text-red-800 flex items-center gap-1 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg border border-red-200 transition-colors"
                   >
-                    <QrCode className="w-3.5 h-3.5" /> Quét QR Code
+                    <QrCode className="w-3.5 h-3.5" /> Scan QR Code
                   </button>
                 </div>
 
@@ -350,10 +350,10 @@ export function RecallPage() {
                     onChange={(e) => setForm({ ...form, batchId: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white cursor-pointer transition-all focus:border-red-500 mb-2"
                   >
-                    <option value="">-- Chọn lô hàng từ danh sách --</option>
+                    <option value="">-- Select batch from list --</option>
                     {availableBatches.map((b) => (
                       <option key={b.id} value={b.id}>
-                        [{b.batchCode || "Lô Hàng"}] {b.product || b.productName || "Sản phẩm"} — S/L: {b.quantity} {b.unit}
+                        [{b.batchCode || "Batch"}] {b.product || b.productName || "Product"} — Qty: {b.quantity} {b.unit}
                       </option>
                     ))}
                   </select>
@@ -363,7 +363,7 @@ export function RecallPage() {
                 <input
                   value={form.batchId}
                   onChange={(e) => setForm({ ...form, batchId: e.target.value })}
-                  placeholder="Hoặc nhập GUID / Mã Lô hàng (e.g. BTH-2026-001)"
+                  placeholder="Or enter GUID / Batch Code (e.g. BTH-2026-001)"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-gray-50/50 focus:bg-white focus:border-red-500 transition-all font-mono"
                 />
               </div>
@@ -379,42 +379,42 @@ export function RecallPage() {
                         {selectedBatch.batchCode}
                       </span>
                     </div>
-                    <div>Số lượng: <strong>{selectedBatch.quantity} {selectedBatch.unit}</strong> | Ngày sản xuất: {selectedBatch.harvestDate || "N/A"}</div>
+                    <div>Quantity: <strong>{selectedBatch.quantity} {selectedBatch.unit}</strong> | Harvest Date: {selectedBatch.harvestDate || "N/A"}</div>
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="text-xs font-semibold text-gray-700 mb-1.5 block uppercase tracking-wide">Lý Do Thu Hồi *</label>
+                <label className="text-xs font-semibold text-gray-700 mb-1.5 block uppercase tracking-wide">Recall Reason *</label>
                 <input
                   value={form.reason}
                   onChange={(e) => setForm({ ...form, reason: e.target.value })}
-                  placeholder="Ví dụ: Phát hiện vi phạm chất lượng / vi sinh"
+                  placeholder="e.g., Pesticide residue detected / quality non-compliance"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-500 bg-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-700 mb-1.5 block uppercase tracking-wide">Mức Độ Nghiêm Trọng</label>
+                <label className="text-xs font-semibold text-gray-700 mb-1.5 block uppercase tracking-wide">Severity Level</label>
                 <select
                   value={form.severity}
                   onChange={(e) => setForm({ ...form, severity: Number(e.target.value) })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white cursor-pointer focus:border-red-500"
                 >
-                  <option value={3}>High (Cao — Nguy cơ ảnh hưởng sức khỏe)</option>
-                  <option value={2}>Medium (Trung bình — Sai sót quy cách / nhãn mác)</option>
-                  <option value={1}>Low (Thấp — Điều chỉnh kỹ thuật nhẹ)</option>
+                  <option value={3}>High (Risks affecting public health)</option>
+                  <option value={2}>Medium (Specification / labeling defect)</option>
+                  <option value={1}>Low (Minor technical adjustment)</option>
                 </select>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-700 mb-1.5 block uppercase tracking-wide">Ghi Chú Bổ Sung</label>
+                <label className="text-xs font-semibold text-gray-700 mb-1.5 block uppercase tracking-wide">Additional Notes</label>
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   rows={2}
-                  placeholder="Nhập hướng dẫn xử lý hoặc các thông tin bổ sung khác..."
+                  placeholder="Enter handling instructions or additional details..."
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-none focus:border-red-500 bg-white"
                 />
               </div>
@@ -430,7 +430,7 @@ export function RecallPage() {
                   onClick={() => setShowCreate(false)}
                   className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  Hủy bỏ
+                  Cancel
                 </button>
                 <button
                   onClick={handleCreate}
@@ -438,7 +438,7 @@ export function RecallPage() {
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 shadow-md"
                   style={{ background: "linear-gradient(135deg, #B71C1C 0%, #E53935 100%)" }}
                 >
-                  {createRecall.isPending ? "Đang tạo..." : "Xác Nhận Thu Hồi"}
+                  {createRecall.isPending ? "Creating..." : "Confirm Recall"}
                 </button>
               </div>
             </div>
@@ -455,7 +455,7 @@ export function RecallPage() {
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-700">
                   <CheckCircle className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-gray-900">Hoàn Tất Thu Hồi Lô Hàng</h3>
+                <h3 className="font-bold text-gray-900">Complete Batch Recall</h3>
               </div>
               <button onClick={() => setShowResolveModal(null)} className="p-1.5 rounded-lg hover:bg-gray-100">
                 <X className="w-4 h-4 text-gray-500" />
@@ -463,14 +463,14 @@ export function RecallPage() {
             </div>
             <div className="space-y-4">
               <p className="text-sm text-gray-700 leading-relaxed">
-                Bạn có chắc chắn muốn đánh dấu sự cố thu hồi này là <strong>Đã Xử Lý (Resolved)</strong>? Thao tác này xác nhận lô hàng đã được thu hồi an toàn.
+                Are you sure you want to mark this recall issue as <strong>Resolved</strong>? This confirms the batch has been safely recalled.
               </p>
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowResolveModal(null)}
                   className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  Hủy bỏ
+                  Cancel
                 </button>
                 <button
                   onClick={() => handleResolve(showResolveModal)}
@@ -478,7 +478,7 @@ export function RecallPage() {
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50"
                   style={{ background: "#2E7D32" }}
                 >
-                  {resolveRecall.isPending ? "Đang xử lý..." : "Xác Nhận Đóng Thu Hồi"}
+                  {resolveRecall.isPending ? "Processing..." : "Confirm Close Recall"}
                 </button>
               </div>
             </div>
