@@ -4,12 +4,14 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
-  username: string;
+  fullName: string;
   email: string;
   password: string;
-  confirmPassword: string;
-  role: string;
+  role?: string;
   organizationId?: string;
+  organizationName?: string;
+  organizationTypeId?: string;
+  organizationAddress?: string;
 }
 
 export interface ChangePasswordRequest {

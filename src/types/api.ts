@@ -3651,10 +3651,234 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    /** @description Request body for toggling active status. Matches swagger `ActiveStatusRequest`. */
-    ActiveStatusRequest: {
-      isActive: boolean;
+    schemas: {
+        /** @description Request body for toggling active status. Matches swagger `ActiveStatusRequest`. */
+        ActiveStatusRequest: {
+            isActive: boolean;
+        };
+        /**
+         * @description Envelope chuẩn cho response thành công của API, khớp schema `ApiResponse` trong swagger.yaml.
+         *     Hình dạng: { success, data, message, timestamp }.
+         */
+        ApiResponse: {
+            success?: boolean;
+            data?: unknown;
+            message?: string | null;
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        /** @description Request body for setting a batch's status. Matches swagger `BatchStatusRequest`. */
+        BatchStatusRequest: {
+            /** Format: int32 */
+            status: number;
+        };
+        CategoryRequest: {
+            name: string;
+            description?: string | null;
+        };
+        ChangePasswordRequest: {
+            currentPassword?: string | null;
+            newPassword?: string | null;
+        };
+        /**
+         * @description Request body for creating a new batch. Matches swagger `CreateBatchRequest`.
+         *     The server generates the batch code; the client does not provide it.
+         */
+        CreateBatchRequest: {
+            /** Format: uuid */
+            productId?: string;
+            /** Format: double */
+            quantity?: number;
+            /** Format: uuid */
+            unitId?: string;
+            /** Format: date */
+            productionDate?: string;
+            /** Format: date */
+            expiryDate?: string | null;
+        };
+        /** @description Request body for creating a supply-chain event. Matches swagger `CreateEventRequest`. */
+        CreateEventRequest: {
+            /** Format: uuid */
+            eventTypeId: string;
+            eventData?: string | null;
+            location?: string | null;
+            /** Format: uuid */
+            inspectionId?: string | null;
+        };
+        /** @description Request body for creating a new quality inspection on a batch. */
+        CreateInspectionRequest: {
+            /** @description Inspection result: "PASS" or "FAIL". */
+            result: string;
+            /** @description Optional notes about the inspection findings. */
+            notes?: string | null;
+        };
+        /**
+         * @description Request body for creating a recall. Matches swagger `CreateRecallRequest`.
+         *     severity: 1=LOW, 2=MEDIUM, 3=HIGH.
+         */
+        CreateRecallRequest: {
+            /** Format: uuid */
+            batchId?: string;
+            reason: string;
+            /** Format: int32 */
+            severity?: number;
+        };
+        /**
+         * @description Request body for creating a user. Matches swagger `CreateUserRequest`.
+         *     organizationId is not accepted; it is auto-assigned from the authenticated MANAGER's token.
+         *     role is a required string enum (STAFF only).
+         */
+        CreateUserRequest: {
+            fullName?: string | null;
+            email?: string | null;
+            password?: string | null;
+            role?: string | null;
+        };
+        /**
+         * @description Envelope chuẩn cho response lỗi của API, khớp schema `ErrorResponse` trong swagger.yaml.
+         *     Hình dạng: { success, data, message, errors[], timestamp }.
+         */
+        ErrorResponse: {
+            success?: boolean;
+            data?: unknown;
+            message?: string | null;
+            errors?: components["schemas"]["FieldError"][] | null;
+            /** Format: date-time */
+            timestamp?: string;
+        };
+        /**
+         * @description Mô tả một lỗi ở cấp field, khớp schema `FieldError` trong swagger.yaml.
+         *     Hình dạng: { field, code, message }.
+         */
+        FieldError: {
+            field?: string | null;
+            code?: string | null;
+            message?: string | null;
+        };
+        ForgotPasswordRequest: {
+            email?: string | null;
+        };
+        /** @description Request body for issuing a new certificate on a batch. */
+        IssueCertificateRequest: {
+            /**
+             * Format: uuid
+             * @description Related inspection Id.
+             */
+            inspectionId: string;
+            /** @description Certificate type. */
+            certificateType: string;
+            /** @description URL to the certificate file. */
+            fileUrl: string;
+            /**
+             * Format: date
+             * @description Issued date.
+             */
+            issuedDate: string;
+        };
+        LoginRequest: {
+            email?: string | null;
+            password?: string | null;
+        };
+        /** @description Request body for merging batches. Matches swagger `MergeBatchRequest` (min 2 sources). */
+        MergeBatchRequest: {
+            sourceBatchIds: string[];
+            /** Format: uuid */
+            productId?: string;
+            /** Format: double */
+            quantity?: number;
+            /** Format: uuid */
+            unitId?: string;
+            /** Format: date */
+            productionDate?: string;
+        };
+        /** @description Request body for creating/updating an organization. Matches swagger `OrganizationRequest`. */
+        OrganizationRequest: {
+            name: string;
+            /** @description Organization type. One of: FARM, PROCESSOR, DISTRIBUTOR, RETAILER, INSPECTOR_ORG. */
+            type: string;
+            address?: string | null;
+        };
+        /**
+         * @description Request body for creating/updating a product.
+         *     Supports both string Unit and UUID UnitId for frontend flexibility.
+         */
+        ProductRequest: {
+            name: string;
+            /** Format: uuid */
+            categoryId?: string | null;
+            /** @description Unit code/name (e.g. "kg"). */
+            unit?: string | null;
+            /**
+             * Format: uuid
+             * @description Direct Unit ID (Guid).
+             */
+            unitId?: string | null;
+            /** Format: uuid */
+            organizationId?: string | null;
+        };
+        /** @enum {string} */
+        ProductStatus: "Created" | "Active" | "Inactive";
+        /** @description Request body for setting a product's status. */
+        ProductStatusRequest: {
+            status: components["schemas"]["ProductStatus"];
+        };
+        RefreshTokenRequest: {
+            refreshToken?: string | null;
+        };
+        ResetPasswordRequest: {
+            token?: string | null;
+            newPassword?: string | null;
+        };
+        /** @description Request body for resolving a recall. Matches swagger `ResolveRecallRequest`. */
+        ResolveRecallRequest: {
+            /** Format: int32 */
+            status?: number;
+        };
+        /** @description Request body for splitting a batch. Matches swagger `SplitBatchRequest` (min 2 splits). */
+        SplitBatchRequest: {
+            splits: components["schemas"]["SplitItem"][];
+        };
+        SplitItem: {
+            /** Format: double */
+            quantity?: number;
+            /** Format: uuid */
+            unitId?: string;
+        };
+        /** @description Request body for setting an organization's status. Matches swagger `StatusRequest`. */
+        StatusRequest: {
+            status: string;
+        };
+        /**
+         * @description Request body for updating an existing batch. Matches swagger `UpdateBatchRequest`.
+         *     Only `quantity` and `expiryDate` are updatable.
+         */
+        UpdateBatchRequest: {
+            /** Format: double */
+            quantity?: number | null;
+            /** Format: date */
+            expiryDate?: string | null;
+        };
+        /** @description Request body for updating an existing quality inspection. */
+        UpdateInspectionRequest: {
+            /** @description Updated inspection result: "PASS" or "FAIL". */
+            result: string;
+            /** @description Updated notes about the inspection findings. */
+            notes?: string | null;
+        };
+        /**
+         * @description Request body for updating a user. Matches swagger `UpdateUserRequest`.
+         *     All fields are optional. role is a string enum when provided.
+         */
+        UpdateUserRequest: {
+            fullName?: string | null;
+            phone?: string | null;
+            role?: string | null;
+        };
+        /** @description Request body for changing a user's active status. Matches swagger `UserStatusRequest`. */
+        UserStatusRequest: {
+            isActive?: boolean;
+        };
+>>>>>>> 26e55c1359f2a490a93eb6e2918355627147d9f7
     };
     /**
      * @description Envelope chuẩn cho response thành công của API, khớp schema `ApiResponse` trong swagger.yaml.
@@ -3876,12 +4100,12 @@ export interface components {
     UserStatusRequest: {
       isActive?: boolean;
     };
-  };
-  responses: never;
+    responses: never;
   parameters: never;
   requestBodies: never;
   headers: never;
   pathItems: never;
-}
+  };
+  
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

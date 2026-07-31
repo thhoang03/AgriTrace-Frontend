@@ -30,6 +30,7 @@ export interface SupplyChainEvent {
   performedByName?: string;
   eventData?: string;
   location?: string;
+  inspectionId?: string;
   previousHash?: string;
   currentHash?: string;
   eventTime?: string;
@@ -39,6 +40,7 @@ export interface CreateEventRequest {
   eventType: string;
   location?: string;
   description?: string;
+  inspectionId?: string;
   metadata?: Record<string, any>;
 }
 
@@ -75,6 +77,7 @@ function adaptEventFromDetail(item: any): SupplyChainEvent {
     performedByName: item.performedByName ?? "",
     eventData: item.eventData ?? "",
     location: item.location ?? "",
+    inspectionId: item.inspectionId,
     previousHash: item.previousHash ?? "",
     currentHash: item.currentHash ?? "",
     eventTime: item.eventTime ?? "",
@@ -129,6 +132,7 @@ export const supplyChainApi = {
         return Object.keys(ed).length > 0 ? JSON.stringify(ed) : undefined;
       })(),
       location: data.location,
+      inspectionId: data.inspectionId,
     };
     const response = await post<EventCreatedData>(`/batches/${batchId}/events`, newRequest);
     const createdData = response.data as any;

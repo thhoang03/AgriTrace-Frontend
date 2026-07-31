@@ -106,10 +106,12 @@ export const usersApi = {
     return adaptUserListItem(response.data);
   },
 
-  create: async (data: any) => {
-    const newRequest = adaptCreateUserRequest(data as ApiCreateUserRequest);
-    const response = await post<{ userId: number }>("/users", newRequest);
-    return { data: { id: String(response.data.userId) } };
+  create: async (data: ApiCreateUserRequest) => {
+    const newRequest = adaptCreateUserRequest(data);
+    const response = await post<any>("/users", newRequest);
+    const resData = response.data;
+    const createdId = String(resData?.userId ?? resData?.id ?? resData ?? "");
+    return { data: { id: createdId } };
   },
 
   update: async (id: string, data: UpdateUserRequest) => {

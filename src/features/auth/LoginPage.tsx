@@ -32,7 +32,12 @@ export function LoginPage() {
       toast.success(lang === "vi" ? "Đăng nhập thành công!" : "Login successful!");
       navigate(needChange ? "/app/change-password" : "/app/dashboard");
     } catch (err: any) {
-      setError(err.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại tài khoản.");
+      const apiMsg =
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.message ||
+        "Login failed. Please check your credentials.";
+      setError(apiMsg);
     } finally {
       setLoading(false);
     }
@@ -176,8 +181,19 @@ export function LoginPage() {
           </button>
         </form>
 
+        <div className="mt-6 p-4 rounded-xl border border-green-200 bg-green-50/60 text-center space-y-2">
+          <p className="text-xs text-gray-600">Don't have an account or want to register a new Organization?</p>
+          <button
+            type="button"
+            onClick={() => navigate("/register")}
+            className="w-full py-2.5 rounded-lg border border-green-700 text-green-800 font-semibold text-xs bg-white hover:bg-green-700 hover:text-white transition-all shadow-sm flex items-center justify-center gap-1.5"
+          >
+            🌱 Register Account / New Organization
+          </button>
+        </div>
+
         {/* Quick Demo Accounts Fill Box */}
-        <div className="mt-6 p-4 rounded-2xl bg-green-50/60 border border-green-100 space-y-3">
+        <div className="mt-4 p-4 rounded-2xl bg-green-50/60 border border-green-100 space-y-3">
           <div className="flex items-center gap-1.5 text-xs font-bold text-green-900">
             <Sparkles className="w-4 h-4 text-amber-500" />
             <span>{lang === "vi" ? "Thử nghiệm nhanh tài khoản demo:" : "Quick Demo Test Login Accounts:"}</span>
@@ -197,6 +213,10 @@ export function LoginPage() {
             ))}
           </div>
         </div>
+
+        <p className="text-center text-xs text-gray-400 mt-6">
+          © 2026 Ministry of Agriculture and Rural Development · Vietnam
+        </p>
       </div>
     </div>
   );

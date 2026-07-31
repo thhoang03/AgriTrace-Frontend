@@ -1,6 +1,6 @@
 import axios, { AxiosError, type AxiosRequestConfig, type AxiosResponse } from "axios";
 import { env } from "../../config/env";
-import { getToken, setToken, removeToken } from "./token-storage";
+import { getToken, setToken, removeToken, getRefreshToken, setRefreshToken, removeRefreshToken } from "./token-storage";
 
 export interface ApiResponse<T> {
   data: T;
@@ -47,6 +47,7 @@ http.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -60,19 +61,32 @@ http.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
+      const storedRefreshToken = getRefreshToken();
+      if (!storedRefreshToken) {
+        processQueue(new Error("No refresh token"), null);
+        removeToken();
+        removeRefreshToken();
+        sessionStorage.removeItem("agritrace_user");
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
+
       try {
-        const { data } = await axios.post<{ accessToken: string }>(
+        const { data } = await axios.post<{ data: { accessToken: string; refreshToken: string } }>(
           `${env.apiBaseUrl}/auth/refresh-token`,
-          {},
-          { withCredentials: true },
+          { refreshToken: storedRefreshToken },
         );
-        setToken(data.accessToken);
-        processQueue(null, data.accessToken);
-        originalRequest.headers!.Authorization = `Bearer ${data.accessToken}`;
+        const newAccessToken = data.data.accessToken;
+        const newRefreshToken = data.data.refreshToken;
+        setToken(newAccessToken);
+        if (newRefreshToken) setRefreshToken(newRefreshToken);
+        processQueue(null, newAccessToken);
+        originalRequest.headers!.Authorization = `Bearer ${newAccessToken}`;
         return http(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
         removeToken();
+        removeRefreshToken();
         sessionStorage.removeItem("agritrace_user");
         window.location.href = "/login";
         return Promise.reject(refreshError);
@@ -84,6 +98,8 @@ http.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+
 
 export function get<T>(url: string, config?: AxiosRequestConfig) {
   return http.get<ApiResponse<T>>(url, config).then((r) => r.data);

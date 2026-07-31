@@ -1,44 +1,85 @@
-export type InspectionResult = "Pass" | "Fail" | "Pending";
-export type InspectionCategory = "Quality" | "Safety" | "Regulatory";
+export type InspectionStatus = "Pending" | "Passed" | "Failed";
+
+export const InspectionTypeValues = [
+  { value: 1, label: "Raw Material" },
+  { value: 2, label: "Processing" },
+  { value: 3, label: "Packaging" },
+  { value: 4, label: "Storage" },
+  { value: 5, label: "Transportation" },
+  { value: 6, label: "Retail" },
+  { value: 7, label: "Random Sampling" },
+] as const;
+
+export type InspectionType = (typeof InspectionTypeValues)[number]["value"];
 
 export interface LabTest {
-  name: string;
-  result: string;
-  standard: string;
-  ok: boolean;
+  id: string;
+  inspectionId: string;
+  testName: string;
+  measuredValue?: string;
+  unit?: string;
+  minStandardValue?: string;
+  maxStandardValue?: string;
+  isPassed: boolean;
+  remark?: string;
+  createdAt: string;
+}
+
+export interface CreateLabTestRequest {
+  testName: string;
+  measuredValue?: string;
+  unit?: string;
+  minStandardValue?: string;
+  maxStandardValue?: string;
+  isPassed: boolean;
+  remark?: string;
 }
 
 export interface InspectionItem {
   id: string;
   batchId: string;
   batchCode: string;
-  product: string;
-  productImage?: string;
-  result: InspectionResult;
+  inspectorId: string;
   inspector: string;
-  inspectorId?: string;
-  organization: string;
-  date: string;
-  category: InspectionCategory;
-  score: number;
+  inspectionType: InspectionType;
+  status: InspectionStatus;
+  overallResult?: string;
+  inspectionDate: string;
   notes: string;
-  certificate: string | null;
-  tests: LabTest[];
-  status?: number;
+  createdAt: string;
+  labTests: LabTest[];
 }
+
+export const InspectionTypeLabel: Record<InspectionType, string> = {
+  1: "Raw Material",
+  2: "Processing",
+  3: "Packaging",
+  4: "Storage",
+  5: "Transportation",
+  6: "Retail",
+  7: "Random Sampling",
+};
+
+export const StatusLabel: Record<InspectionStatus, string> = {
+  Pending: "Pending",
+  Passed: "Passed",
+  Failed: "Failed",
+};
 
 export interface CreateInspectionRequest {
   batchId: string;
-  category: InspectionCategory;
-  inspector: string;
-  result: InspectionResult;
+  inspectionType: InspectionType;
+  inspectionDate: string;
   notes: string;
 }
 
+export interface ConcludeInspectionRequest {
+  id: string;
+  overallResult: "PASS" | "FAIL";
+  notes?: string;
+}
+
 export interface InspectionFilters {
-  status?: InspectionResult | "All";
-  category?: InspectionCategory | "All";
-  search?: string;
   page?: number;
   limit?: number;
 }

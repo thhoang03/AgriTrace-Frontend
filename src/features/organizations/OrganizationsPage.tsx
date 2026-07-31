@@ -114,7 +114,7 @@ export function OrganizationsPage() {
       !form.address.trim() ||
       !form.organizationTypeId.trim()
     ) {
-      setError("Vui lòng điền đầy đủ thông tin");
+      setError("Please fill in all required fields");
       return;
     }
     setSaving(true);
@@ -131,7 +131,7 @@ export function OrganizationsPage() {
               : o,
           ),
         );
-        showAlert("success", `Đã cập nhật "${form.name}" thành công`);
+        showAlert("success", ` "${form.name}" updated successfully`);
       } else {
         const res = await organizationsApi.create(form);
         setOrgs((prev) => [
@@ -142,11 +142,11 @@ export function OrganizationsPage() {
             ...form,
           },
         ]);
-        showAlert("success", `Đã thêm "${form.name}" thành công`);
+        showAlert("success", ` "${form.name}" added successfully`);
       }
       setShowModal(false);
     } catch (e: any) {
-      setError(e.message || "Có lỗi xảy ra");
+      setError(e.message || "An error occurred");
     } finally {
       setSaving(false);
     }
@@ -169,16 +169,17 @@ export function OrganizationsPage() {
         setDetail({ ...detail, status: newStatus });
       showAlert(
         newStatus === "ACTIVE" ? "success" : "error",
-        `"${org.name}" đã được ${newStatus === "ACTIVE" ? "kích hoạt" : "vô hiệu hóa"}`,
+
+        `"${org.name}" has been ${newStatus === "ACTIVE" ? "activated" : "deactivated"}`,
       );
     } catch (e: any) {
-      showAlert("error", e.message || "Cập nhật trạng thái thất bại");
+      showAlert("error", e.message || "Failed to update status");
     }
   };
 
   const handleInviteStaff = async () => {
     if (!inviteEmail.trim()) {
-      showAlert("error", "Vui lòng nhập email");
+      showAlert("error", "Please enter an email address");
       return;
     }
     if (!detail) return;
@@ -189,11 +190,11 @@ export function OrganizationsPage() {
         detail.organizationId,
         inviteEmail.trim(),
       );
-      showAlert("success", `Đã gửi lời mời đến ${inviteEmail}`);
+      showAlert("success", `Invitation sent to ${inviteEmail}`);
       setInviteEmail("");
       setShowInviteModal(false);
     } catch (e: any) {
-      setError(e.message || "Gửi lời mời thất bại");
+      setError(e.message || "Failed to send invitation");
     } finally {
       setInviting(false);
     }
@@ -493,7 +494,7 @@ export function OrganizationsPage() {
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400"
                   style={{ background: "#F8FAF8" }}
-                  placeholder="Tên tổ chức"
+                  placeholder="Organization Name"
                 />
               </div>
               <div>
@@ -526,7 +527,7 @@ export function OrganizationsPage() {
                   }
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400"
                   style={{ background: "#F8FAF8" }}
-                  placeholder="Địa chỉ"
+                  placeholder="Address"
                 />
               </div>
               {error && <p className="text-sm text-red-500">{error}</p>}
