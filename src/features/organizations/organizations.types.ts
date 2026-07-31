@@ -1,23 +1,24 @@
-export type OrganizationType = "FARM" | "PROCESSOR" | "DISTRIBUTOR" | "RETAILER" | "INSPECTION" | "SYSTEM";
+export type OrganizationType = string;
 export type OrganizationStatus = "ACTIVE" | "INACTIVE";
 
 export interface Organization {
   organizationId: number;
   name: string;
   type: OrganizationType;
+  organizationTypeId?: string;
   status?: OrganizationStatus;
   address?: string;
 }
 
 export interface CreateOrganizationRequest {
   name: string;
-  type: OrganizationType;
+  organizationTypeId?: string;
   address?: string;
 }
 
 export interface UpdateOrganizationRequest {
   name?: string;
-  type?: OrganizationType;
+  organizationTypeId?: string;
   address?: string;
 }
 
