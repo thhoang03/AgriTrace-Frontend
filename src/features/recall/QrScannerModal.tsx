@@ -60,7 +60,7 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
       );
     } catch (err: any) {
       console.warn("Unable to start camera scanner", err);
-      setErrorMsg("Không thể truy cập camera. Vui lòng cấp quyền truy cập hoặc chọn Tải ảnh QR.");
+      setErrorMsg("Unable to access camera. Please grant camera permission or upload a QR image.");
       setScanning(false);
     }
   };
@@ -86,7 +86,6 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
     setErrorMsg("");
     try {
       const html5Qr = new Html5Qrcode("file-qr-reader-container");
-      // renderImage = false prevents Html5Qrcode from mutating DOM elements
       const decodedText = await html5Qr.scanFile(file, false);
       try {
         await html5Qr.clear();
@@ -96,7 +95,7 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
       handleScannedData(decodedText);
     } catch (err) {
       console.error("QR File parse error", err);
-      setErrorMsg("Không đọc được mã QR trong tệp ảnh. Vui lòng chọn ảnh chứa mã QR rõ nét hơn.");
+      setErrorMsg("Could not detect QR code in image. Please choose a clearer QR code image.");
     }
   };
 
@@ -127,8 +126,8 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
               <QrCode className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-base">Quét Mã QR Lô Hàng</h3>
-              <p className="text-xs text-red-100">Quét camera hoặc tải ảnh QR để tìm lô hàng thu hồi</p>
+              <h3 className="font-bold text-base">Scan Batch QR Code</h3>
+              <p className="text-xs text-red-100">Scan camera or upload QR image to locate batch</p>
             </div>
           </div>
           <button
@@ -152,7 +151,7 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            <Camera className="w-4 h-4" /> Quét Trực Tiếp (Camera)
+            <Camera className="w-4 h-4" /> Live Camera Scan
           </button>
           <button
             onClick={() => {
@@ -165,18 +164,14 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            <Upload className="w-4 h-4" /> Tải Ảnh QR lên
+            <Upload className="w-4 h-4" /> Upload QR Image
           </button>
         </div>
 
         {/* Scanner View Area */}
         <div className="p-6 flex-1 flex flex-col items-center justify-center min-h-[300px] bg-gray-950/5 relative">
-          {/* Container wrapper for camera scanner */}
           <div className={`relative w-full max-w-xs h-[260px] rounded-2xl overflow-hidden shadow-inner bg-black flex items-center justify-center border-2 border-red-500/30 ${activeTab === "camera" ? "block" : "hidden"}`}>
-            {/* Pure DOM node for camera feed - ZERO React child nodes inside */}
             <div id="camera-qr-reader-container" className="w-full h-full" />
-
-            {/* Sibling React overlay for scanner viewfinder line */}
             {!scannedResult && scanning && (
               <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
                 <div className="w-48 h-48 border-2 border-dashed border-red-500 rounded-xl animate-pulse flex items-center justify-center">
@@ -186,7 +181,6 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
             )}
           </div>
 
-          {/* File Upload Reader Area */}
           {activeTab === "file" && (
             <div className="w-full max-w-xs text-center flex flex-col items-center">
               <input
@@ -200,23 +194,22 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
                 <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center">
                   <Upload className="w-6 h-6" />
                 </div>
-                <div className="text-xs text-gray-500">Hỗ trợ các định dạng PNG, JPG, JPEG chứa mã QR</div>
+                <div className="text-xs text-gray-500">Supports PNG, JPG, JPEG formats containing QR code</div>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-sm transition-all"
                 >
-                  <Upload className="w-4 h-4" /> Chọn tệp hình ảnh
+                  <Upload className="w-4 h-4" /> Select Image File
                 </button>
               </div>
             </div>
           )}
 
-          {/* Success Scan Result Overlay */}
           {scannedResult && (
             <div className="mt-4 p-4 rounded-xl bg-green-50 border border-green-200 text-green-900 text-sm w-full max-w-xs space-y-2">
               <div className="flex items-center gap-2 font-bold text-green-800">
-                <CheckCircle2 className="w-5 h-5 text-green-600" /> Đã nhận diện thành công:
+                <CheckCircle2 className="w-5 h-5 text-green-600" /> Scanned Successfully:
               </div>
               <div className="font-mono bg-white p-2.5 rounded-lg border border-green-200 text-xs break-all select-all text-gray-800 font-semibold">
                 {scannedResult}
@@ -224,7 +217,6 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
             </div>
           )}
 
-          {/* Error Message */}
           {errorMsg && (
             <div className="mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2 w-full max-w-xs">
               <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
@@ -239,7 +231,7 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
             onClick={onClose}
             className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            Hủy bỏ
+            Cancel
           </button>
           {scannedResult ? (
             <button
@@ -247,7 +239,7 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all shadow-md hover:opacity-90 flex items-center justify-center gap-2"
               style={{ background: "linear-gradient(135deg, #2E7D32 0%, #388E3C 100%)" }}
             >
-              <CheckCircle2 className="w-4 h-4" /> Sử dụng mã này
+              <CheckCircle2 className="w-4 h-4" /> Use Scanned Code
             </button>
           ) : (
             <button
@@ -259,7 +251,7 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
               }}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
             >
-              <Camera className="w-4 h-4" /> Quét lại
+              <Camera className="w-4 h-4" /> Rescan
             </button>
           )}
         </div>

@@ -554,18 +554,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   </button>
                 </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                  Organization
-                </label>
-                <input
-                  value={form.organization}
-                  onChange={(e) => setForm({ ...form, organization: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                  style={{ background: "#F8FAF8" }}
-                  placeholder="Organization name"
-                />
-              </div>
+
               {/* ADMIN: Organization + Role */}
               {isAdmin ? (
                 <>

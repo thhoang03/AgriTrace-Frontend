@@ -3,21 +3,21 @@ import type { UserRole, OrganizationType, EventType } from "./auth.types";
 export const ROLE_ACCESS: Record<UserRole, string[]> = {
   ADMIN: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
-    "/app/supply-chain", "/app/inspection", "/app/recall",
+    "/app/supply-chain", "/app/event-requests", "/app/inspection", "/app/recall",
     "/app/reports", "/app/organizations", "/app/categories",
     "/app/users", "/app/products", "/app/profile",
     "/app/analytics", "/app/notifications",
   ],
   MANAGER: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
-    "/app/supply-chain", "/app/recall",
+    "/app/supply-chain", "/app/event-requests", "/app/recall",
     "/app/reports", "/app/categories",
     "/app/users", "/app/products", "/app/profile",
     "/app/analytics", "/app/notifications",
   ],
   STAFF: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
-    "/app/supply-chain", "/app/profile",
+    "/app/supply-chain", "/app/event-requests", "/app/profile",
     "/app/notifications",
   ],
 };
@@ -53,13 +53,30 @@ export function canAccessRoute(
 
 export function canCreateEvent(
   orgType: OrganizationType | undefined,
-  eventType: EventType
+  eventType: EventType,
+  role?: UserRole,
+  extraAllowedEvents?: EventType[]
 ): boolean {
+  if (role === "ADMIN") return true;
   if (!orgType) return false;
-  return (ORG_EVENT_PERMISSIONS[orgType] || []).includes(eventType);
+  const baseAllowed = ORG_EVENT_PERMISSIONS[orgType] || [];
+  const extraAllowed = extraAllowedEvents || [];
+  return baseAllowed.includes(eventType) || extraAllowed.includes(eventType);
 }
 
-export function getAllowedEventTypes(orgType: OrganizationType | undefined): EventType[] {
+export function getAllowedEventTypes(
+  orgType: OrganizationType | undefined,
+  role?: UserRole,
+  extraAllowedEvents?: EventType[]
+): EventType[] {
+  if (role === "ADMIN") {
+    return [
+      "HARVEST", "RECEIVE", "PROCESSING", "PACKAGING", "TRANSPORT",
+      "DISTRIBUTION", "RETAIL", "INSPECTION", "RECALL", "SPLIT", "MERGE"
+    ];
+  }
   if (!orgType) return [];
-  return ORG_EVENT_PERMISSIONS[orgType] || [];
+  const baseAllowed = ORG_EVENT_PERMISSIONS[orgType] || [];
+  const extraAllowed = extraAllowedEvents || [];
+  return Array.from(new Set([...baseAllowed, ...extraAllowed]));
 }

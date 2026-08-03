@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
-  Plus, Hash, CheckCircle, MapPin, Thermometer, Droplets, ChevronDown, ChevronUp, X, AlertCircle, Search, Clock, LocateFixed, FileText,
+  Plus, Hash, CheckCircle, MapPin, Thermometer, Droplets, ChevronDown, ChevronUp, X, AlertCircle, Search, Clock, LocateFixed, FileText, Globe,
 } from "lucide-react";
 import { useEvents, useCreateEvent, useEventTypes, useRecentBatches } from "./supply-chain.queries";
 import type { CreateEventRequest, SupplyChainEvent } from "./supply-chain.api";
@@ -10,6 +10,8 @@ import { useAuth } from "../auth/auth.store";
 import { canCreateEvent, getAllowedEventTypes } from "../auth/permissions";
 import type { EventType } from "../auth/permissions";
 import { QrScannerButton } from "./QrScannerButton";
+import { fetchDeviceLocation } from "../../utils/locationUtils";
+import { MapPickerModal } from "../../components/common/MapPickerModal";
 
 
 
@@ -57,8 +59,9 @@ export function SupplyChainPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showForm, setShowForm] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
   const orgType = user?.organizationType;
-  const allowedEventTypes = getAllowedEventTypes(orgType);
+  const allowedEventTypes = getAllowedEventTypes(orgType, user?.role);
   const [form, setForm] = useState(getInitialForm(allowedEventTypes));
   const [error, setError] = useState("");
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
@@ -149,24 +152,16 @@ export function SupplyChainPage() {
     setForm({ ...form, batchId: scanned });
   };
 
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser");
-      return;
-    }
+  const handleGetLocation = async () => {
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setForm({ ...form, location: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}` });
-        setLocating(false);
-      },
-      () => {
-        setError("Unable to retrieve location. Please enter manually.");
-        setLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+    try {
+      const res = await fetchDeviceLocation();
+      setForm((prev) => ({ ...prev, location: res.locationString }));
+    } catch (err: any) {
+      setError(err.message || "Unable to retrieve device location.");
+    } finally {
+      setLocating(false);
+    }
   };
 
   const getEventConfig = (type: string) => ALL_EVENT_TYPES.find((e) => e.value === type) || { emoji: "📋", label: type, color: "#666" };
@@ -479,76 +474,184 @@ export function SupplyChainPage() {
 
       {/* Add Event Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
-              <h3 className="font-bold text-gray-900">Add Supply Chain Event</h3>
-              <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-gray-100"><X className="w-4 h-4 text-gray-500" /></button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl border border-gray-100" style={{ boxShadow: "0 25px 70px rgba(0,0,0,0.25)" }}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-emerald-800 via-green-800 to-green-700 text-white relative">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-white shrink-0 shadow-inner">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg leading-snug tracking-tight">Add Supply Chain Event</h3>
+                  <p className="text-xs text-green-100 opacity-90">Record verified trace event to the immutable ledger</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowForm(false)}
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              {/* Event type selector */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Event Type Selector */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Event Type</label>
-                <div className="flex flex-wrap gap-2">
-                  {eventTypes.map(({ value, label, emoji, color }) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setForm({ ...form, eventType: value })}
-                      className="px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-1.5"
-                      style={form.eventType === value ? { background: color, color: "#fff" } : { background: "#F5F5F5", color: "#555" }}
-                    >
-                      {emoji} {label}
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between mb-2.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Select Event Type
+                  </label>
+                  {form.eventType && (
+                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3" /> Selected: {form.eventType}
+                    </span>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {eventTypes.map(({ value, label, emoji, color }) => {
+                    const isSelected = form.eventType === value;
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setForm({ ...form, eventType: value })}
+                        className={`px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-200 flex items-center justify-start gap-2 border text-left ${
+                          isSelected
+                            ? "bg-emerald-700 text-white border-emerald-800 shadow-md shadow-emerald-700/20 scale-[1.02]"
+                            : "bg-gray-50/80 hover:bg-emerald-50/50 text-gray-700 border-gray-200/80 hover:border-emerald-300"
+                        }`}
+                      >
+                        <span className="text-base shrink-0">{emoji}</span>
+                        <span className="truncate">{label}</span>
+                      </button>
+                    );
+                  })}
                 </div>
                 {!canSubmit && (
-                  <p className="text-xs text-red-500 mt-2">Your organization is not allowed to create this event type</p>
+                  <p className="text-xs text-rose-500 mt-2 font-medium flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" /> Your organization is not authorized to create this event type
+                  </p>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Input Fields Section Card */}
+              <div className="bg-gradient-to-b from-gray-50/90 to-slate-50/50 p-4 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
+                {/* Row 1: Batch ID */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">Batch ID <span className="text-red-400">*</span></label>
-                  <div className="flex gap-2">
-                    <input
-                      value={form.batchId}
-                      onChange={(e) => setForm({ ...form, batchId: e.target.value })}
-                      className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400"
-                      style={{ background: "#F8FAF8" }}
-                      placeholder="Enter or scan batch ID"
+                  <div className="flex items-center justify-between mb-2 min-h-[28px]">
+                    <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <Hash className="w-3.5 h-3.5 text-emerald-600" />
+                      Batch ID
+                    </label>
+                    <QrScannerButton
+                      onScan={handleQrScanModal}
+                      className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-200 transition-colors flex items-center gap-1 shadow-xs"
                     />
-                    <QrScannerButton onScan={handleQrScanModal} />
                   </div>
+                  <input
+                    value={form.batchId}
+                    onChange={(e) => setForm({ ...form, batchId: e.target.value })}
+                    className="w-full h-10 px-3.5 rounded-xl border border-gray-200 text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all"
+                    placeholder="e.g. BATCH-2026-001 or scan QR..."
+                  />
                 </div>
+
+                {/* Row 2: Location */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block"><MapPin className="w-3.5 h-3.5 inline mr-1" />Location <span className="text-red-400">*</span></label>
-                  <div className="flex gap-2">
-                    <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="Address or location" />
-                    <button type="button" onClick={handleGetLocation} disabled={locating} className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:border-green-400 transition-colors disabled:opacity-50" title="Lấy vị trí hiện tại">
-                      <LocateFixed className={`w-4 h-4 ${locating ? "animate-spin" : ""}`} />
-                    </button>
+                  <div className="flex items-center justify-between mb-2 min-h-[28px]">
+                    <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                      Location
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={handleGetLocation}
+                        disabled={locating}
+                        className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-200 transition-colors flex items-center gap-1 shadow-xs"
+                        title="Get Current Computer / Device GPS Location"
+                      >
+                        <LocateFixed className={`w-3 h-3 ${locating ? "animate-spin" : ""}`} />
+                        {locating ? "Locating..." : "Device (GPS)"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowMapPicker(true)}
+                        className="text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-200 transition-colors flex items-center gap-1 shadow-xs"
+                        title="Select Location from Interactive Map"
+                      >
+                        <MapPin className="w-3 h-3 text-blue-600" /> Map Picker
+                      </button>
+                    </div>
                   </div>
+                  <input
+                    value={form.location}
+                    onChange={(e) => setForm({ ...form, location: e.target.value })}
+                    className="w-full h-10 px-3.5 rounded-xl border border-gray-200 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all"
+                    placeholder="e.g. Warehouse A, Da Lat or select on map..."
+                  />
                 </div>
-                <div className="md:col-span-2">
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">Description <span className="text-red-400">*</span></label>
-                  <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-none focus:border-green-400" style={{ background: "#F8FAF8" }} placeholder="Describe what happened at this stage..." />
+
+                {/* Description Textarea */}
+                <div>
+                  <label className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 block flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-emerald-600" />
+                    Description / Activity Notes
+                  </label>
+                  <textarea
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs outline-none resize-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all"
+                    placeholder="Describe what occurred at this supply chain stage (e.g. Harvested 500kg organic apples at Farm A)..."
+                  />
                 </div>
               </div>
 
-              {error && <p className="text-sm text-red-500 flex items-center gap-1"><AlertCircle className="w-4 h-4" />{error}</p>}
+              {error && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
 
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button type="submit" disabled={createEventMutation.isPending || !canSubmit || eventTypesLoading} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2" style={{ background: "#2E7D32" }}>
-                  {createEventMutation.isPending ? "Saving..." : <><Hash className="w-4 h-4" /> Save to Blockchain</>}
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createEventMutation.isPending || !canSubmit || eventTypesLoading}
+                  className="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-700 to-green-700 hover:from-emerald-800 hover:to-green-800 shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {createEventMutation.isPending ? (
+                    "Saving to Ledger..."
+                  ) : (
+                    <>
+                      <Hash className="w-4 h-4" /> Save to Blockchain
+                    </>
+                  )}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* Interactive Map Picker Modal */}
+      <MapPickerModal
+        isOpen={showMapPicker}
+        onClose={() => setShowMapPicker(false)}
+        onSelectLocation={(selectedLoc) => setForm((prev) => ({ ...prev, location: selectedLoc }))}
+        initialLocation={form.location}
+      />
     </div>
   );
 }

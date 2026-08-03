@@ -22,6 +22,7 @@ import { RegisterPage } from "../features/auth/RegisterPage";
 import { AnalyticsPage } from "../features/analytics/AnalyticsPage";
 import { PublicLineagePage } from "../pages/PublicLineagePage";
 import { NotificationsPage } from "../features/notifications/NotificationsPage";
+import { EventRequestsPage } from "../features/event-requests/EventRequestsPage";
 
 export const router = createBrowserRouter([
   { path: "/", Component: HomePage },
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
       { path: "batches/new", Component: BatchCreatePage },
       { path: "batches/:id", Component: BatchDetailPage },
       { path: "supply-chain", Component: SupplyChainPage },
+      { path: "event-requests", Component: EventRequestsPage },
       { path: "inspection", Component: InspectionPage },
       { path: "recall", Component: RecallPage },
       { path: "reports", Component: ReportsPage },
