@@ -28,6 +28,7 @@ export interface ApiCreateUserRequest {
   password: string;
   phone?: string;
   role: string;
+  organizationId?: string;
   organization?: string;
 }
 
@@ -63,6 +64,7 @@ function adaptUserListItem(item: any): UserItem {
 
 function adaptCreateUserRequest(legacy: ApiCreateUserRequest): NewCreateUserRequest {
   return {
+    organizationId: legacy.organizationId,
     fullName: legacy.fullName,
     email: legacy.email,
     password: legacy.password,

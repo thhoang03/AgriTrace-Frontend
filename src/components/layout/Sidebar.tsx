@@ -17,6 +17,7 @@ import {
   Building2,
   Tags,
   Bell,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "../../features/auth/auth.store";
 import { canAccessRoute } from "../../features/auth/permissions";
@@ -25,6 +26,7 @@ const navItems = [
   { to: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/app/batches", icon: Package, label: "Batch Management" },
   { to: "/app/supply-chain", icon: Truck, label: "Supply Chain" },
+  { to: "/app/event-requests", icon: Clock, label: "Event Requests" },
   { to: "/app/inspection", icon: FlaskConical, label: "Quality Inspection" },
   { to: "/app/recall", icon: AlertTriangle, label: "Recall Management" },
   { to: "/app/reports", icon: BarChart3, label: "Reports" },

@@ -24,18 +24,20 @@ const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
   FARM: { bg: "#E8F5E9", color: "#1B5E20" },
   PROCESSOR: { bg: "#E3F2FD", color: "#1565C0" },
   DISTRIBUTOR: { bg: "#F3E5F5", color: "#6A1B9A" },
-  RETAILER: { bg: "#E0F2F1", color: "#004D40" },
-  INSPECTION: { bg: "#FFF9C4", color: "#F57F17" },
+  RETAILER:    { bg: "#E0F2F1", color: "#004D40" },
+  INSPECTION:  { bg: "#FFF9C4", color: "#F57F17" },
+  SYSTEM:      { bg: "#EDE7F6", color: "#4A148C" },
 };
 
-const ORG_TYPES = [
-  "FARM",
-  "PROCESSOR",
-  "DISTRIBUTOR",
-  "RETAILER",
-  "INSPECTION",
+const ORG_TYPES = ["FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"];
+const ORG_TYPE_OPTIONS = [
+  { code: "FARM", name: "Farm", id: "10000000-0000-0000-0000-000000000001" },
+  { code: "PROCESSOR", name: "Processor", id: "10000000-0000-0000-0000-000000000002" },
+  { code: "DISTRIBUTOR", name: "Distributor", id: "10000000-0000-0000-0000-000000000003" },
+  { code: "RETAILER", name: "Retailer", id: "10000000-0000-0000-0000-000000000004" },
+  { code: "INSPECTION", name: "Inspection", id: "10000000-0000-0000-0000-000000000005" },
 ];
-const EMPTY_FORM = { name: "", organizationTypeId: "", address: "" };
+const EMPTY_FORM = { name: "", organizationTypeId: "10000000-0000-0000-0000-000000000001", type: "FARM", address: "" };
 
 interface Alert {
   type: "success" | "error";
@@ -99,9 +101,17 @@ export function OrganizationsPage() {
   };
   const openEdit = (org: Organization) => {
     setEditing(org);
+<<<<<<< HEAD
     setForm({
       name: org.name,
       organizationTypeId: org.organizationTypeId ?? "",
+=======
+    const matched = ORG_TYPE_OPTIONS.find(t => t.code.toUpperCase() === org.type?.toUpperCase());
+    setForm({
+      name: org.name,
+      organizationTypeId: matched?.id || "10000000-0000-0000-0000-000000000001",
+      type: org.type || "FARM",
+>>>>>>> e0c806f (feat: implement Event Requests UI and Location Picker)
       address: org.address,
     });
     setError("");
@@ -123,6 +133,7 @@ export function OrganizationsPage() {
       orgTypes.find((t) => t.id === form.organizationTypeId)?.code ?? "";
     try {
       if (editing) {
+<<<<<<< HEAD
         await organizationsApi.update(editing.organizationId, form);
         setOrgs((prev) =>
           prev.map((o) =>
@@ -143,6 +154,23 @@ export function OrganizationsPage() {
           },
         ]);
         showAlert("success", ` "${form.name}" added successfully`);
+=======
+        await organizationsApi.update(editing.organizationId, {
+          name: form.name,
+          organizationTypeId: form.organizationTypeId,
+          address: form.address,
+        });
+        setOrgs((prev) => prev.map((o) => o.organizationId === editing.organizationId ? { ...o, name: form.name, type: form.type, address: form.address } : o));
+        showAlert("success", `"${form.name}" updated successfully`);
+      } else {
+        const res = await organizationsApi.create({
+          name: form.name,
+          organizationTypeId: form.organizationTypeId,
+          address: form.address,
+        });
+        setOrgs((prev) => [...prev, { organizationId: res.data.organizationId, status: "ACTIVE", name: form.name, type: form.type, address: form.address }]);
+        showAlert("success", `"${form.name}" added successfully`);
+>>>>>>> e0c806f (feat: implement Event Requests UI and Location Picker)
       }
       setShowModal(false);
     } catch (e: any) {
@@ -399,9 +427,13 @@ export function OrganizationsPage() {
                           </span>
                         </td>
                         <td className="px-5 py-4">
+<<<<<<< HEAD
                           <span className="text-sm text-gray-700">
                             {org.address}
                           </span>
+=======
+                          <span className="text-sm text-gray-700">{org.address || "—"}</span>
+>>>>>>> e0c806f (feat: implement Event Requests UI and Location Picker)
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2">
@@ -498,6 +530,7 @@ export function OrganizationsPage() {
                 />
               </div>
               <div>
+<<<<<<< HEAD
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">
                   Type
                 </label>
@@ -512,6 +545,20 @@ export function OrganizationsPage() {
                   {orgTypes.map((t) => (
                     <option key={t.id} value={t.id}>
                       {t.name}
+=======
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">Type</label>
+                <select
+                  value={form.organizationTypeId}
+                  onChange={(e) => {
+                    const matched = ORG_TYPE_OPTIONS.find(t => t.id === e.target.value);
+                    setForm({ ...form, organizationTypeId: e.target.value, type: matched?.code || "FARM" });
+                  }}
+                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white focus:border-green-400"
+                >
+                  {ORG_TYPE_OPTIONS.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.code}
+>>>>>>> e0c806f (feat: implement Event Requests UI and Location Picker)
                     </option>
                   ))}
                 </select>

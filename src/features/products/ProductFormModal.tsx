@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { useCategoriesList } from "../categories/categories.queries";
 import { useCreateProduct, useUpdateProduct } from "./products.queries";
+import { useAuth } from "../auth/auth.store";
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -16,10 +17,11 @@ interface ProductFormModalProps {
 }
 
 export function ProductFormModal({ isOpen, onClose, productId, initialData }: ProductFormModalProps) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     categoryId: "",
-    unit: "kg",
+    unit: "40000000-0000-0000-0000-000000000001",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -35,13 +37,13 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
       setFormData({
         name: initialData.name || "",
         categoryId: initialData.categoryId || (categories.length > 0 ? String(categories[0].id) : ""),
-        unit: initialData.unit || "kg",
+        unit: initialData.unit || "40000000-0000-0000-0000-000000000001",
       });
     } else {
       setFormData({
         name: "",
         categoryId: categories.length > 0 ? String(categories[0].id) : "",
-        unit: "kg",
+        unit: "40000000-0000-0000-0000-000000000001",
       });
     }
   }, [initialData, isOpen, categoriesData]);
@@ -65,27 +67,35 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
     if (!validate()) return;
 
     try {
+      const orgId = initialData?.organizationId || (user as any)?.organizationId || (user as any)?.orgId || undefined;
       if (isEdit && productId) {
         await updateProduct.mutateAsync({
           id: productId,
           data: {
             name: formData.name,
             categoryId: formData.categoryId || undefined,
+            unitId: formData.unit,
             unit: formData.unit,
+            organizationId: orgId,
           },
         });
       } else {
         await createProduct.mutateAsync({
           name: formData.name,
           categoryId: formData.categoryId || undefined,
+          unitId: formData.unit,
           unit: formData.unit,
+          organizationId: orgId,
         });
       }
       onClose();
     } catch (error: any) {
       console.error("Error saving product:", error);
       const errData = error?.response?.data;
-      const errMsg = errData?.detail || errData?.data || errData?.message || error?.message || "Failed to save product";
+      const errorList = Array.isArray(errData?.errorMessages) && errData.errorMessages.length > 0
+        ? errData.errorMessages.join(", ")
+        : null;
+      const errMsg = errorList || errData?.detail || errData?.data || errData?.message || error?.message || "Failed to save product";
       setErrors({ submit: errMsg });
     }
   };
@@ -156,13 +166,12 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
               onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100"
             >
-              <option value="kg">kg (Kilogram)</option>
-              <option value="ton">ton (Metric Ton)</option>
-              <option value="box">box</option>
-              <option value="bag">bag</option>
-              <option value="crate">crate</option>
-              <option value="pack">pack</option>
-              <option value="liter">liter</option>
+              <option value="40000000-0000-0000-0000-000000000001">kg (Kilogram)</option>
+              <option value="40000000-0000-0000-0000-000000000008">ton (Metric Ton)</option>
+              <option value="40000000-0000-0000-0000-000000000005">box (Box)</option>
+              <option value="40000000-0000-0000-0000-000000000009">sack (Sack)</option>
+              <option value="40000000-0000-0000-0000-000000000007">bag / pack (Piece)</option>
+              <option value="40000000-0000-0000-0000-000000000003">liter (Liter)</option>
             </select>
             {errors.unit && <p className="text-xs text-red-500 mt-1">{errors.unit}</p>}
           </div>

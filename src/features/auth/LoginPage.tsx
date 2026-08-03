@@ -54,7 +54,7 @@ export function LoginPage() {
       <div className="hidden lg:flex flex-col flex-1 relative overflow-hidden">
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${BG_IMG})` }} />
         <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(27,94,32,0.92) 0%, rgba(46,125,50,0.85) 100%)" }} />
-        
+
         <div className="relative z-10 flex flex-col h-full p-12 justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
             <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-white/15 backdrop-blur shadow-sm">
@@ -193,6 +193,7 @@ export function LoginPage() {
         </div>
 
         {/* Quick Demo Accounts Fill Box */}
+        {/*
         <div className="mt-4 p-4 rounded-2xl bg-green-50/60 border border-green-100 space-y-3">
           <div className="flex items-center gap-1.5 text-xs font-bold text-green-900">
             <Sparkles className="w-4 h-4 text-amber-500" />
@@ -213,6 +214,7 @@ export function LoginPage() {
             ))}
           </div>
         </div>
+        */}
 
         <p className="text-center text-xs text-gray-400 mt-6">
           © 2026 Ministry of Agriculture and Rural Development · Vietnam
