@@ -101,9 +101,6 @@ export const organizationsApi = {
     if (data.address !== undefined) newRequest.address = data.address;
     return put<void>(`/organizations/${id}`, newRequest);
   },
-    if (data.address !== undefined) newRequest.address = data.address;
-    return put<void>(`/organizations/${id}`, newRequest);
-  },
 
   updateStatus: async (id: number | string, data: { status: string }) => {
     return patch<void>(`/organizations/${id}/status`, {

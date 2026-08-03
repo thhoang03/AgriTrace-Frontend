@@ -101,17 +101,11 @@ export function OrganizationsPage() {
   };
   const openEdit = (org: Organization) => {
     setEditing(org);
-<<<<<<< HEAD
-    setForm({
-      name: org.name,
-      organizationTypeId: org.organizationTypeId ?? "",
-=======
     const matched = ORG_TYPE_OPTIONS.find(t => t.code.toUpperCase() === org.type?.toUpperCase());
     setForm({
       name: org.name,
-      organizationTypeId: matched?.id || "10000000-0000-0000-0000-000000000001",
+      organizationTypeId: matched?.id || org.organizationTypeId || "10000000-0000-0000-0000-000000000001",
       type: org.type || "FARM",
->>>>>>> e0c806f (feat: implement Event Requests UI and Location Picker)
       address: org.address,
     });
     setError("");
@@ -133,28 +127,6 @@ export function OrganizationsPage() {
       orgTypes.find((t) => t.id === form.organizationTypeId)?.code ?? "";
     try {
       if (editing) {
-<<<<<<< HEAD
-        await organizationsApi.update(editing.organizationId, form);
-        setOrgs((prev) =>
-          prev.map((o) =>
-            o.organizationId === editing.organizationId
-              ? { ...o, ...form, type: selectedTypeCode || o.type }
-              : o,
-          ),
-        );
-        showAlert("success", ` "${form.name}" updated successfully`);
-      } else {
-        const res = await organizationsApi.create(form);
-        setOrgs((prev) => [
-          ...prev,
-          {
-            organizationId: res.data.organizationId,
-            status: "ACTIVE",
-            ...form,
-          },
-        ]);
-        showAlert("success", ` "${form.name}" added successfully`);
-=======
         await organizationsApi.update(editing.organizationId, {
           name: form.name,
           organizationTypeId: form.organizationTypeId,
@@ -170,7 +142,6 @@ export function OrganizationsPage() {
         });
         setOrgs((prev) => [...prev, { organizationId: res.data.organizationId, status: "ACTIVE", name: form.name, type: form.type, address: form.address }]);
         showAlert("success", `"${form.name}" added successfully`);
->>>>>>> e0c806f (feat: implement Event Requests UI and Location Picker)
       }
       setShowModal(false);
     } catch (e: any) {
@@ -427,13 +398,7 @@ export function OrganizationsPage() {
                           </span>
                         </td>
                         <td className="px-5 py-4">
-<<<<<<< HEAD
-                          <span className="text-sm text-gray-700">
-                            {org.address}
-                          </span>
-=======
                           <span className="text-sm text-gray-700">{org.address || "—"}</span>
->>>>>>> e0c806f (feat: implement Event Requests UI and Location Picker)
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-2">
@@ -530,22 +495,6 @@ export function OrganizationsPage() {
                 />
               </div>
               <div>
-<<<<<<< HEAD
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                  Type
-                </label>
-                <select
-                  value={form.organizationTypeId}
-                  onChange={(e) =>
-                    setForm({ ...form, organizationTypeId: e.target.value })
-                  }
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white focus:border-green-400"
-                >
-                  {typesLoading && <option value="">Đang tải...</option>}
-                  {orgTypes.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
-=======
                 <label className="text-sm font-medium text-gray-700 mb-1.5 block">Type</label>
                 <select
                   value={form.organizationTypeId}
@@ -558,7 +507,6 @@ export function OrganizationsPage() {
                   {ORG_TYPE_OPTIONS.map((t) => (
                     <option key={t.id} value={t.id}>
                       {t.code}
->>>>>>> e0c806f (feat: implement Event Requests UI and Location Picker)
                     </option>
                   ))}
                 </select>
