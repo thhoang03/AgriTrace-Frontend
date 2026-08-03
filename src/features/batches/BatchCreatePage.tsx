@@ -1,14 +1,26 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   ArrowLeft, Save, Package, MapPin, User, Leaf,
-  Image as ImageIcon, AlertCircle, CheckCircle,
+  Image as ImageIcon, AlertCircle, CheckCircle, LocateFixed, Map,
 } from "lucide-react";
 import { useCreateBatch } from "./batches.queries";
 import type { CreateBatchRequest } from "./batches.types";
 import { useAuth } from "../auth/auth.store";
 import { useCategoriesList } from "../categories/categories.queries";
 import { useProductsList } from "../products/products.queries";
+import { lookupApi } from "../../lib/api/lookup";
+import { MapPickerModal } from "../../components/common/MapPickerModal";
+
+const DEFAULT_UNITS = [
+  { id: "10000000-0000-0000-0000-000000000001", code: "kg", name: "Kilogram (kg)" },
+  { id: "10000000-0000-0000-0000-000000000002", code: "ton", name: "Tấn (Ton)" },
+  { id: "10000000-0000-0000-0000-000000000003", code: "g", name: "Gram (g)" },
+  { id: "10000000-0000-0000-0000-000000000004", code: "box", name: "Thùng (Box)" },
+  { id: "10000000-0000-0000-0000-000000000005", code: "bag", name: "Bao / Túi (Bag)" },
+  { id: "10000000-0000-0000-0000-000000000006", code: "crate", name: "Sọt (Crate)" },
+  { id: "10000000-0000-0000-0000-000000000007", code: "liter", name: "Lít (Liter)" },
+];
 
 const initialForm: CreateBatchRequest = {
   product: "",
@@ -120,6 +132,60 @@ function ProductSelect({
   );
 }
 
+function UnitSelect({
+  value,
+  unitId,
+  onChange,
+  className,
+}: {
+  value: string;
+  unitId?: string;
+  onChange: (unitCode: string, unitId: string) => void;
+  className: string;
+}) {
+  const [units, setUnits] = useState<Array<{ id: string; code: string; name: string }>>(DEFAULT_UNITS);
+
+  useEffect(() => {
+    lookupApi
+      .getUnits()
+      .then((res) => {
+        if (res.data && res.data.length > 0) {
+          const mapped = res.data.map((u: any) => ({
+            id: u.value || u.id || u.code,
+            code: u.label || u.code || u.value,
+            name: `${u.label || u.code}`,
+          }));
+          setUnits(mapped);
+        }
+      })
+      .catch(() => {
+        // Fallback to DEFAULT_UNITS
+      });
+  }, []);
+
+  const currentValue = unitId || units.find((u) => u.code.toLowerCase() === value.toLowerCase())?.id || value || DEFAULT_UNITS[0].id;
+
+  return (
+    <select
+      value={currentValue}
+      onChange={(e) => {
+        const selectedId = e.target.value;
+        const matched = units.find((u) => u.id === selectedId || u.code === selectedId);
+        onChange(matched?.code || selectedId, matched?.id || selectedId);
+      }}
+      className={className}
+      style={{ appearance: "auto" }}
+    >
+      <option value="">-- Select unit --</option>
+      {units.map((u) => (
+        <option key={u.id} value={u.id}>
+          {u.name}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export function BatchCreatePage() {
   const navigate = useNavigate();
   const createBatch = useCreateBatch();
@@ -133,7 +199,48 @@ export function BatchCreatePage() {
   const [error, setError] = useState("");
   const [activeSection, setActiveSection] = useState<Section>("product");
   const [imageError, setImageError] = useState(false);
+  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  const handleMapSelect = (selectedLocationStr: string) => {
+    const coordMatch = selectedLocationStr.match(/\((-?\d+\.\d+),\s*(-?\d+\.\d+)\)/);
+    if (coordMatch) {
+      const lat = coordMatch[1];
+      const lng = coordMatch[2];
+      const addressOnly = selectedLocationStr.replace(/\s*\(-?\d+\.\d+,\s*-?\d+\.\d+\)/, "").trim();
+      setForm((curr) => ({
+        ...curr,
+        location: addressOnly || curr.location,
+        gps: `${lat}, ${lng}`,
+        gpsLocation: `${lat}, ${lng}`,
+        productionArea: addressOnly || curr.productionArea,
+      }));
+    } else {
+      setForm((curr) => ({
+        ...curr,
+        location: selectedLocationStr,
+      }));
+    }
+  };
+
+  const handleDetectGps = () => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(5);
+        const lng = pos.coords.longitude.toFixed(5);
+        setForm((curr) => ({
+          ...curr,
+          gps: `${lat}, ${lng}`,
+          gpsLocation: `${lat}, ${lng}`,
+        }));
+      },
+      (err) => {
+        console.warn("GPS detection error:", err);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   const isValid = useMemo(() => Boolean(
     form.product.trim() &&
@@ -367,8 +474,15 @@ export function BatchCreatePage() {
                     <input type="number" min={1} value={form.quantity || ""} onChange={(e) => handleChange("quantity", Number(e.target.value))} className={inputClass} placeholder="500" />
                   </label>
                   <label className="space-y-1.5">
-                    <FieldLabel>Unit</FieldLabel>
-                    <input value={form.unit} readOnly className={`${inputClass} bg-gray-50 cursor-not-allowed`} placeholder="kg" />
+                    <FieldLabel required>Unit</FieldLabel>
+                    <UnitSelect
+                      value={form.unit || "kg"}
+                      unitId={form.unitId}
+                      onChange={(unitCode, unitId) => {
+                        setForm((curr) => ({ ...curr, unit: unitCode, unitId: unitId }));
+                      }}
+                      className={inputClass}
+                    />
                   </label>
                   <label className="space-y-1.5">
                     <FieldLabel required>Weight</FieldLabel>
@@ -393,42 +507,77 @@ export function BatchCreatePage() {
                     <MapPin className="w-4 h-4" style={{ color: "#2E7D32" }} />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900">Location &amp; GPS</div>
-                    <div className="text-xs text-gray-400">Geographic origin and coordinates</div>
+                    <div className="font-semibold text-gray-900">Location &amp; GPS Mapping</div>
+                    <div className="text-xs text-gray-400">Geographic origin, farm address, and GPS coordinates</div>
                   </div>
                 </div>
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <label className="space-y-1.5">
-                    <FieldLabel required>Location</FieldLabel>
-                    <input value={form.location} onChange={(e) => handleChange("location", e.target.value)} className={inputClass} placeholder="Province or city" />
-                  </label>
-                  <label className="space-y-1.5">
-                    <FieldLabel>Production Area</FieldLabel>
-                    <input value={form.productionArea} onChange={(e) => handleChange("productionArea", e.target.value)} className={inputClass} placeholder="e.g. Bình Thuận Province" />
-                  </label>
-                  <div className="space-y-1.5">
-                    <FieldLabel required>GPS Coordinates</FieldLabel>
-                    <div className="flex gap-2">
-                      <input
-                        value={form.gps}
-                        onChange={(e) => handleChange("gps", e.target.value)}
-                        className={inputClass}
-                        placeholder="10.1234, 107.5678"
-                      />
+                <div className="p-6 space-y-4">
+                  {/* Location Mapping Action Bar */}
+                  <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">Interactive Location Mapping</span>
+                      <p className="text-xs text-emerald-600 mt-0.5">Pick location on 3rd-party interactive map or detect current device GPS</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
                       <button
                         type="button"
-                        onClick={openMaps}
-                        disabled={!form.gps}
-                        className="flex-shrink-0 px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors flex items-center gap-1.5"
+                        onClick={() => setIsMapPickerOpen(true)}
+                        className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5"
                       >
-                        <MapPin className="w-3.5 h-3.5" /> View
+                        <Map className="w-4 h-4" /> Pick on Map
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDetectGps}
+                        className="px-3.5 py-2 bg-white hover:bg-emerald-100 text-emerald-700 border border-emerald-300 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5"
+                      >
+                        <LocateFixed className="w-4 h-4" /> Use Device GPS
                       </button>
                     </div>
-                    {form.gps && (
-                      <div className="text-xs text-gray-400 flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3 text-green-500" /> Coordinates entered
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label className="space-y-1.5 md:col-span-2">
+                      <FieldLabel required>Location Address</FieldLabel>
+                      <div className="relative">
+                        <input
+                          value={form.location}
+                          onChange={(e) => handleChange("location", e.target.value)}
+                          className={inputClass}
+                          placeholder="e.g. Xã Đại Lộc, Huyện Hậu Lộc, Thanh Hóa"
+                        />
                       </div>
-                    )}
+                    </label>
+
+                    <label className="space-y-1.5">
+                      <FieldLabel>Production Area</FieldLabel>
+                      <input value={form.productionArea} onChange={(e) => handleChange("productionArea", e.target.value)} className={inputClass} placeholder="e.g. Bình Thuận Province" />
+                    </label>
+
+                    <div className="space-y-1.5">
+                      <FieldLabel required>GPS Coordinates (Lat, Lng)</FieldLabel>
+                      <div className="flex gap-2">
+                        <input
+                          value={form.gps}
+                          onChange={(e) => handleChange("gps", e.target.value)}
+                          className={inputClass}
+                          placeholder="11.9404, 108.4583"
+                        />
+                        <button
+                          type="button"
+                          onClick={openMaps}
+                          disabled={!form.gps}
+                          className="flex-shrink-0 px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors flex items-center gap-1.5"
+                        >
+                          <MapPin className="w-3.5 h-3.5" /> View Google Maps
+                        </button>
+                      </div>
+                      {form.gps && (
+                        <div className="text-xs text-gray-400 flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3 text-green-500" /> Coordinates entered ({form.gps})
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -466,6 +615,14 @@ export function BatchCreatePage() {
           </div>
         </div>
       </div>
+
+      {/* Map Picker Modal */}
+      <MapPickerModal
+        isOpen={isMapPickerOpen}
+        onClose={() => setIsMapPickerOpen(false)}
+        onSelectLocation={handleMapSelect}
+        initialLocation={form.location}
+      />
     </div>
   );
 }

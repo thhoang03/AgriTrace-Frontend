@@ -45,6 +45,11 @@ export function canAccessRoute(
     return role === "ADMIN" || organizationType === "INSPECTION";
   }
 
+  // Batch Management (/app/batches) is accessible ONLY by ADMIN or FARM (Farmer) organization type
+  if (path === "/app/batches" || path.startsWith("/app/batches/")) {
+    return role === "ADMIN" || organizationType === "FARM";
+  }
+
   const allowed = ROLE_ACCESS[role] || [];
   return allowed.some(
     (route) => path === route || path.startsWith(route + "/")
