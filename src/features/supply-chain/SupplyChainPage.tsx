@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
@@ -73,6 +73,17 @@ export function SupplyChainPage() {
   const createEventMutation = useCreateEvent(activeBatchId || form.batchId);
   const { data: eventTypesLookup = [], isLoading: eventTypesLoading } = useEventTypes();
   const { data: recentBatches = [] } = useRecentBatches();
+
+  useEffect(() => {
+    if (!activeBatchId && recentBatches.length > 0) {
+      const firstBatch = recentBatches[0];
+      const targetId = firstBatch?.id || firstBatch?.batchCode || "";
+      if (targetId) {
+        setActiveBatchId(targetId);
+        setSearchBatchId(targetId);
+      }
+    }
+  }, [recentBatches, activeBatchId]);
 
 
   const eventTypeGuidMap = new Map(
