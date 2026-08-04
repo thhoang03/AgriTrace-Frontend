@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Search, Plus, Eye, Edit2, Trash2, Power, RotateCcw,
+  Search, Plus, Eye, Edit2, Trash2, RotateCcw, ToggleLeft, ToggleRight,
   ChevronLeft, ChevronRight, X, SlidersHorizontal,
 } from "lucide-react";
 import { useProductsList, useDeleteProduct, useUpdateProductStatus } from "./products.queries";
 import { useCategoriesList } from "../categories/categories.queries";
+import { useOrganizationsList } from "../organizations/organizations.queries";
 import { ProductFormModal } from "./ProductFormModal";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1400&q=80";
 
@@ -16,23 +18,38 @@ export function ProductManagementPage() {
   const { lang } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "Inactive">("All");
+  const [organizationFilter, setOrganizationFilter] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
-  const perPage = 10;
+
+  const { sort, toggle } = useColumnSort();
 
   const deleteProduct = useDeleteProduct();
   const updateProductStatus = useUpdateProductStatus();
 
   const { data: productsData, isLoading, isError } = useProductsList({
     search: search || undefined,
+    organizationId: organizationFilter || undefined,
+    categoryId: categoryFilter || undefined,
     page,
     pageSize: perPage,
   });
 
   const { data: categoriesData } = useCategoriesList();
+  const { data: organizationsData } = useOrganizationsList({ pageSize: 100 });
+
+  const organizations = organizationsData?.data?.items || [];
+  const categories = categoriesData?.data?.items || [];
+
+  const activeFilterCount =
+    (statusFilter !== "All" ? 1 : 0) +
+    (organizationFilter ? 1 : 0) +
+    (categoryFilter ? 1 : 0);
 
   const products = productsData?.data?.items || [];
   const totalCount = productsData?.data?.totalCount || 0;
@@ -42,6 +59,22 @@ export function ProductManagementPage() {
     if (statusFilter === "All") return true;
     return statusFilter === "Active" ? p.isActive : !p.isActive;
   });
+
+  const productSortValue = (p: any, key: string): string | number | boolean => {
+    switch (key) {
+      case "id": return String(p.id || p.productId);
+      case "name": return p.name;
+      case "category": return p.categoryName;
+      case "organization": return p.organizationName;
+      case "unit": return p.unit;
+      case "status": return p.isActive;
+      default: return "";
+    }
+  };
+
+  const sortedProducts = sortRows(filteredProducts, sort, (p: any) =>
+    productSortValue(p, sort?.key ?? ""),
+  );
 
   const handleToggleStatus = async (product: any) => {
     const prodId = product.id || product.productId;
@@ -67,6 +100,14 @@ export function ProductManagementPage() {
     } catch (error) {
       console.error("Error deleting product:", error);
     }
+  };
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setStatusFilter("All");
+    setOrganizationFilter("");
+    setCategoryFilter("");
+    setPage(1);
   };
 
   return (
@@ -120,7 +161,7 @@ export function ProductManagementPage() {
             >
               <SlidersHorizontal className="w-4 h-4" />
               {lang === "vi" ? "Bộ Lọc" : "Filters"}
-              {statusFilter !== "All" && <span className="w-5 h-5 rounded-full text-xs flex items-center justify-center" style={{ background: showFilters ? "rgba(255,255,255,0.2)" : "#2E7D32", color: "white" }}>1</span>}
+              {activeFilterCount > 0 && <span className="w-5 h-5 rounded-full text-xs flex items-center justify-center" style={{ background: showFilters ? "rgba(255,255,255,0.2)" : "#2E7D32", color: "white" }}>{activeFilterCount}</span>}
             </button>
             <div className="ml-auto flex items-center gap-2">
               <button
@@ -135,8 +176,40 @@ export function ProductManagementPage() {
 
           {showFilters && (
             <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex items-center gap-4">
-                <div className="flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Organization</label>
+                  <select
+                    value={organizationFilter}
+                    onChange={(e) => { setOrganizationFilter(e.target.value); setPage(1); }}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                  >
+                    <option value="">All Organizations</option>
+                    {organizations.map((org: any) => {
+                      const orgId = String(org.id || org.organizationId || "");
+                      return (
+                        <option key={orgId} value={orgId}>{org.name}</option>
+                      );
+                    })}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Category</label>
+                  <select
+                    value={categoryFilter}
+                    onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                  >
+                    <option value="">All Categories</option>
+                    {categories.map((cat: any) => {
+                      const catId = String(cat.id || cat.categoryId || "");
+                      return (
+                        <option key={catId} value={catId}>{cat.name}</option>
+                      );
+                    })}
+                  </select>
+                </div>
+                <div>
                   <label className="text-xs font-medium text-gray-600 mb-1.5 block">{lang === "vi" ? "Trạng thái" : "Status"}</label>
                   <select
                     value={statusFilter}
@@ -147,6 +220,14 @@ export function ProductManagementPage() {
                     <option value="Active">{lang === "vi" ? "Hoạt động" : "Active"}</option>
                     <option value="Inactive">{lang === "vi" ? "Ngưng hoạt động" : "Inactive"}</option>
                   </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handleResetFilters}
+                    className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Reset Filters
+                  </button>
                 </div>
               </div>
             </div>
@@ -166,16 +247,17 @@ export function ProductManagementPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100">
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">{lang === "vi" ? "Tên Sản Phẩm" : "Name"}</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">{lang === "vi" ? "Danh Mục" : "Category"}</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">{lang === "vi" ? "Đơn Vị Tính" : "Unit"}</th>
-                      <th className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">{lang === "vi" ? "Trạng Thái" : "Status"}</th>
+                      <SortHeader label="ID" sortKey="id" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                      <SortHeader label={lang === "vi" ? "Tên Sản Phẩm" : "Name"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Danh Mục" : "Category"} sortKey="category" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Đơn Vị Tính" : "Unit"} sortKey="unit" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Trạng Thái" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
                       <th className="text-right px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredProducts.map((product: any) => {
+                    {sortedProducts.map((product: any) => {
                       const prodId = product.id || product.productId;
                       return (
                         <tr key={prodId} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
@@ -184,6 +266,7 @@ export function ProductManagementPage() {
                             <span className="text-sm font-semibold text-gray-900">{product.name}</span>
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600">{product.categoryName}</td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{product.organizationName || "—"}</td>
                           <td className="px-6 py-4 text-sm text-gray-600">{product.unit}</td>
                           <td className="px-6 py-4">
                             <span
@@ -219,7 +302,7 @@ export function ProductManagementPage() {
                                   className="p-2 rounded-lg hover:bg-red-50 transition-colors text-red-500 hover:text-red-700"
                                   title={lang === "vi" ? "Ngưng hoạt động" : "Deactivate"}
                                 >
-                                  <Power className="w-4 h-4" />
+                                  <ToggleRight className="w-4 h-4" />
                                 </button>
                               ) : (
                                 <button
@@ -227,7 +310,7 @@ export function ProductManagementPage() {
                                   className="p-2 rounded-lg hover:bg-green-50 transition-colors text-green-600 hover:text-green-800"
                                   title={lang === "vi" ? "Kích hoạt lại" : "Activate"}
                                 >
-                                  <Power className="w-4 h-4" />
+                                  <ToggleLeft className="w-4 h-4" />
                                 </button>
                               )}
                             </div>
@@ -239,34 +322,79 @@ export function ProductManagementPage() {
                 </table>
               </div>
 
-              {totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+              <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                   <div className="text-sm text-gray-500">
                     {lang === "vi"
                       ? `Hiển thị ${((page - 1) * perPage) + 1} đến ${Math.min(page * perPage, totalCount)} trong số ${totalCount} sản phẩm`
                       : `Showing ${((page - 1) * perPage) + 1} to ${Math.min(page * perPage, totalCount)} of ${totalCount} products`}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setPage(Math.max(1, page - 1))}
-                      disabled={page === 1}
-                      className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    <label className="text-xs text-gray-500">Rows/page</label>
+                    <select
+                      value={perPage}
+                      onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+                      className="px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none bg-white"
                     >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <span className="px-3 py-1 text-sm font-medium" style={{ background: "#2E7D32", color: "white", borderRadius: 6 }}>
-                      {page}
-                    </span>
-                    <button
-                      onClick={() => setPage(Math.min(totalPages, page + 1))}
-                      disabled={page === totalPages}
-                      className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
+                      {[5, 10, 20, 50].map((n) => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-              )}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Previous"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  {page > 1 && (
+                    <>
+                      <button
+                        onClick={() => setPage(1)}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                        style={page === 1 ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                      >
+                        1
+                      </button>
+                      {page > 2 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                    </>
+                  )}
+                  {[page - 1, page, page + 1].filter((p) => p > 1 && p < totalPages).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                      style={p === page ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  {page < totalPages && (
+                    <>
+                      {page < totalPages - 1 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                      <button
+                        onClick={() => setPage(totalPages)}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                        style={page === totalPages ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={() => setPage(Math.min(totalPages, page + 1))}
+                    disabled={page === totalPages}
+                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Next"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </>
           )}
         </div>

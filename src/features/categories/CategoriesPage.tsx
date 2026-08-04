@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, Edit2, Power, PowerOff, X, Tags, Filter, Eye, CheckCircle, AlertCircle, Layers } from "lucide-react";
+import { Search, Plus, Edit2, Power, PowerOff, X, Tags, Eye, CheckCircle, AlertCircle, Layers, RotateCcw, ChevronLeft, ChevronRight, SlidersHorizontal, ToggleLeft, ToggleRight } from "lucide-react";
 import {
   useCategoriesList,
   useCreateCategory,
@@ -9,27 +9,22 @@ import {
 import { useAuth } from "../auth/auth.store";
 import type { Category } from "./categories.types";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
 
 const EMPTY_FORM = { name: "", description: "" };
 
 interface Alert { type: "success" | "error"; message: string; }
-
-function normalizeText(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "d");
-}
 
 export function CategoriesPage() {
   const { user } = useAuth();
   const { lang } = useLanguage();
   const isAdmin = user?.role === "ADMIN";
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "Inactive">("All");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "name">("newest");
+  const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [detail, setDetail] = useState<Category | null>(null);
@@ -43,14 +38,20 @@ export function CategoriesPage() {
     { value: "name", label: "Name" },
   ] as const;
 
-  const { data, isLoading } = useCategoriesList(
-    search ? { search } : undefined,
-  );
+  const { data, isLoading } = useCategoriesList({
+    search: search || undefined,
+    status: statusFilter === "All" ? undefined : statusFilter,
+    page,
+    pageSize: perPage,
+  });
   const createMutation = useCreateCategory();
   const updateMutation = useUpdateCategory();
   const statusMutation = useUpdateCategoryStatus();
+  const { sort, toggle } = useColumnSort();
 
   const categories: Category[] = data?.data.items ?? [];
+  const totalCount = data?.data.totalCount ?? 0;
+  const totalPages = Math.ceil(totalCount / perPage);
 
   const showAlert = (type: Alert["type"], message: string) => {
     setAlert({ type, message });
@@ -60,21 +61,35 @@ export function CategoriesPage() {
   const getApiErrorMessage = (err: unknown) =>
     (err as any)?.response?.data?.message || (err as any)?.message || "An error occurred";
 
-  const filtered = categories.filter((c) => {
-    const matchSearch = !search || normalizeText(c.name).includes(normalizeText(search)) ||
-      normalizeText(c.description ?? "").includes(normalizeText(search));
-    const matchStatus = statusFilter === "All" ||
-      (statusFilter === "ACTIVE" && c.isActive) ||
-      (statusFilter === "INACTIVE" && !c.isActive);
-    return matchSearch && matchStatus;
-  });
+  const categorySortValue = (c: Category, key: string): string | number | boolean => {
+    switch (key) {
+      case "name": return c.name;
+      case "description": return c.description ?? "";
+      case "status": return c.isActive;
+      default: return "";
+    }
+  };
 
-  const displayed = [...filtered].sort((a, b) => {
-    if (sortBy === "name") return a.name.localeCompare(b.name);
-    const da = a.createdAt ? new Date(a.createdAt).getTime() : a.categoryId;
-    const db = b.createdAt ? new Date(b.createdAt).getTime() : b.categoryId;
-    return sortBy === "newest" ? db - da : da - db;
-  });
+  const displayed = sort
+    ? sortRows(categories, sort, (c) => categorySortValue(c, sort.key))
+    : [...categories].sort((a, b) => {
+        if (sortBy === "name") return a.name.localeCompare(b.name);
+        const da = a.createdAt ? new Date(a.createdAt).getTime() : a.categoryId;
+        const db = b.createdAt ? new Date(b.createdAt).getTime() : b.categoryId;
+        return sortBy === "newest" ? db - da : da - db;
+      });
+
+  const activeFilterCount =
+    (statusFilter !== "All" ? 1 : 0) +
+    (sortBy !== "newest" ? 1 : 0);
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setStatusFilter("All");
+    setSortBy("newest");
+    setPage(1);
+    setShowFilters(false);
+  };
 
   const missingDates = categories.some((c) => !c.createdAt);
 
@@ -164,7 +179,7 @@ export function CategoriesPage() {
               );
             })}
             <div className="text-center">
-              <div className="font-bold text-white" style={{ fontSize: 20 }}>{categories.length}</div>
+              <div className="font-bold text-white" style={{ fontSize: 20 }}>{totalCount}</div>
               <div className="text-green-200 text-xs">{lang === "vi" ? "TỔNG CỘNG" : "TOTAL"}</div>
             </div>
           </div>
@@ -177,29 +192,62 @@ export function CategoriesPage() {
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1 min-w-48 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={lang === "vi" ? "Tìm kiếm danh mục..." : "Search categories..."} className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none" style={{ background: "#F8FAF8" }} />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                placeholder={lang === "vi" ? "Tìm kiếm danh mục..." : "Search categories..."}
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
+                style={{ background: "#F8FAF8" }}
+              />
+              {search && (
+                <button onClick={() => { setSearch(""); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white">
-                <option value="All">{lang === "vi" ? "Tất cả trạng thái" : "All Status"}</option>
-                <option value="ACTIVE">{lang === "vi" ? "Hoạt động" : "ACTIVE"}</option>
-                <option value="INACTIVE">{lang === "vi" ? "Ngưng hoạt động" : "INACTIVE"}</option>
-              </select>
-            </div>
-            <div className="flex items-center gap-2">
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white">
-                <option value="newest">{lang === "vi" ? "Mới nhất" : "Newest"}</option>
-                <option value="oldest">{lang === "vi" ? "Cũ nhất" : "Oldest"}</option>
-                <option value="name">{lang === "vi" ? "Theo tên" : "Name"}</option>
-              </select>
-            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
+              style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              Filters
+              {activeFilterCount > 0 && <span className="w-5 h-5 rounded-full text-xs flex items-center justify-center" style={{ background: showFilters ? "rgba(255,255,255,0.2)" : "#2E7D32", color: "white" }}>{activeFilterCount}</span>}
+            </button>
             {isAdmin && (
               <button onClick={openAdd} className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity" style={{ background: "#2E7D32" }}>
                 <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Danh Mục" : "Add Category"}
               </button>
             )}
           </div>
+
+          {showFilters && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Status</label>
+                  <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value as "All" | "Active" | "Inactive"); setPage(1); }} className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white">
+                    {["All", "Active", "Inactive"].map((s) => <option key={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Sort By</label>
+                  <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white">
+                    {sortOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handleResetFilters}
+                    className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Reset Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Table */}
@@ -212,18 +260,15 @@ export function CategoriesPage() {
           {isLoading ? (
             <div className="flex items-center justify-center py-16 text-gray-400 text-sm">{lang === "vi" ? "Đang tải..." : "Loading..."}</div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr style={{ background: "#F8FAF8" }}>
-                    {[
-                      lang === "vi" ? "DANH MỤC" : "Category",
-                      lang === "vi" ? "MÔ TẢ" : "Description",
-                      lang === "vi" ? "TRẠNG THÁI" : "Status",
-                      lang === "vi" ? "THAO TÁC" : "Actions"
-                    ].map((h) => (
-                      <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
-                    ))}
+                    <SortHeader label={lang === "vi" ? "DANH MỤC" : "Category"} sortKey="name" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "MÔ TẢ" : "Description"} sortKey="description" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -252,7 +297,7 @@ export function CategoriesPage() {
                           </div>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center gap-1 transition-opacity">
                             <button onClick={() => setDetail(cat)} className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors" title="View Detail">
                               <Eye className="w-3.5 h-3.5" />
                             </button>
@@ -262,7 +307,7 @@ export function CategoriesPage() {
                                   <Edit2 className="w-3.5 h-3.5" />
                                 </button>
                                 <button onClick={() => handleToggleStatus(cat)} className={`p-1.5 rounded-lg transition-colors ${isActive ? "hover:bg-red-50 text-red-400" : "hover:bg-green-50 text-green-500"}`} title={isActive ? "Deactivate" : "Activate"}>
-                                  {isActive ? <PowerOff className="w-3.5 h-3.5" /> : <Power className="w-3.5 h-3.5" />}
+                                  {isActive ? <ToggleRight className="w-3.5 h-3.5" /> : <ToggleLeft className="w-3.5 h-3.5" />}
                                 </button>
                               </>
                             )}
@@ -280,6 +325,79 @@ export function CategoriesPage() {
                 </div>
               )}
             </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                <div className="text-sm text-gray-500">
+                  Showing {totalCount === 0 ? 0 : ((page - 1) * perPage) + 1} to {Math.min(page * perPage, totalCount)} of {totalCount} categories
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-gray-500">Rows/page</label>
+                  <select
+                    value={perPage}
+                    onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+                    className="px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                  >
+                    {[5, 10, 20, 50].map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page === 1}
+                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Previous"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {page > 1 && (
+                  <>
+                    <button
+                      onClick={() => setPage(1)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                      style={page === 1 ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                    >
+                      1
+                    </button>
+                    {page > 2 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                  </>
+                )}
+                {[page - 1, page, page + 1].filter((p) => p > 1 && p < totalPages).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                    style={p === page ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                  >
+                    {p}
+                  </button>
+                ))}
+                {page < totalPages && (
+                  <>
+                    {page < totalPages - 1 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                    <button
+                      onClick={() => setPage(totalPages)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                      style={page === totalPages ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                    >
+                      {totalPages}
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => setPage(Math.min(totalPages, page + 1))}
+                  disabled={page === totalPages}
+                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Next"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            </>
           )}
         </div>
       </div>
