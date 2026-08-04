@@ -29,6 +29,7 @@ function getOrganizationTypeId(code: string): string {
 function adaptOrgFromListItem(item: any): Organization {
   return {
     organizationId: item.organizationId ?? 0,
+    id: String(item.id ?? item.organizationId ?? ""),
     name: item.name ?? "",
     type: item.type ?? "",
     organizationTypeId: item.organizationTypeId ?? "",
@@ -40,6 +41,7 @@ function adaptOrgFromListItem(item: any): Organization {
 function adaptOrgFromDetail(item: any): Organization {
   return {
     organizationId: item.organizationId ?? 0,
+    id: String(item.id ?? item.organizationId ?? ""),
     name: item.name ?? "",
     type: item.type ?? "",
     organizationTypeId: item.organizationTypeId ?? "",
@@ -53,10 +55,14 @@ export const organizationsApi = {
     page?: number;
     pageSize?: number;
     search?: string;
+    status?: string;
+    organizationTypeId?: string;
   }) => {
     const response = await get<OrganizationPagedResponse>("/organizations", {
       params: {
         search: filters?.search,
+        status: filters?.status,
+        organizationTypeId: filters?.organizationTypeId,
         page: filters?.page,
         pageSize: filters?.pageSize,
       },

@@ -7,6 +7,7 @@ export const categoriesQueries = {
     search?: string;
     page?: number;
     pageSize?: number;
+    status?: string;
   }) => ({
     queryKey: ["categories", "list", params],
     queryFn: () => categoriesApi.getAll(params),
@@ -21,6 +22,7 @@ export const categoriesQueries = {
 
 export function useCategoriesList(params?: {
   search?: string;
+  status?: string;
   page?: number;
   pageSize?: number;
 }) {

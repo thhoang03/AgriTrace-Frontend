@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Search,
   Plus,
@@ -7,18 +7,23 @@ import {
   ToggleRight,
   X,
   Building2,
-  Filter,
   Eye,
   CheckCircle,
   AlertCircle,
   Users,
   Package,
   Mail,
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+  SlidersHorizontal,
 } from "lucide-react";
 import { organizationsApi } from "./organizations.api";
+import { useOrganizationsList } from "./organizations.queries";
 import { useAuth } from "../../features/auth/auth.store";
 import { useOrganizationTypes } from "../../features/organizationTypes/organizationType.queries";
 import type { Organization } from "./organizations.types";
+import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
 
 const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
   FARM: { bg: "#E8F5E9", color: "#1B5E20" },
@@ -49,11 +54,12 @@ export function OrganizationsPage() {
   const isManager = user?.role === "MANAGER";
   const { data: orgTypes = [], isLoading: typesLoading } =
     useOrganizationTypes();
-  const [orgs, setOrgs] = useState<Organization[]>([]);
-  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Organization | null>(null);
   const [detail, setDetail] = useState<Organization | null>(null);
@@ -65,33 +71,55 @@ export function OrganizationsPage() {
   const [error, setError] = useState("");
   const [alert, setAlert] = useState<Alert | null>(null);
 
+  const selectedTypeId =
+    typeFilter === "All"
+      ? undefined
+      : orgTypes.find((t) => t.code.toUpperCase() === typeFilter.toUpperCase())?.id;
+
+  const { data: orgData, isLoading, refetch } = useOrganizationsList({
+    search: search || undefined,
+    status: statusFilter === "All" ? undefined : statusFilter,
+    organizationTypeId: selectedTypeId,
+    page,
+    pageSize: perPage,
+  });
+
+  const orgs = orgData?.data?.items ?? [];
+  const totalCount = orgData?.data?.totalCount ?? 0;
+  const totalPages = Math.ceil(totalCount / perPage);
+
+  const { sort, toggle } = useColumnSort();
+
+  const organizationSortValue = (o: Organization, key: string): string | number | boolean => {
+    switch (key) {
+      case "name": return o.name;
+      case "type": return o.type;
+      case "address": return o.address ?? "";
+      case "status": return o.status;
+      default: return "";
+    }
+  };
+
+  const sortedOrgs = sortRows(orgs, sort, (o) =>
+    organizationSortValue(o, sort?.key ?? ""),
+  );
+
   const showAlert = (type: Alert["type"], message: string) => {
     setAlert({ type, message });
     setTimeout(() => setAlert(null), 3000);
   };
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const res = await organizationsApi.getAll();
-      setOrgs(res.data.items);
-    } finally {
-      setLoading(false);
-    }
+  const activeFilterCount =
+    (typeFilter !== "All" ? 1 : 0) +
+    (statusFilter !== "All" ? 1 : 0);
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setTypeFilter("All");
+    setStatusFilter("All");
+    setPage(1);
+    setShowFilters(false);
   };
-
-  useEffect(() => {
-    load();
-  }, []);
-
-  const filtered = orgs.filter((o) => {
-    const matchSearch =
-      o.name.toLowerCase().includes(search.toLowerCase()) ||
-      o.address.toLowerCase().includes(search.toLowerCase());
-    const matchType = typeFilter === "All" || o.type === typeFilter;
-    const matchStatus = statusFilter === "All" || o.status === statusFilter;
-    return matchSearch && matchType && matchStatus;
-  });
 
   const openAdd = () => {
     setEditing(null);
@@ -132,7 +160,6 @@ export function OrganizationsPage() {
           organizationTypeId: form.organizationTypeId,
           address: form.address,
         });
-        setOrgs((prev) => prev.map((o) => o.organizationId === editing.organizationId ? { ...o, name: form.name, type: form.type, address: form.address } : o));
         showAlert("success", `"${form.name}" updated successfully`);
       } else {
         const res = await organizationsApi.create({
@@ -140,9 +167,9 @@ export function OrganizationsPage() {
           organizationTypeId: form.organizationTypeId,
           address: form.address,
         });
-        setOrgs((prev) => [...prev, { organizationId: res.data.organizationId, status: "ACTIVE", name: form.name, type: form.type, address: form.address }]);
         showAlert("success", `"${form.name}" added successfully`);
       }
+      refetch();
       setShowModal(false);
     } catch (e: any) {
       setError(e.message || "An error occurred");
@@ -157,15 +184,9 @@ export function OrganizationsPage() {
       await organizationsApi.updateStatus(org.organizationId, {
         status: newStatus,
       });
-      setOrgs((prev) =>
-        prev.map((o) =>
-          o.organizationId === org.organizationId
-            ? { ...o, status: newStatus }
-            : o,
-        ),
-      );
       if (detail?.organizationId === org.organizationId)
         setDetail({ ...detail, status: newStatus });
+      refetch();
       showAlert(
         newStatus === "ACTIVE" ? "success" : "error",
 
@@ -244,19 +265,11 @@ export function OrganizationsPage() {
             </p>
           </div>
           <div className="flex items-center gap-6">
-            {["ACTIVE", "INACTIVE"].map((s) => (
-              <div key={s} className="text-center">
-                <div className="font-bold text-white" style={{ fontSize: 20 }}>
-                  {orgs.filter((o) => o.status === s).length}
-                </div>
-                <div className="text-green-200 text-xs">{s}</div>
-              </div>
-            ))}
             <div className="text-center">
               <div className="font-bold text-white" style={{ fontSize: 20 }}>
-                {orgs.length}
+                {totalCount}
               </div>
-              <div className="text-green-200 text-xs">TOTAL</div>
+              <div className="text-green-200 text-xs">TOTAL ORGANIZATIONS</div>
             </div>
           </div>
         </div>
@@ -274,36 +287,26 @@ export function OrganizationsPage() {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 placeholder="Search organizations..."
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
                 style={{ background: "#F8FAF8" }}
               />
+              {search && (
+                <button onClick={() => { setSearch(""); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
-              >
-                <option value="All">All</option>
-                {orgTypes.map((t) => (
-                  <option key={t.id} value={t.code}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
-              >
-                {["All", "ACTIVE", "INACTIVE"].map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>
-            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
+              style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              Filters
+              {activeFilterCount > 0 && <span className="w-5 h-5 rounded-full text-xs flex items-center justify-center" style={{ background: showFilters ? "rgba(255,255,255,0.2)" : "#2E7D32", color: "white" }}>{activeFilterCount}</span>}
+            </button>
             <button
               onClick={openAdd}
               className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
@@ -312,6 +315,48 @@ export function OrganizationsPage() {
               <Plus className="w-4 h-4" /> Add Organization
             </button>
           </div>
+
+          {showFilters && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Type</label>
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                  >
+                    <option value="All">All</option>
+                    {orgTypes.map((t) => (
+                      <option key={t.id} value={t.code}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Status</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                  >
+                    {["All", "ACTIVE", "INACTIVE"].map((s) => (
+                      <option key={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handleResetFilters}
+                    className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Reset Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Table */}
@@ -323,38 +368,30 @@ export function OrganizationsPage() {
             <span className="text-sm text-gray-500">
               Showing{" "}
               <span className="font-medium text-gray-800">
-                {filtered.length}
+                {totalCount}
               </span>{" "}
               organizations
             </span>
           </div>
-          {loading ? (
+          {isLoading ? (
             <div className="flex items-center justify-center py-16 text-gray-400 text-sm">
               Loading...
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
                 <thead>
                   <tr style={{ background: "#F8FAF8" }}>
-                    {[
-                      "Organization",
-                      "Type",
-                      "Address",
-                      "Status",
-                      "Actions",
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                      >
-                        {h}
-                      </th>
-                    ))}
+                    <SortHeader label="Organization" sortKey="name" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label="Type" sortKey="type" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label="Address" sortKey="address" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label="Status" sortKey="status" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {filtered.map((org) => {
+                  {sortedOrgs.map((org) => {
                     const typeCfg = TYPE_COLORS[org.type] || {
                       bg: "#F5F5F5",
                       color: "#666",
@@ -419,7 +456,7 @@ export function OrganizationsPage() {
                           </div>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center gap-1 transition-opacity">
                             <button
                               onClick={() => setDetail(org)}
                               className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors"
@@ -452,13 +489,86 @@ export function OrganizationsPage() {
                   })}
                 </tbody>
               </table>
-              {filtered.length === 0 && (
+              {orgs.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                   <Building2 className="w-10 h-10 mb-3 opacity-30" />
                   <p className="text-sm">No organizations found</p>
                 </div>
               )}
             </div>
+
+            <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                <div className="text-sm text-gray-500">
+                  Showing {totalCount === 0 ? 0 : ((page - 1) * perPage) + 1} to {Math.min(page * perPage, totalCount)} of {totalCount} organizations
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-gray-500">Rows/page</label>
+                  <select
+                    value={perPage}
+                    onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+                    className="px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                  >
+                    {[5, 10, 20, 50].map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page === 1}
+                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Previous"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {page > 1 && (
+                  <>
+                    <button
+                      onClick={() => setPage(1)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                      style={page === 1 ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                    >
+                      1
+                    </button>
+                    {page > 2 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                  </>
+                )}
+                {[page - 1, page, page + 1].filter((p) => p > 1 && p < totalPages).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                    style={p === page ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                  >
+                    {p}
+                  </button>
+                ))}
+                {page < totalPages && (
+                  <>
+                    {page < totalPages - 1 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                    <button
+                      onClick={() => setPage(totalPages)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                      style={page === totalPages ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                    >
+                      {totalPages}
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => setPage(Math.min(totalPages, page + 1))}
+                  disabled={page === totalPages}
+                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Next"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            </>
           )}
         </div>
       </div>
