@@ -1,4 +1,5 @@
 export type BatchStatus =
+  | "CREATED"
   | "HARVESTED"
   | "PROCESSING"
   | "PACKAGING"
@@ -7,6 +8,7 @@ export type BatchStatus =
   | "RETAIL"
   | "COMPLETED"
   | "RECALLED"
+  | "Created"
   | "Harvested"
   | "Processing"
   | "Packaged"
@@ -76,22 +78,25 @@ export interface BatchFilters {
 }
 
 export interface CreateBatchRequest {
+  productId?: string;
   product: string;
   productName?: string;
   categoryId?: number;
-  category: string;
+  category?: string;
   farmId?: number;
-  farm: string;
+  farm?: string;
   farmerId?: number;
-  farmer: string;
-  harvestDate: string;
+  farmer?: string;
+  productionDate: string;
+  harvestDate?: string;
+  expiryDate?: string;
   quantity: number;
   unit?: string;
   unitId?: string;
-  weight: string;
+  weight?: string;
   productionArea?: string;
-  location: string;
-  gps: string;
+  location?: string;
+  gps?: string;
   gpsLocation?: string;
   description?: string;
   productImage?: string;

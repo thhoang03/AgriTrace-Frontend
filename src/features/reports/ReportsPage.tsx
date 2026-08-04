@@ -205,7 +205,7 @@ export function ReportsPage() {
           <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="mb-5">
               <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Monthly Production Volume</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Total quantity (kg) produced per month</p>
+              <p className="text-gray-400 text-xs mt-0.5">Total quantity produced per month</p>
             </div>
             {overview?.monthlyProduction && overview.monthlyProduction.length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
@@ -220,7 +220,7 @@ export function ReportsPage() {
                   <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} width={45} />
                   <Tooltip contentStyle={{ borderRadius: 10, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.12)", fontSize: 12 }} />
-                  <Area type="monotone" dataKey="quantity" name="Quantity (kg)" stroke="#2E7D32" strokeWidth={2.5} fill="url(#prodGrad)" dot={{ fill: "#2E7D32", r: 3 }} />
+                  <Area type="monotone" dataKey="quantity" name="Quantity" stroke="#2E7D32" strokeWidth={2.5} fill="url(#prodGrad)" dot={{ fill: "#2E7D32", r: 3 }} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (

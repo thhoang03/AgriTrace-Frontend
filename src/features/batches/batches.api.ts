@@ -1,4 +1,5 @@
 import { get, post, put, del } from "../../lib/api";
+import { env } from "../../config/env";
 import type {
   BatchDetail,
   BatchListItem,
@@ -15,6 +16,7 @@ import type {
 
 // Legacy types for backward compatibility
 export type BatchStatus =
+  | "CREATED"
   | "HARVESTED"
   | "PROCESSING"
   | "PACKAGING"
@@ -23,6 +25,7 @@ export type BatchStatus =
   | "RETAIL"
   | "COMPLETED"
   | "RECALLED"
+  | "Created"
   | "Harvested"
   | "Processing"
   | "Packaged"
@@ -91,21 +94,25 @@ export interface BatchFilters {
 }
 
 export interface CreateBatchRequest {
+  productId?: string;
   product: string;
   productName?: string;
   categoryId?: number;
-  category: string;
+  category?: string;
   farmId?: number;
-  farm: string;
+  farm?: string;
   farmerId?: number;
-  farmer: string;
-  harvestDate: string;
+  farmer?: string;
+  productionDate: string;
+  harvestDate?: string;
+  expiryDate?: string;
   quantity: number;
   unit?: string;
-  weight: string;
+  unitId?: string;
+  weight?: string;
   productionArea?: string;
-  location: string;
-  gps: string;
+  location?: string;
+  gps?: string;
   gpsLocation?: string;
   description?: string;
   productImage?: string;
@@ -148,7 +155,7 @@ function adaptBatchFromListItem(item: any): Batch {
     remainingQuantity: item.remainingQuantity ?? item.quantity ?? 0,
     unit: item.unitCode ?? item.unit ?? "",
     unitId: item.unitId ? String(item.unitId) : undefined,
-    weight: String(item.quantity ?? ""),
+    weight: item.weight ?? "",
     productionArea: "",
     status: (item.statusName ?? item.status) as BatchStatus,
     location: "",
@@ -182,7 +189,7 @@ function adaptBatchFromDetail(item: any): Batch {
     remainingQuantity: item.remainingQuantity ?? item.quantity ?? 0,
     unit: item.unitCode ?? item.unit ?? "",
     unitId: item.unitId ? String(item.unitId) : undefined,
-    weight: String(item.quantity ?? ""),
+    weight: item.weight ?? "",
     productionArea: "",
     status: (item.statusName ?? String(item.status ?? "")) as BatchStatus,
     location: item.location ?? "",
@@ -199,16 +206,26 @@ function adaptBatchFromDetail(item: any): Batch {
 }
 
 function adaptEventFromItem(item: any): TimelineEvent {
+  const code = (item.eventTypeCode || item.stage || "").toUpperCase();
+  const icon =
+    code.includes("HARVEST") ? "🌾" :
+    code.includes("PROCESS") ? "⚙️" :
+    code.includes("PACKAG") ? "📦" :
+    code.includes("TRANS") ? "🚚" :
+    code.includes("RETAIL") ? "🛒" :
+    code.includes("INSPECT") || code.includes("QA") || code.includes("QC") ? "🔬" :
+    code.includes("CREATE") ? "🌱" : "📍";
+
   return {
     id: item.eventId ?? item.id ?? "",
-    stage: item.eventTypeCode ?? item.stage ?? "",
-    icon: "",
+    stage: item.eventTypeCode ?? item.stage ?? "Sự kiện chuỗi cung ứng",
+    icon,
     date: item.eventTime?.split("T")[0] ?? "",
     time: item.eventTime?.split("T")[1]?.split(".")[0] ?? "",
-    organization: item.organizationName ?? "",
-    location: item.location ?? "",
-    employee: item.performedByUserId ?? "",
-    description: item.eventData ?? "",
+    organization: item.organizationName ?? "Đơn vị vận hành",
+    location: item.location ?? "Địa điểm lưu vết",
+    employee: item.performedByName ?? item.performedByUserId ?? "Chuyên viên AgriTrace",
+    description: item.eventData ?? "Ghi nhận sự kiện chuỗi cung ứng cho lô nông sản.",
     temp: "",
     humidity: "",
     hash: item.currentHash ?? "",
@@ -217,10 +234,19 @@ function adaptEventFromItem(item: any): TimelineEvent {
   };
 }
 
+function getFullImageUrl(rawUrl?: string): string {
+  if (!rawUrl) return "";
+  if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://") || rawUrl.startsWith("data:")) {
+    return rawUrl;
+  }
+  const backendOrigin = env.apiBaseUrl.replace(/\/api\/v1\/?$/, "");
+  return `${backendOrigin}${rawUrl.startsWith("/") ? "" : "/"}${rawUrl}`;
+}
+
 function adaptImageFromItem(item: any): BatchImage {
   return {
     imageId: Number(item.imageId ?? 0),
-    url: item.url ?? "",
+    url: getFullImageUrl(item.url),
     fileName: item.fileName ?? "",
     uploadedAt: item.uploadedAt ?? "",
   };
@@ -228,11 +254,11 @@ function adaptImageFromItem(item: any): BatchImage {
 
 function adaptCreateToNew(legacy: CreateBatchRequest): NewCreateBatchRequest {
   return {
-    productId: legacy.product,
+    productId: legacy.productId || legacy.product,
     quantity: legacy.quantity,
     unitId: legacy.unitId ?? legacy.unit ?? "",
-    productionDate: legacy.harvestDate,
-    expiryDate: null,
+    productionDate: legacy.productionDate || legacy.harvestDate || new Date().toISOString().split("T")[0],
+    expiryDate: legacy.expiryDate || null,
   };
 }
 
@@ -312,7 +338,7 @@ export const batchesApi = {
       headers: { "Content-Type": "multipart/form-data" },
     });
     const imgData = response.data as any;
-    return { data: { imageId: Number(imgData.imageId ?? 0), url: imgData.url ?? "" } as BatchImage };
+    return { data: { imageId: Number(imgData.imageId ?? 0), url: getFullImageUrl(imgData.url) } as BatchImage };
   },
 
   deleteImage: async (imageId: number | string) => del(`/batches/images/${imageId}`),

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
@@ -75,6 +75,17 @@ export function SupplyChainPage() {
   const createEventMutation = useCreateEvent(activeBatchId || form.batchId);
   const { data: eventTypesLookup = [], isLoading: eventTypesLoading } = useEventTypes();
   const { data: recentBatches = [] } = useRecentBatches();
+
+  useEffect(() => {
+    if (!activeBatchId && recentBatches.length > 0) {
+      const firstBatch = recentBatches[0];
+      const targetId = firstBatch?.id || firstBatch?.batchCode || "";
+      if (targetId) {
+        setActiveBatchId(targetId);
+        setSearchBatchId(targetId);
+      }
+    }
+  }, [recentBatches, activeBatchId]);
 
 
   const eventTypeGuidMap = new Map(
@@ -199,7 +210,11 @@ export function SupplyChainPage() {
             <span className="text-xs text-green-700">Blockchain connected</span>
           </div>
           <button
-            onClick={() => { setShowForm(true); setError(""); }}
+            onClick={() => {
+              setForm((prev) => ({ ...prev, batchId: prev.batchId || activeBatchId }));
+              setShowForm(true);
+              setError("");
+            }}
             className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
             style={{ background: "#2E7D32" }}
           >
@@ -545,19 +560,42 @@ export function SupplyChainPage() {
                   <div className="flex items-center justify-between mb-2 min-h-[28px]">
                     <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
                       <Hash className="w-3.5 h-3.5 text-emerald-600" />
-                      Batch ID
+                      Batch ID / Chọn lô hàng
                     </label>
                     <QrScannerButton
                       onScan={handleQrScanModal}
                       className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg border border-emerald-200 transition-colors flex items-center gap-1 shadow-xs"
                     />
                   </div>
-                  <input
-                    value={form.batchId}
-                    onChange={(e) => setForm({ ...form, batchId: e.target.value })}
-                    className="w-full h-10 px-3.5 rounded-xl border border-gray-200 text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all"
-                    placeholder="e.g. BATCH-2026-001 or scan QR..."
-                  />
+
+                  <div className="space-y-2">
+                    {recentBatches.length > 0 && (
+                      <select
+                        value={form.batchId}
+                        onChange={(e) => setForm({ ...form, batchId: e.target.value })}
+                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all text-gray-800 font-medium"
+                      >
+                        <option value="">-- Chọn lô hàng đã tạo từ danh sách --</option>
+                        {recentBatches.map((b: any) => {
+                          const bCode = b.batchCode || b.id;
+                          const pName = b.productName || b.product || "Sản phẩm";
+                          const label = `${bCode} - ${pName}${b.quantity ? ` (${b.quantity} ${b.unitName || b.unit || ''})` : ''}`;
+                          return (
+                            <option key={b.id || bCode} value={bCode}>
+                              {label}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    )}
+
+                    <input
+                      value={form.batchId}
+                      onChange={(e) => setForm({ ...form, batchId: e.target.value })}
+                      className="w-full h-10 px-3.5 rounded-xl border border-gray-200 text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all"
+                      placeholder="Nhập mã Batch ID hoặc chọn lô hàng ở trên / quét mã QR..."
+                    />
+                  </div>
                 </div>
 
                 {/* Row 2: Location */}

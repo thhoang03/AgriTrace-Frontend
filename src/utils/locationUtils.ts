@@ -1,5 +1,6 @@
 export interface LocationResult {
   locationString: string;
+  address?: string;
   latitude?: number;
   longitude?: number;
   city?: string;
@@ -23,6 +24,7 @@ export async function fetch3rdPartyIpLocation(): Promise<LocationResult> {
 
       return {
         locationString: displayString,
+        address: placeName,
         latitude: data.latitude,
         longitude: data.longitude,
         city: data.city,
@@ -44,6 +46,7 @@ export async function fetch3rdPartyIpLocation(): Promise<LocationResult> {
 
   return {
     locationString: displayString,
+    address: placeName,
     latitude: fallbackData.latitude,
     longitude: fallbackData.longitude,
     city,
@@ -53,6 +56,7 @@ export async function fetch3rdPartyIpLocation(): Promise<LocationResult> {
 
 /**
  * 2. Get current device / computer location using Browser Geolocation API (HTML5 GPS)
+ *    and reverse geocode to human-readable address.
  */
 export async function fetchDeviceLocation(): Promise<LocationResult> {
   return new Promise((resolve, reject) => {
@@ -67,30 +71,50 @@ export async function fetchDeviceLocation(): Promise<LocationResult> {
         const coordsStr = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
 
         try {
-          // Attempt reverse geocoding via 3rd party API for human readable address
+          // Attempt reverse geocoding via OpenStreetMap Nominatim for exact address in Vietnamese
           const res = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`,
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=vi`,
             { signal: AbortSignal.timeout(5000) }
           );
           const data = await res.json();
-          const city = data.locality || data.city || data.principalSubdivision || "";
-          const country = data.countryName || "";
-          const placeName = [city, country].filter(Boolean).join(", ");
-          const displayString = placeName ? `${placeName} (${coordsStr})` : coordsStr;
+          const address = data.display_name || "";
+          const displayString = address ? `${address} (${coordsStr})` : coordsStr;
 
           resolve({
             locationString: displayString,
+            address: address || coordsStr,
             latitude,
             longitude,
-            city,
-            country,
           });
         } catch {
-          resolve({
-            locationString: coordsStr,
-            latitude,
-            longitude,
-          });
+          // Fallback to BigDataCloud
+          try {
+            const res = await fetch(
+              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=vi`,
+              { signal: AbortSignal.timeout(5000) }
+            );
+            const data = await res.json();
+            const city = data.locality || data.city || data.principalSubdivision || "";
+            const country = data.countryName || "";
+            const placeName = [city, country].filter(Boolean).join(", ");
+            const displayString = placeName ? `${placeName} (${coordsStr})` : coordsStr;
+
+            resolve({
+              locationString: displayString,
+              address: placeName || coordsStr,
+              latitude,
+              longitude,
+              city,
+              country,
+            });
+          } catch {
+            resolve({
+              locationString: coordsStr,
+              address: coordsStr,
+              latitude,
+              longitude,
+            });
+          }
         }
       },
       (error) => {

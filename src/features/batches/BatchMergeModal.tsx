@@ -27,7 +27,7 @@ export function BatchMergeModal({
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [mergedQuantity, setMergedQuantity] = useState("");
-  const [mergedUnit, setMergedUnit] = useState("kg");
+  const [mergedUnit, setMergedUnit] = useState("");
   const [notes, setNotes] = useState("");
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
@@ -180,7 +180,7 @@ export function BatchMergeModal({
                       </div>
                       <div className="text-right flex-shrink-0">
                         <div className="text-xs font-semibold text-gray-700">
-                          {b.quantity.toLocaleString()} {b.unit ?? "units"}
+                          {b.quantity.toLocaleString()}
                         </div>
                         <div className="text-xs text-gray-400">{b.status}</div>
                       </div>

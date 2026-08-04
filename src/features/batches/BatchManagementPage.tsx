@@ -17,6 +17,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 const BANNER_IMG = "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=1400&q=80";
 
 const statusConfig: Record<string, { bg: string; color: string; label: string }> = {
+  Created:       { bg: "#E0F7FA", color: "#00838F", label: "Created" },
   Harvested:     { bg: "#E8F5E9", color: "#2E7D32", label: "Harvested" },
   Processing:    { bg: "#FFF3E0", color: "#F57C00", label: "Processing" },
   Packaged:      { bg: "#E3F2FD", color: "#1565C0", label: "Packaged" },
@@ -27,12 +28,13 @@ const statusConfig: Record<string, { bg: string; color: string; label: string }>
 };
 
 const allStatuses: BatchStatus[] = [
-  "Harvested", "Processing", "Packaged", "In Transit", "Distributed", "At Retail", "Recalled",
+  "Created", "Harvested", "Processing", "Packaged", "In Transit", "Distributed", "At Retail", "Recalled",
 ];
 
 const normalizeBatchStatus = (status: BatchStatus): BatchStatus => {
   const upper = status.toUpperCase();
   switch (upper) {
+    case "CREATED":      return "Created";
     case "HARVESTED":    return "Harvested";
     case "PROCESSING":   return "Processing";
     case "PACKAGING":    return "Packaged";
@@ -475,13 +477,11 @@ export function BatchManagementPage() {
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="text-sm font-semibold text-gray-900">{batch.quantity.toLocaleString()}</div>
-                            <div className="text-xs text-gray-400">{batch.unit || batch.weight}</div>
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="text-sm font-bold text-green-700">
                               {(batch.remainingQuantity ?? batch.quantity).toLocaleString()}
                             </div>
-                            <div className="text-xs text-gray-400">{batch.unit || batch.weight}</div>
                           </td>
                           <td className="px-4 py-3.5">
                             <span className="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap" style={{ background: cfg.bg, color: cfg.color }}>

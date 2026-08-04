@@ -44,7 +44,7 @@ export function useRecentBatches() {
   return useQuery({
     queryKey: [QUERY_KEY, "recent-batches"],
     queryFn: async () => {
-      const result = await batchesApi.getAll({ limit: 5, sortBy: "createdAt", sortOrder: "desc" });
+      const result = await batchesApi.getAll({ limit: 50, sortBy: "createdAt", sortOrder: "desc" });
       return result.data ?? [];
     },
     staleTime: 2 * 60 * 1000,

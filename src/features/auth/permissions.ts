@@ -45,6 +45,16 @@ export function canAccessRoute(
     return role === "ADMIN" || organizationType === "INSPECTION";
   }
 
+  // Batch Management (/app/batches) is accessible ONLY by ADMIN or FARM (Farmer) organization type
+  if (path === "/app/batches" || path.startsWith("/app/batches/")) {
+    return role === "ADMIN" || organizationType === "FARM";
+  }
+
+  // Supply Chain (/app/supply-chain) is hidden/disabled for INSPECTION (Inspector) organization type
+  if (path === "/app/supply-chain" || path.startsWith("/app/supply-chain/")) {
+    if (organizationType === "INSPECTION") return false;
+  }
+
   const allowed = ROLE_ACCESS[role] || [];
   return allowed.some(
     (route) => path === route || path.startsWith(route + "/")
