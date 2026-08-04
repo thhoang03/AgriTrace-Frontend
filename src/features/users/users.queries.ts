@@ -54,3 +54,21 @@ export function useResetPassword() {
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 }
+
+export function useProfile() {
+  return useQuery({
+    queryKey: [QUERY_KEY, "profile"],
+    queryFn: () => usersApi.getProfile(),
+  });
+}
+
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { fullName?: string; phone?: string }) =>
+      usersApi.updateProfile(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [QUERY_KEY] });
+    },
+  });
+}
