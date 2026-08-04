@@ -635,7 +635,7 @@ export function BatchDetailPage() {
                   onClick={() => setShowRequestInspectionModal(true)}
                   className="mt-4 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5"
                 >
->>>>>>> origin/main
+                  <Plus className="w-4 h-4" /> {lang === "vi" ? "Gửi Yêu Cầu Kiểm Định Ngay" : "Send Inspection Request Now"}
                 </button>
               </div>
             )}
