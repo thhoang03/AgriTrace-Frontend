@@ -392,7 +392,7 @@ export function BatchManagementPage() {
                         <div className="flex items-center gap-1.5">{lang === "vi" ? "Sản Phẩm" : "Product"} <SortIcon field="product" /></div>
                       </th>
                       <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        {lang === "vi" ? "Mã Lô Hàng" : "Batch ID"}
+                        {lang === "vi" ? "Mã Lô Hàng" : "Batch Code"}
                       </th>
                       <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                         {lang === "vi" ? "Trang Trại / Nông Dân" : "Farm / Farmer"}
@@ -620,7 +620,7 @@ export function BatchManagementPage() {
             <div className="flex flex-col items-center gap-4">
               <div className="w-48 h-48 rounded-2xl overflow-hidden flex items-center justify-center p-2" style={{ background: "#F8FAF8", border: "2px dashed #E0E0E0" }}>
                 <img
-                  src={showQRBatch.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin + "/public/trace/" + showQRBatch.id)}`}
+                  src={showQRBatch.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin + "/trace/" + (showQRBatch.batchCode ?? showQRBatch.id))}`}
                   alt="QR Code"
                   className="w-full h-full object-contain"
                 />
@@ -631,7 +631,7 @@ export function BatchManagementPage() {
               <div className="flex gap-2 w-full">
                 <button
                   onClick={async () => {
-                    const qrUrl = showQRBatch.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + "/public/trace/" + showQRBatch.id)}`;
+                    const qrUrl = showQRBatch.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + "/trace/" + (showQRBatch.batchCode ?? showQRBatch.id))}`;
                     try {
                       const res = await fetch(qrUrl);
                       const blob = await res.blob();

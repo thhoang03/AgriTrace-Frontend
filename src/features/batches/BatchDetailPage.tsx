@@ -70,7 +70,7 @@ export function BatchDetailPage() {
   const statusCfg = statusConfig[statusNorm] ?? { bg: "#F3F4F6", color: "#6B7280" };
 
   const handleDownloadQr = async () => {
-    const qrUrl = qrCode?.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + "/public/trace/" + (batch?.id || ""))}`;
+    const qrUrl = qrCode?.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + "/trace/" + (batch?.batchCode || batch?.id || ""))}`;
     try {
       const res = await fetch(qrUrl);
       const blob = await res.blob();
@@ -304,7 +304,7 @@ export function BatchDetailPage() {
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-36 h-36 rounded-2xl overflow-hidden flex items-center justify-center" style={{ background: "#F8FAF8", border: "2px dashed #E0E0E0" }}>
                     <img
-                      src={qrCode?.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.origin + "/public/trace/" + (batch.id || ""))}`}
+                      src={qrCode?.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.origin + "/trace/" + (batch.batchCode || batch.id || ""))}`}
                       alt="QR Code"
                       className="w-full h-full object-contain"
                     />

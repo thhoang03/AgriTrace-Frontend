@@ -7,8 +7,8 @@ import {
   Copy, ExternalLink, RefreshCw, Cpu, Layers, Truck, Factory,
   Store, Microscope, Sparkles, Check, ChevronDown
 } from "lucide-react";
-import { get } from "../lib/api";
 import type { PublicTraceData } from "../types/mapping";
+import { publicTraceApi } from "../features/public-trace/public-trace.api";
 import { toast } from "sonner";
 import { QRScannerModal } from "../components/common/QRScannerModal";
 
@@ -57,7 +57,7 @@ export function PublicTracePage() {
 
   const { data: traceData, isLoading, isError, refetch } = useQuery({
     queryKey: ["publicTrace", id],
-    queryFn: () => get<PublicTraceData>(`/public/trace/${id}`),
+    queryFn: () => publicTraceApi.getTrace(id!),
     enabled: !!id,
   });
 
