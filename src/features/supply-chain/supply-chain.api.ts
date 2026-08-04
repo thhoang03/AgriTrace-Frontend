@@ -91,10 +91,42 @@ export const supplyChainApi = {
   },
 
   getChain: async (batchId: string) => {
-    const response = await get<any>(`/supply-chain/${batchId}`, { params: { batchId } });
-    const data = response.data as any;
-    const items = Array.isArray(data) ? data : data?.items ?? [];
-    return { data: items.map(adaptToNode) as SupplyChainNode[] };
+    try {
+      const response = await get<any>(`/public/trace/${batchId}/lineage`);
+      const data = response.data as any;
+      const items = Array.isArray(data) ? data : data?.lineage ?? [];
+
+      if (items.length === 0) return { data: [] };
+
+      const nodeMap = new Map<string, SupplyChainNode>();
+      items.forEach((item: any) => {
+        nodeMap.set(item.batchId, {
+          id: item.batchCode || (item.batchId ? item.batchId.substring(0, 8) : "Lô hàng"),
+          name: item.batchCode || "Lô hàng",
+          role: item.eventTypeCode || "BATCH",
+          date: `Số lượng: ${item.quantity ?? 0}`,
+          children: [],
+        });
+      });
+
+      const rootNodes: SupplyChainNode[] = [];
+      items.forEach((item: any) => {
+        const node = nodeMap.get(item.batchId);
+        if (node) {
+          if (item.parentBatchId && nodeMap.has(item.parentBatchId)) {
+            const parentNode = nodeMap.get(item.parentBatchId)!;
+            parentNode.children = parentNode.children || [];
+            parentNode.children.push(node);
+          } else {
+            rootNodes.push(node);
+          }
+        }
+      });
+
+      return { data: rootNodes };
+    } catch {
+      return { data: [] };
+    }
   },
 
   getNode: async (nodeId: string) => {

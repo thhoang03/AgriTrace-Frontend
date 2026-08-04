@@ -4,7 +4,7 @@ import {
   Clock, Plus, CheckCircle2, XCircle, AlertCircle, Search, Filter, Building2, User, MapPin, FileText, ChevronRight, Check, X, ShieldAlert, LocateFixed, Globe,
 } from "lucide-react";
 import { useEventRequests, useCreateEventRequest, useApproveEventRequest, useRejectEventRequest } from "./event-requests.queries";
-import { useEventTypes, useRecentBatches } from "../supply-chain/supply-chain.queries";
+import { useEventTypes } from "../supply-chain/supply-chain.queries";
 import { useAuth } from "../auth/auth.store";
 import type { EventRequestItem } from "./event-requests.api";
 import { fetchDeviceLocation } from "../../utils/locationUtils";
@@ -12,7 +12,9 @@ import { MapPickerModal } from "../../components/common/MapPickerModal";
 
 export function EventRequestsPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"mine" | "pending" | "all">("mine");
+  const [activeTab, setActiveTab] = useState<"mine" | "pending" | "all">(
+    user?.role === "ADMIN" ? "pending" : "mine"
+  );
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [rejectingItem, setRejectingItem] = useState<EventRequestItem | null>(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -24,7 +26,6 @@ export function EventRequestsPage() {
 
   // Queries & Mutations
   const { data: eventTypes = [] } = useEventTypes();
-  const { data: recentBatches = [] } = useRecentBatches();
 
   const { data: requestsData, isLoading, refetch } = useEventRequests({
     onlyMine: activeTab === "mine",
@@ -37,7 +38,6 @@ export function EventRequestsPage() {
 
   // Create Form State
   const [form, setForm] = useState({
-    batchId: "",
     eventTypeId: "",
     location: "",
     description: "",
@@ -50,7 +50,7 @@ export function EventRequestsPage() {
     const q = searchBatch.toLowerCase();
     return (
       item.batchCode?.toLowerCase().includes(q) ||
-      item.batchId?.toLowerCase().includes(q) ||
+      item.organizationName?.toLowerCase().includes(q) ||
       item.eventTypeCode?.toLowerCase().includes(q) ||
       item.location?.toLowerCase().includes(q)
     );
@@ -75,17 +75,15 @@ export function EventRequestsPage() {
       toast.error("Please select an Event Type to expand");
       return;
     }
-    const targetBatchId = form.batchId || (recentBatches.length > 0 ? recentBatches[0].id : "00000000-0000-0000-0000-000000000000");
     try {
       await createMutation.mutateAsync({
-        batchId: targetBatchId,
         eventTypeId: form.eventTypeId,
         location: form.location,
         description: form.description,
       });
-      toast.success("Event type expansion request created successfully! Awaiting admin review.");
+      toast.success("Yêu cầu mở rộng event type đã được gửi! Vui lòng chờ Admin xét duyệt.");
       setShowCreateModal(false);
-      setForm({ batchId: "", eventTypeId: "", location: "", description: "" });
+      setForm({ eventTypeId: "", location: "", description: "" });
       refetch();
     } catch (err: any) {
       toast.error(err?.response?.data?.message || err?.message || "An error occurred while creating request");
@@ -152,37 +150,43 @@ export function EventRequestsPage() {
               Submit supply chain event logging requests and review approvals before appending to the immutable Hash Chain ledger.
             </p>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex items-center justify-center gap-2 bg-white text-green-800 hover:bg-green-50 px-5 py-2.5 rounded-xl font-semibold shadow-lg transition-all text-sm shrink-0"
-          >
-            <Plus className="w-4 h-4" /> New Request
-          </button>
+          {user?.role !== "ADMIN" && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center justify-center gap-2 bg-white text-green-800 hover:bg-green-50 px-5 py-2.5 rounded-xl font-semibold shadow-lg transition-all text-sm shrink-0"
+            >
+              <Plus className="w-4 h-4" /> New Request
+            </button>
+          )}
         </div>
       </div>
 
       {/* Control Bar & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
         <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
-          <button
-            onClick={() => setActiveTab("mine")}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-              activeTab === "mine" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            My Requests
-          </button>
-          <button
-            onClick={() => setActiveTab("pending")}
-            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-              activeTab === "pending" ? "bg-white text-emerald-800 shadow-sm" : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            Pending Approvals
-            {requestsList.filter((r) => r.status === 0 || r.status === "Pending").length > 0 && (
-              <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-            )}
-          </button>
+          {user?.role !== "ADMIN" && (
+            <button
+              onClick={() => setActiveTab("mine")}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                activeTab === "mine" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              My Requests
+            </button>
+          )}
+          {user?.role === "ADMIN" && (
+            <button
+              onClick={() => setActiveTab("pending")}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                activeTab === "pending" ? "bg-white text-emerald-800 shadow-sm" : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Pending Approvals
+              {requestsList.filter((r) => r.status === 0 || r.status === "Pending").length > 0 && (
+                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+              )}
+            </button>
+          )}
           <button
             onClick={() => setActiveTab("all")}
             className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
@@ -222,8 +226,8 @@ export function EventRequestsPage() {
             <div key={item.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-5 flex flex-col justify-between space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-mono font-bold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-lg">
-                    {item.batchCode || item.batchId.slice(0, 8)}
+                  <span className="text-xs font-semibold text-gray-700 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg border border-emerald-100">
+                    {item.organizationName || "Organization"}
                   </span>
                   {getStatusBadge(item.status)}
                 </div>
@@ -268,8 +272,8 @@ export function EventRequestsPage() {
                 </div>
               </div>
 
-              {/* Action Buttons for Pending items */}
-              {(item.status === 0 || item.status === "Pending") && (
+              {/* Action Buttons — Approve/Reject only for Admin */}
+              {(item.status === 0 || item.status === "Pending") && user?.role === "ADMIN" && (
                 <div className="pt-2 flex items-center gap-2">
                   <button
                     onClick={() => handleApprove(item)}
@@ -318,27 +322,13 @@ export function EventRequestsPage() {
                   className="w-full px-3.5 py-2.5 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-gray-50 font-medium"
                 >
                   <option value="">-- Select event type to expand --</option>
-                  {eventTypes.map((et) => (
-                    <option key={et.id} value={et.id}>
-                      {et.code} - {et.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Target Batch (Optional)</label>
-                <select
-                  value={form.batchId}
-                  onChange={(e) => setForm({ ...form, batchId: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-gray-50"
-                >
-                  <option value="">-- General Organization Expansion (No specific batch) --</option>
-                  {recentBatches.map((b: any) => (
-                    <option key={b.id} value={b.id}>
-                      {b.batchCode || b.id} - {b.productName || "Produce"}
-                    </option>
-                  ))}
+                  {eventTypes
+                    .filter((et) => !["SPLIT", "MERGE", "RECALL"].includes(et.code?.toUpperCase() ?? ""))
+                    .map((et) => (
+                      <option key={et.id} value={et.id}>
+                        {et.code} - {et.name}
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -423,7 +413,7 @@ export function EventRequestsPage() {
 
             <form onSubmit={handleRejectSubmit} className="space-y-4">
               <p className="text-xs text-gray-600">
-                Please enter the reason for rejecting event request for batch <span className="font-mono font-bold text-gray-800">{rejectingItem.batchCode || rejectingItem.batchId.slice(0, 8)}</span>:
+                Please enter the reason for rejecting expansion request from <span className="font-semibold text-gray-800">{rejectingItem.organizationName || rejectingItem.requestedByUserName || "this organization"}</span>:
               </p>
               <textarea
                 rows={3}

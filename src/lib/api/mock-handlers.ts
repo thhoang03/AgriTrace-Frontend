@@ -182,7 +182,7 @@ export const handlers: Record<string, MockHandler> = {
       harvestDate: new Date().toISOString().split("T")[0],
       quantity: 0,
       weight: "0 kg",
-      status: "Harvested",
+      status: "Created",
       location: "",
       gps: "",
       ...data,

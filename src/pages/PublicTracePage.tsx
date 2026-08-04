@@ -444,7 +444,7 @@ export function PublicTracePage() {
                 {[
                   { labelVi: "Tên sản phẩm", labelEn: "Product Name", value: batch.productName || "—" },
                   { labelVi: "Mã định danh", labelEn: "Batch Code", value: batch.batchCode || batch.batchId, code: true },
-                  { labelVi: "Số lượng", labelEn: "Quantity", value: batch.quantity ? `${batch.quantity} ${batch.unitCode || "KG"}` : "500 KG" },
+                  { labelVi: "Số lượng", labelEn: "Quantity", value: batch.quantity ? `${batch.quantity}` : "500" },
                   { labelVi: "Đơn vị sở hữu", labelEn: "Current Org", value: batch.currentOrganizationName || "—" },
                   { labelVi: "Trạng thái thu hồi", labelEn: "Recall Status", value: batch.recallStatus || "None (Safe)", safe: true },
                   { labelVi: "Chuẩn mã hoá", labelEn: "Standard", value: "ISO/IEC 18004" },

@@ -1,16 +1,16 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
-  ArrowLeft, Save, Package, MapPin, User, Leaf,
-  Image as ImageIcon, AlertCircle, CheckCircle, LocateFixed, Map,
+  ArrowLeft, Save, Package, Leaf, Calendar, MapPin, Map, LocateFixed,
+  Image as ImageIcon, AlertCircle, CheckCircle, FileText, Building, UserCheck
 } from "lucide-react";
 import { useCreateBatch } from "./batches.queries";
 import type { CreateBatchRequest } from "./batches.types";
 import { useAuth } from "../auth/auth.store";
-import { useCategoriesList } from "../categories/categories.queries";
 import { useProductsList } from "../products/products.queries";
 import { lookupApi } from "../../lib/api/lookup";
 import { MapPickerModal } from "../../components/common/MapPickerModal";
+import { fetchDeviceLocation } from "../../utils/locationUtils";
 
 const DEFAULT_UNITS = [
   { id: "10000000-0000-0000-0000-000000000001", code: "kg", name: "Kilogram (kg)" },
@@ -22,72 +22,20 @@ const DEFAULT_UNITS = [
   { id: "10000000-0000-0000-0000-000000000007", code: "liter", name: "Lít (Liter)" },
 ];
 
-const initialForm: CreateBatchRequest = {
-  product: "",
-  productName: "",
-  category: "",
-  farm: "",
-  farmer: "",
-  harvestDate: "",
-  quantity: 0,
-  unit: "kg",
-  unitId: "",
-  weight: "",
-  productionArea: "",
-  location: "",
-  gps: "",
-  gpsLocation: "",
-  description: "",
-  productImage: "",
-};
-
-type Section = "product" | "farm" | "quantity" | "location";
+type Section = "product" | "quantity" | "origin";
 
 const SECTIONS: { key: Section; label: string; icon: React.ElementType; desc: string }[] = [
-  { key: "product",  label: "Product Details",  icon: Package, desc: "Product and category information" },
-  { key: "farm",     label: "Farm & Producer",   icon: Leaf,    desc: "Farming origin and producer info" },
-  { key: "quantity", label: "Quantity & Weight", icon: Package, desc: "Volume, unit, and weight details" },
-  { key: "location", label: "Location & GPS",    icon: MapPin,  desc: "Geographic and GPS coordinates" },
+  { key: "product",  label: "1. Thông tin Sản phẩm",   icon: Package,  desc: "Sản phẩm & Danh mục nông sản" },
+  { key: "quantity", label: "2. Sản xuất & Số lượng",  icon: Calendar, desc: "Số lượng, đơn vị, ngày tạo & HSD" },
+  { key: "origin",   label: "3. Nguồn gốc & Ghi chú",  icon: Leaf,     desc: "Thông tin nông trại & ghi chú thêm" },
 ];
 
 function FieldLabel({ required, children }: { required?: boolean; children: React.ReactNode }) {
   return (
-    <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-1">
+    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-1">
       {children}
-      {required && <span className="text-red-500">*</span>}
+      {required && <span className="text-rose-500 font-bold">*</span>}
     </span>
-  );
-}
-
-function CategorySelect({
-  value,
-  onChange,
-  className,
-}: {
-  value: string;
-  onChange: (val: string) => void;
-  className: string;
-}) {
-  const { data, isLoading } = useCategoriesList({ pageSize: 100 });
-  const categories = data?.data?.items ?? [];
-
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={className}
-      style={{ appearance: "auto" }}
-    >
-      <option value="">-- Select category --</option>
-      {isLoading && <option disabled>Loading...</option>}
-      {categories
-        .filter((c) => c.isActive)
-        .map((c) => (
-          <option key={c.categoryId} value={c.name}>
-            {c.name}
-          </option>
-        ))}
-    </select>
   );
 }
 
@@ -112,22 +60,25 @@ function ProductSelect({
         const val = e.target.value;
         onChange(val);
         if (onProductSelected) {
-          const product = products.find((p: any) => String(p.productId) === val);
+          const product = products.find((p: any) => String(p.productId) === val || String(p.id) === val);
           if (product) onProductSelected(product);
         }
       }}
       className={className}
       style={{ appearance: "auto" }}
     >
-      <option value="">-- Select product --</option>
-      {isLoading && <option disabled>Loading...</option>}
+      <option value="">-- Chọn sản phẩm nông sản --</option>
+      {isLoading && <option disabled>Đang tải danh sách sản phẩm...</option>}
       {products
-        .filter((c: any) => c.isActive)
-        .map((c: any) => (
-          <option key={c.productId} value={String(c.productId)}>
-            {c.name}
-          </option>
-        ))}
+        .filter((c: any) => c.isActive ?? true)
+        .map((c: any) => {
+          const pId = String(c.productId || c.id || "");
+          return (
+            <option key={pId} value={pId}>
+              {c.name} {c.code ? `(${c.code})` : ""}
+            </option>
+          );
+        })}
     </select>
   );
 }
@@ -163,7 +114,7 @@ function UnitSelect({
       });
   }, []);
 
-  const currentValue = unitId || units.find((u) => u.code.toLowerCase() === value.toLowerCase())?.id || value || DEFAULT_UNITS[0].id;
+  const currentValue = unitId || units.find((u) => u.code.toLowerCase() === value.toLowerCase())?.id || value || "";
 
   return (
     <select
@@ -176,7 +127,7 @@ function UnitSelect({
       className={className}
       style={{ appearance: "auto" }}
     >
-      <option value="">-- Select unit --</option>
+      <option value="">-- Chọn đơn vị tính --</option>
       {units.map((u) => (
         <option key={u.id} value={u.id}>
           {u.name}
@@ -190,12 +141,23 @@ export function BatchCreatePage() {
   const navigate = useNavigate();
   const createBatch = useCreateBatch();
   const { user } = useAuth();
+
   const [form, setForm] = useState<CreateBatchRequest>({
-    ...initialForm,
-    farm: user?.organization ?? "",
-    farmer: user?.name ?? "",
-    harvestDate: new Date().toISOString().split("T")[0],
+    productId: "",
+    product: "",
+    productName: "",
+    category: "",
+    farm: user?.organization ?? "Nông trại mặc định",
+    farmer: user?.name ?? "Nông dân sản xuất",
+    productionDate: new Date().toISOString().split("T")[0],
+    expiryDate: "",
+    quantity: 0,
+    unit: "",
+    unitId: "",
+    description: "",
+    productImage: "",
   });
+
   const [error, setError] = useState("");
   const [activeSection, setActiveSection] = useState<Section>("product");
   const [imageError, setImageError] = useState(false);
@@ -223,35 +185,40 @@ export function BatchCreatePage() {
     }
   };
 
-  const handleDetectGps = () => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude.toFixed(5);
-        const lng = pos.coords.longitude.toFixed(5);
-        setForm((curr) => ({
-          ...curr,
-          gps: `${lat}, ${lng}`,
-          gpsLocation: `${lat}, ${lng}`,
-        }));
-      },
-      (err) => {
-        console.warn("GPS detection error:", err);
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+  const [detectingGps, setDetectingGps] = useState(false);
+
+  const handleDetectGps = async () => {
+    setDetectingGps(true);
+    try {
+      const res = await fetchDeviceLocation();
+      const addressOnly = res.address || res.locationString.replace(/\s*\(-?\d+\.\d+,\s*-?\d+\.\d+\)/, "").trim();
+      const latStr = res.latitude ? res.latitude.toFixed(6) : "";
+      const lngStr = res.longitude ? res.longitude.toFixed(6) : "";
+      const coordsStr = latStr && lngStr ? `${latStr}, ${lngStr}` : res.locationString;
+
+      setForm((curr) => ({
+        ...curr,
+        location: addressOnly || curr.location,
+        gps: coordsStr || curr.gps,
+        gpsLocation: coordsStr || curr.gpsLocation,
+        productionArea: addressOnly || curr.productionArea,
+      }));
+    } catch (err: any) {
+      console.warn("GPS detection error:", err);
+    } finally {
+      setDetectingGps(false);
+    }
+  };
+
+  const openMaps = () => {
+    if (form.gps) window.open(`https://maps.google.com/?q=${encodeURIComponent(form.gps)}`, "_blank");
   };
 
   const isValid = useMemo(() => Boolean(
-    form.product.trim() &&
-    form.category.trim() &&
-    form.farm.trim() &&
-    form.farmer.trim() &&
-    form.harvestDate.trim() &&
-    form.location.trim() &&
-    form.gps.trim() &&
+    (form.productId?.trim() || form.product?.trim()) &&
     Number(form.quantity) > 0 &&
-    form.weight.trim()
+    (form.unitId?.trim() || form.unit?.trim()) &&
+    form.productionDate?.trim()
   ), [form]);
 
   const handleChange = (field: keyof CreateBatchRequest, value: string | number) =>
@@ -260,45 +227,52 @@ export function BatchCreatePage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
-    if (!isValid) { setError("Please complete all required fields before submitting."); return; }
+    if (!isValid) {
+      setError("Vui lòng điền đầy đủ các thông tin bắt buộc (*).");
+      return;
+    }
     try {
-      const result = await createBatch.mutateAsync({ ...form, quantity: Number(form.quantity) });
+      const payload: CreateBatchRequest = {
+        ...form,
+        productId: form.productId || form.product,
+        product: form.productId || form.product,
+        quantity: Number(form.quantity),
+        productionDate: form.productionDate,
+        expiryDate: form.expiryDate || undefined,
+      };
+      const result = await createBatch.mutateAsync(payload);
       navigate(`/app/batches/${result.data.id}`);
-    } catch {
-      setError("Unable to create this batch right now. Please try again.");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || "Không thể tạo lô hàng lúc này. Vui lòng thử lại.";
+      setError(msg);
     }
   };
 
-  const inputClass = "w-full px-3 py-2.5 rounded-xl border border-gray-200 outline-none text-sm transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100";
-
-  const openMaps = () => {
-    if (form.gps) window.open(`https://maps.google.com/?q=${encodeURIComponent(form.gps)}`, "_blank");
-  };
+  const inputClass = "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 outline-none text-sm transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 bg-white text-gray-800 shadow-xs font-medium";
+  const readOnlyInputClass = "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 outline-none text-sm bg-gray-50 text-gray-600 font-medium cursor-not-allowed";
 
   return (
     <div className="pb-10">
-      {/* Banner */}
-      <div className="relative h-40 overflow-hidden">
-        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%)" }} />
-        {/* Decorative circles */}
+      {/* Header Banner */}
+      <div className="relative h-40 overflow-hidden" style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%)" }}>
         <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full opacity-10 bg-white" />
         <div className="absolute right-32 bottom-0 w-24 h-24 rounded-full opacity-10 bg-white" />
         <div className="relative z-10 h-full flex items-center px-8">
           <div>
             <button
               onClick={() => navigate("/app/batches")}
-              className="flex items-center gap-1.5 text-green-200 hover:text-white text-sm mb-3 transition-colors"
+              className="flex items-center gap-1.5 text-green-200 hover:text-white text-sm mb-3 transition-colors font-medium"
             >
-              <ArrowLeft className="w-4 h-4" /> Back to Batch List
+              <ArrowLeft className="w-4 h-4" /> Quay lại danh sách Lô hàng
             </button>
-            <h1 className="text-white" style={{ fontSize: 26, fontWeight: 800 }}>Create New Batch</h1>
-            <p className="text-green-100 text-sm mt-0.5">
-              Register a new agricultural batch and generate traceability data
+            <h1 className="text-white" style={{ fontSize: 26, fontWeight: 800 }}>Khởi Tạo Lô Hàng Mới</h1>
+            <p className="text-green-100 text-sm mt-0.5 opacity-90">
+              Khai báo mã lô nông sản mới và phát sinh dữ liệu truy xuất nguồn gốc ban đầu
             </p>
           </div>
           <div className="ml-auto">
             <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center border border-white/20 shadow-inner"
               style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)" }}
             >
               <Package className="w-8 h-8 text-white" />
@@ -312,44 +286,46 @@ export function BatchCreatePage() {
 
           {/* Left: Section Navigator */}
           <div className="xl:col-span-1">
-            <div className="bg-white rounded-2xl p-3 sticky top-4" style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.07)" }}>
-              <div className="text-xs font-semibold uppercase tracking-widest text-gray-400 px-2 mb-2">Form Sections</div>
+            <div className="bg-white rounded-2xl p-3 sticky top-4 border border-gray-100" style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
+              <div className="text-xs font-bold uppercase tracking-wider text-gray-400 px-2 mb-2">Các mục thông tin</div>
               {SECTIONS.map(({ key, label, icon: Icon, desc }) => (
                 <button
                   key={key}
+                  type="button"
                   onClick={() => {
                     setActiveSection(key);
                     document.getElementById(`section-${key}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all mb-0.5 ${activeSection === key ? "text-white" : "text-gray-600 hover:bg-gray-50"}`}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all mb-1 ${activeSection === key ? "text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
                   style={activeSection === key ? { background: "linear-gradient(135deg, #2E7D32, #388E3C)" } : {}}
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
                   <div>
-                    <div className="text-sm font-semibold">{label}</div>
-                    <div className={`text-xs mt-0.5 ${activeSection === key ? "text-green-200" : "text-gray-400"}`}>{desc}</div>
+                    <div className="text-xs font-bold">{label}</div>
+                    <div className={`text-[11px] mt-0.5 ${activeSection === key ? "text-green-100 opacity-90" : "text-gray-400"}`}>{desc}</div>
                   </div>
                 </button>
               ))}
 
-              {/* Completion indicator */}
-              <div className="mt-4 px-2">
-                <div className="flex justify-between text-xs text-gray-400 mb-1">
-                  <span>Form Completion</span>
-                  <span className="font-semibold" style={{ color: "#2E7D32" }}>
-                    {isValid ? "100%" : "In progress"}
+              {/* Progress completion bar */}
+              <div className="mt-4 px-2 pt-3 border-t border-gray-100">
+                <div className="flex justify-between text-xs text-gray-500 mb-1.5 font-medium">
+                  <span>Tiến độ hoàn thành</span>
+                  <span className="font-bold" style={{ color: "#2E7D32" }}>
+                    {isValid ? "Hoàn tất 100%" : "Đang nhập..."}
                   </span>
                 </div>
-                <div className="w-full h-1.5 rounded-full bg-gray-100">
+                <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
                   <div
-                    className="h-full rounded-full transition-all"
+                    className="h-full rounded-full transition-all duration-300"
                     style={{
                       background: "#2E7D32",
                       width: `${Math.min(100, [
-                        form.product, form.category, form.farm, form.farmer,
-                        form.harvestDate, form.location, form.gps,
-                        String(form.quantity), form.weight,
-                      ].filter(Boolean).length / 9 * 100)}%`,
+                        form.productId || form.product,
+                        String(form.quantity),
+                        form.unitId || form.unit,
+                        form.productionDate,
+                      ].filter(Boolean).length / 4 * 100)}%`,
                     }}
                   />
                 </div>
@@ -357,62 +333,63 @@ export function BatchCreatePage() {
             </div>
           </div>
 
-          {/* Right: Form */}
+          {/* Right: Form fields */}
           <div className="xl:col-span-3">
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
 
-              {/* Section: Product Details */}
-              <div id="section-product" className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
-                    <Package className="w-4 h-4" style={{ color: "#2E7D32" }} />
+              {/* Section 1: Product Details */}
+              <div id="section-product" className="bg-white rounded-2xl overflow-hidden border border-gray-100" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100">
+                    <Package className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900">Product Details</div>
-                    <div className="text-xs text-gray-400">Name, category, and product image</div>
+                    <div className="font-bold text-gray-900 text-sm">1. Thông tin Sản phẩm (Product Details)</div>
+                    <div className="text-xs text-gray-500">Chọn sản phẩm nông sản và danh mục liên quan</div>
                   </div>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="space-y-1.5">
-                    <FieldLabel required>Product Name</FieldLabel>
+                    <FieldLabel required>Sản phẩm Nông sản</FieldLabel>
                     <ProductSelect
-                      value={form.product}
-                      onChange={(val) => handleChange("product", val)}
+                      value={form.productId || form.product}
+                      onChange={(val) => {
+                        setForm((curr) => ({ ...curr, productId: val, product: val }));
+                      }}
                       onProductSelected={(product) => {
-                        handleChange("productName", product.name);
-                        if (product.categoryName) handleChange("category", product.categoryName);
+                        handleChange("productName", product.name || "");
+                        if (product.categoryName || product.category) {
+                          handleChange("category", product.categoryName || product.category);
+                        }
                         if (product.unit) handleChange("unit", product.unit);
                         if (product.unitId) handleChange("unitId", product.unitId);
                       }}
                       className={inputClass}
                     />
                   </label>
+
                   <label className="space-y-1.5">
-                    <FieldLabel>Display Name</FieldLabel>
-                    <input value={form.productName} onChange={(e) => handleChange("productName", e.target.value)} className={inputClass} placeholder="Optional display name" />
-                  </label>
-                  <label className="space-y-1.5 md:col-span-2">
-                    <FieldLabel required>Category</FieldLabel>
-                    <CategorySelect
-                      value={form.category}
-                      onChange={(val) => handleChange("category", val)}
-                      className={inputClass}
+                    <FieldLabel>Danh mục Nông sản (Tự động)</FieldLabel>
+                    <input
+                      readOnly
+                      value={form.category || "Theo sản phẩm đã chọn"}
+                      className={readOnlyInputClass}
+                      placeholder="Danh mục tự động cập nhật"
                     />
                   </label>
 
-                  {/* Image URL with preview */}
+                  {/* Product Image URL */}
                   <div className="md:col-span-2 space-y-1.5">
-                    <FieldLabel>Product Image URL</FieldLabel>
+                    <FieldLabel>URL Hình ảnh sản phẩm (Tùy chọn)</FieldLabel>
                     <div className="flex gap-3">
                       <input
-                        value={form.productImage}
+                        value={form.productImage || ""}
                         onChange={(e) => { handleChange("productImage", e.target.value); setImageError(false); }}
                         className={inputClass}
-                        placeholder="https://... (optional)"
+                        placeholder="https://example.com/product-image.jpg"
                       />
                       <div
-                        className="w-12 h-12 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center"
-                        style={{ background: "#F8FAF8", border: "1.5px dashed #D1D5DB" }}
+                        className="w-11 h-11 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center bg-gray-50 border border-dashed border-gray-300 shadow-xs"
                       >
                         {form.productImage && !imageError ? (
                           <img
@@ -422,7 +399,7 @@ export function BatchCreatePage() {
                             onError={() => setImageError(true)}
                           />
                         ) : (
-                          <ImageIcon className="w-5 h-5 text-gray-300" />
+                          <ImageIcon className="w-5 h-5 text-gray-400" />
                         )}
                       </div>
                     </div>
@@ -430,51 +407,32 @@ export function BatchCreatePage() {
                 </div>
               </div>
 
-              {/* Section: Farm & Producer */}
-              <div id="section-farm" className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
-                    <Leaf className="w-4 h-4" style={{ color: "#2E7D32" }} />
+              {/* Section 2: Production & Quantity */}
+              <div id="section-quantity" className="bg-white rounded-2xl overflow-hidden border border-gray-100" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100">
+                    <Calendar className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900">Farm &amp; Producer</div>
-                    <div className="text-xs text-gray-400">Origin farm and farmer details</div>
-                  </div>
-                </div>
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <label className="space-y-1.5 md:col-span-2">
-                    <FieldLabel required>Farm Name</FieldLabel>
-                    <input value={form.farm} onChange={(e) => handleChange("farm", e.target.value)} className={inputClass} placeholder="Farm / Cooperative name" />
-                  </label>
-                  <label className="space-y-1.5 md:col-span-2">
-                    <FieldLabel required>Farmer / Producer</FieldLabel>
-                    <input value={form.farmer} onChange={(e) => handleChange("farmer", e.target.value)} className={inputClass} placeholder="Farmer full name" />
-                  </label>
-                  <label className="space-y-1.5 md:col-span-2">
-                    <FieldLabel required>Harvest Date</FieldLabel>
-                    <input type="date" value={form.harvestDate} onChange={(e) => handleChange("harvestDate", e.target.value)} className={inputClass} />
-                  </label>
-                </div>
-              </div>
-
-              {/* Section: Quantity & Weight */}
-              <div id="section-quantity" className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
-                    <User className="w-4 h-4" style={{ color: "#2E7D32" }} />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">Quantity &amp; Weight</div>
-                    <div className="text-xs text-gray-400">Volume, units, and weight information</div>
+                    <div className="font-bold text-gray-900 text-sm">2. Sản xuất &amp; Số lượng (Production &amp; Volume)</div>
+                    <div className="text-xs text-gray-500">Quy mô sản xuất, đơn vị tính, ngày khởi tạo và hạn sử dụng</div>
                   </div>
                 </div>
                 <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <label className="space-y-1.5">
-                    <FieldLabel required>Quantity</FieldLabel>
-                    <input type="number" min={1} value={form.quantity || ""} onChange={(e) => handleChange("quantity", Number(e.target.value))} className={inputClass} placeholder="500" />
+                    <FieldLabel required>Số lượng Lô hàng</FieldLabel>
+                    <input
+                      type="number"
+                      min={1}
+                      value={form.quantity || ""}
+                      onChange={(e) => handleChange("quantity", Number(e.target.value))}
+                      className={inputClass}
+                      placeholder="Nhập số lượng (vd: 500)"
+                    />
                   </label>
+
                   <label className="space-y-1.5">
-                    <FieldLabel required>Unit</FieldLabel>
+                    <FieldLabel required>Đơn vị tính</FieldLabel>
                     <UnitSelect
                       value={form.unit || "kg"}
                       unitId={form.unitId}
@@ -484,39 +442,57 @@ export function BatchCreatePage() {
                       className={inputClass}
                     />
                   </label>
+
                   <label className="space-y-1.5">
-                    <FieldLabel required>Weight</FieldLabel>
-                    <input value={form.weight} onChange={(e) => handleChange("weight", e.target.value)} className={inputClass} placeholder="500 kg" />
+                    <FieldLabel>Tổng trọng lượng / Khối lượng (Weight)</FieldLabel>
+                    <input
+                      type="text"
+                      value={form.weight || ""}
+                      onChange={(e) => handleChange("weight", e.target.value)}
+                      className={inputClass}
+                      placeholder="vd: 5000 kg hoặc 10 kg/thùng"
+                    />
                   </label>
-                  <label className="md:col-span-3 space-y-1.5">
-                    <FieldLabel>Description / Notes</FieldLabel>
-                    <textarea
-                      value={form.description}
-                      onChange={(e) => handleChange("description", e.target.value)}
-                      className={`${inputClass} min-h-24 resize-none`}
-                      placeholder="Batch description, growing conditions, or additional notes..."
+
+                  <label className="space-y-1.5 md:col-span-2">
+                    <FieldLabel required>Ngày bắt đầu sản xuất / Gieo trồng (Production Date)</FieldLabel>
+                    <input
+                      type="date"
+                      value={form.productionDate}
+                      onChange={(e) => handleChange("productionDate", e.target.value)}
+                      className={inputClass}
+                    />
+                  </label>
+
+                  <label className="space-y-1.5">
+                    <FieldLabel>Hạn sử dụng dự kiến (Expiry Date)</FieldLabel>
+                    <input
+                      type="date"
+                      value={form.expiryDate || ""}
+                      onChange={(e) => handleChange("expiryDate", e.target.value)}
+                      className={inputClass}
                     />
                   </label>
                 </div>
               </div>
 
-              {/* Section: Location & GPS */}
-              <div id="section-location" className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
-                    <MapPin className="w-4 h-4" style={{ color: "#2E7D32" }} />
+              {/* Section 3: Origin & Notes */}
+              <div id="section-origin" className="bg-white rounded-2xl overflow-hidden border border-gray-100" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100">
+                    <Leaf className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900">Location &amp; GPS Mapping</div>
-                    <div className="text-xs text-gray-400">Geographic origin, farm address, and GPS coordinates</div>
+                    <div className="font-bold text-gray-900 text-sm">3. Nguồn gốc Trang trại &amp; Ghi chú (Origin &amp; Notes)</div>
+                    <div className="text-xs text-gray-500">Đơn vị chủ quản và ghi chú bổ sung về lô hàng</div>
                   </div>
                 </div>
-                <div className="p-6 space-y-4">
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Location Mapping Action Bar */}
-                  <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:col-span-2">
                     <div>
                       <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">Interactive Location Mapping</span>
-                      <p className="text-xs text-emerald-600 mt-0.5">Pick location on 3rd-party interactive map or detect current device GPS</p>
+                      <p className="text-xs text-emerald-600 mt-0.5">Chọn vị trí trên bản đồ tương tác hoặc định vị GPS thiết bị hiện tại</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <button
@@ -529,63 +505,103 @@ export function BatchCreatePage() {
                       <button
                         type="button"
                         onClick={handleDetectGps}
-                        className="px-3.5 py-2 bg-white hover:bg-emerald-100 text-emerald-700 border border-emerald-300 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5"
+                        disabled={detectingGps}
+                        className="px-3.5 py-2 bg-white hover:bg-emerald-100 disabled:opacity-50 text-emerald-700 border border-emerald-300 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5"
                       >
-                        <LocateFixed className="w-4 h-4" /> Use Device GPS
+                        <LocateFixed className={`w-4 h-4 ${detectingGps ? "animate-spin" : ""}`} />
+                        {detectingGps ? "Đang định vị địa chỉ..." : "Use Device GPS"}
                       </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label className="space-y-1.5 md:col-span-2">
-                      <FieldLabel required>Location Address</FieldLabel>
-                      <div className="relative">
-                        <input
-                          value={form.location}
-                          onChange={(e) => handleChange("location", e.target.value)}
-                          className={inputClass}
-                          placeholder="e.g. Xã Đại Lộc, Huyện Hậu Lộc, Thanh Hóa"
-                        />
-                      </div>
-                    </label>
-
-                    <label className="space-y-1.5">
-                      <FieldLabel>Production Area</FieldLabel>
-                      <input value={form.productionArea} onChange={(e) => handleChange("productionArea", e.target.value)} className={inputClass} placeholder="e.g. Bình Thuận Province" />
-                    </label>
-
-                    <div className="space-y-1.5">
-                      <FieldLabel required>GPS Coordinates (Lat, Lng)</FieldLabel>
-                      <div className="flex gap-2">
-                        <input
-                          value={form.gps}
-                          onChange={(e) => handleChange("gps", e.target.value)}
-                          className={inputClass}
-                          placeholder="11.9404, 108.4583"
-                        />
-                        <button
-                          type="button"
-                          onClick={openMaps}
-                          disabled={!form.gps}
-                          className="flex-shrink-0 px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors flex items-center gap-1.5"
-                        >
-                          <MapPin className="w-3.5 h-3.5" /> View Google Maps
-                        </button>
-                      </div>
-                      {form.gps && (
-                        <div className="text-xs text-gray-400 flex items-center gap-1">
-                          <CheckCircle className="w-3 h-3 text-green-500" /> Coordinates entered ({form.gps})
-                        </div>
-                      )}
+                  <label className="space-y-1.5">
+                    <FieldLabel>Trang trại / Nông trại sản xuất (Tự động)</FieldLabel>
+                    <div className="relative flex items-center">
+                      <Building className="w-4 h-4 text-gray-400 absolute left-3" />
+                      <input
+                        readOnly
+                        value={form.farm || "Tổ chức hiện tại"}
+                        className={`${readOnlyInputClass} pl-9`}
+                      />
                     </div>
+                  </label>
+
+                  <label className="space-y-1.5">
+                    <FieldLabel>Người khởi tạo (Tự động)</FieldLabel>
+                    <div className="relative flex items-center">
+                      <UserCheck className="w-4 h-4 text-gray-400 absolute left-3" />
+                      <input
+                        readOnly
+                        value={form.farmer || "Tài khoản hiện tại"}
+                        className={`${readOnlyInputClass} pl-9`}
+                      />
+                    </div>
+                  </label>
+
+                  <label className="space-y-1.5 md:col-span-2">
+                    <FieldLabel>Địa chỉ Nông trại / Vùng sản xuất (Location Address)</FieldLabel>
+                    <div className="relative flex items-center">
+                      <MapPin className="w-4 h-4 text-emerald-600 absolute left-3" />
+                      <input
+                        value={form.location || ""}
+                        onChange={(e) => handleChange("location", e.target.value)}
+                        className={`${inputClass} pl-9`}
+                        placeholder="vd: Xã Đại Lộc, Huyện Hậu Lộc, Thanh Hóa"
+                      />
+                    </div>
+                  </label>
+
+                  <label className="space-y-1.5">
+                    <FieldLabel>Vùng canh tác / Khu vực gieo trồng (Production Area)</FieldLabel>
+                    <input
+                      value={form.productionArea || ""}
+                      onChange={(e) => handleChange("productionArea", e.target.value)}
+                      className={inputClass}
+                      placeholder="vd: Khu vực A - Nông trường 1, Tỉnh Bình Thuận"
+                    />
+                  </label>
+
+                  <div className="space-y-1.5">
+                    <FieldLabel>Tọa độ GPS (Lat, Lng)</FieldLabel>
+                    <div className="flex gap-2">
+                      <input
+                        value={form.gps || ""}
+                        onChange={(e) => handleChange("gps", e.target.value)}
+                        className={inputClass}
+                        placeholder="vd: 11.9404, 108.4583"
+                      />
+                      <button
+                        type="button"
+                        onClick={openMaps}
+                        disabled={!form.gps}
+                        className="flex-shrink-0 px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors flex items-center gap-1.5"
+                      >
+                        <MapPin className="w-3.5 h-3.5" /> Xem Google Maps
+                      </button>
+                    </div>
+                    {form.gps && (
+                      <div className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                        <CheckCircle className="w-3 h-3 text-green-500" /> Tọa độ đã nhập ({form.gps})
+                      </div>
+                    )}
                   </div>
+
+                  <label className="md:col-span-2 space-y-1.5">
+                    <FieldLabel>Mô tả / Ghi chú điều kiện gieo trồng (Tùy chọn)</FieldLabel>
+                    <textarea
+                      value={form.description || ""}
+                      onChange={(e) => handleChange("description", e.target.value)}
+                      className={`${inputClass} min-h-24 resize-none`}
+                      placeholder="Nhập mô tả về điều kiện canh tác, giống cây trồng, hoặc các lưu ý khác..."
+                    />
+                  </label>
                 </div>
               </div>
 
-              {/* Error + Submit */}
+              {/* Error message */}
               {error && (
                 <div
-                  className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm"
+                  className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium animate-in fade-in"
                   style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}
                 >
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -593,22 +609,23 @@ export function BatchCreatePage() {
                 </div>
               )}
 
-              <div className="flex items-center justify-end gap-3">
+              {/* Form Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => navigate("/app/batches")}
-                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  Hủy bỏ
                 </button>
                 <button
                   type="submit"
                   disabled={createBatch.isPending || !isValid}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60 hover:opacity-90"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50 hover:opacity-90 shadow-md shadow-emerald-700/20"
                   style={{ background: "linear-gradient(135deg, #2E7D32, #388E3C)" }}
                 >
                   <Save className="w-4 h-4" />
-                  {createBatch.isPending ? "Creating..." : "Create Batch"}
+                  {createBatch.isPending ? "Đang tạo lô hàng..." : "Khởi Tạo Lô Hàng"}
                 </button>
               </div>
             </form>
@@ -616,7 +633,7 @@ export function BatchCreatePage() {
         </div>
       </div>
 
-      {/* Map Picker Modal */}
+      {/* Interactive Map Picker Modal */}
       <MapPickerModal
         isOpen={isMapPickerOpen}
         onClose={() => setIsMapPickerOpen(false)}

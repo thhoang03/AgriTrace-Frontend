@@ -1,13 +1,13 @@
 export type InspectionStatus = "Pending" | "Passed" | "Failed";
 
 export const InspectionTypeValues = [
-  { value: 1, label: "Raw Material" },
-  { value: 2, label: "Processing" },
-  { value: 3, label: "Packaging" },
-  { value: 4, label: "Storage" },
-  { value: 5, label: "Transportation" },
-  { value: 6, label: "Retail" },
-  { value: 7, label: "Random Sampling" },
+  { value: 1, label: "1. Nguyên liệu thô (Raw Material)" },
+  { value: 2, label: "2. Sơ chế & Chế biến (Processing)" },
+  { value: 3, label: "3. Đóng gói & Nhãn mác (Packaging)" },
+  { value: 4, label: "4. Lưu kho & Bảo quản (Storage)" },
+  { value: 5, label: "5. Vận chuyển & Logistics (Transportation)" },
+  { value: 6, label: "6. Phân phối Bán lẻ (Retail)" },
+  { value: 7, label: "7. Lấy mẫu đột xuất (Random Sampling)" },
 ] as const;
 
 export type InspectionType = (typeof InspectionTypeValues)[number]["value"];
@@ -51,19 +51,19 @@ export interface InspectionItem {
 }
 
 export const InspectionTypeLabel: Record<InspectionType, string> = {
-  1: "Raw Material",
-  2: "Processing",
-  3: "Packaging",
-  4: "Storage",
-  5: "Transportation",
-  6: "Retail",
-  7: "Random Sampling",
+  1: "Nguyên liệu thô (Raw Material)",
+  2: "Sơ chế & Chế biến (Processing)",
+  3: "Đóng gói (Packaging)",
+  4: "Lưu kho (Storage)",
+  5: "Vận chuyển (Transportation)",
+  6: "Bán lẻ (Retail)",
+  7: "Lấy mẫu đột xuất (Random Sampling)",
 };
 
 export const StatusLabel: Record<InspectionStatus, string> = {
-  Pending: "Pending",
-  Passed: "Passed",
-  Failed: "Failed",
+  Pending: "Chờ kiểm định",
+  Passed: "Đạt chuẩn",
+  Failed: "Không đạt",
 };
 
 export interface CreateInspectionRequest {

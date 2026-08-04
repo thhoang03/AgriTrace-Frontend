@@ -4,7 +4,7 @@ export type EventRequestStatus = 0 | 1 | 2 | "Pending" | "Approved" | "Rejected"
 
 export interface EventRequestItem {
   id: string;
-  batchId: string;
+  batchId?: string;
   batchCode?: string;
   eventTypeId: string;
   eventTypeCode?: string;
@@ -24,11 +24,9 @@ export interface EventRequestItem {
 }
 
 export interface CreateEventRequestPayload {
-  batchId: string;
   eventTypeId: string;
   location?: string;
   description?: string;
-  eventData?: string;
 }
 
 export interface GetEventRequestsParams {
