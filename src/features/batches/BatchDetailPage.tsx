@@ -16,6 +16,7 @@ import { BatchEventModal } from "./BatchEventModal";
 import { BatchMediaTab } from "./BatchMediaTab";
 import { BatchLineageTab } from "./BatchLineageTab";
 import { BatchInspectionRequestModal } from "./BatchInspectionRequestModal";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const PRODUCT_IMG = "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=800&q=80";
 
@@ -30,8 +31,9 @@ const statusConfig: Record<string, { bg: string; color: string }> = {
   Recalled:     { bg: "#FFEBEE", color: "#C62828" },
 };
 
-const tabs = ["Information", "Timeline", "Media", "Lineage", "Certificates", "Inspection Requests", "Audit Log"] as const;
-type Tab = typeof tabs[number];
+const tabsEn = ["Information", "Timeline", "Media", "Lineage", "Certificates", "Inspection Requests", "Audit Log"] as const;
+const tabsVi = ["Thông tin", "Lịch sử", "Phương tiện", "Phả hệ", "Chứng nhận", "Yêu cầu kiểm định", "Nhật ký"] as const;
+type Tab = typeof tabsEn[number];
 
 const auditTypeStyle: Record<string, { bg: string; color: string; dot: string }> = {
   create:   { bg: "#EFF6FF", color: "#1D4ED8", dot: "#3B82F6" },
@@ -44,6 +46,7 @@ const auditTypeStyle: Record<string, { bg: string; color: string; dot: string }>
 export function BatchDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { lang } = useLanguage();
   const [activeTab, setActiveTab] = useState<Tab>("Information");
   const [showEdit, setShowEdit] = useState(false);
   const [showSplit, setShowSplit] = useState(false);
@@ -198,21 +201,22 @@ export function BatchDetailPage() {
                 onClick={() => setShowEdit(true)}
                 className="px-4 py-2 rounded-xl text-sm font-semibold bg-white/15 text-white hover:bg-white/25 flex items-center gap-2 transition-colors"
               >
-                <Edit2 className="w-4 h-4" /> Edit
+                <Edit2 className="w-4 h-4" /> {lang === "vi" ? "Chỉnh sửa" : "Edit"}
               </button>
               <button
                 onClick={() => setShowSplit(true)}
                 className="px-4 py-2 rounded-xl text-sm font-semibold bg-blue-500/80 text-white hover:bg-blue-600/90 flex items-center gap-2 transition-colors"
               >
-                <Scissors className="w-4 h-4" /> Split
+                <Scissors className="w-4 h-4" /> {lang === "vi" ? "Tách lô" : "Split"}
               </button>
               <button
                 onClick={() => setShowMerge(true)}
                 className="px-4 py-2 rounded-xl text-sm font-semibold bg-purple-500/80 text-white hover:bg-purple-600/90 flex items-center gap-2 transition-colors"
               >
-                <Merge className="w-4 h-4" /> Merge
-              </button>              <button onClick={handleShare} className="px-4 py-2 rounded-xl text-sm font-semibold bg-white/15 text-white hover:bg-white/25 flex items-center gap-2 transition-colors">
-                <Share2 className="w-4 h-4" /> Share
+                <Merge className="w-4 h-4" /> {lang === "vi" ? "Gộp lô" : "Merge"}
+              </button>
+              <button onClick={handleShare} className="px-4 py-2 rounded-xl text-sm font-semibold bg-white/15 text-white hover:bg-white/25 flex items-center gap-2 transition-colors">
+                <Share2 className="w-4 h-4" /> {lang === "vi" ? "Chia sẻ" : "Share"}
               </button>
               <button onClick={handleDownloadPdf} className="px-4 py-2 rounded-xl text-sm font-semibold bg-white text-gray-800 hover:opacity-90 flex items-center gap-2 transition-opacity">
                 <Download className="w-4 h-4" /> PDF
@@ -225,14 +229,14 @@ export function BatchDetailPage() {
       <div className="px-6 mt-5">
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-white rounded-2xl p-1.5 max-w-fit flex-wrap" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-          {tabs.map((tab) => (
+          {tabsEn.map((tab, idx) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab ? "text-white" : "text-gray-500 hover:text-gray-700"}`}
               style={activeTab === tab ? { background: "linear-gradient(135deg, #2E7D32, #388E3C)" } : {}}
             >
-              {tab}
+              {lang === "vi" ? tabsVi[idx] : tab}
             </button>
           ))}
         </div>
@@ -246,17 +250,17 @@ export function BatchDetailPage() {
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#E8F5E9" }}>
                   <Award style={{ color: "#2E7D32", width: 16, height: 16 }} />
                 </div>
-                <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Product Information</h3>
+                <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Thông Tin Sản Phẩm" : "Product Information"}</h3>
               </div>
               <div className="space-y-3.5">
                 {[
-                  { label: "Product Name", value: batch.productName ?? batch.product },
-                  { label: "Category", value: batch.category },
-                  { label: "Batch Code", value: batch.batchCode ?? batch.id, mono: true },
-                  { label: "Harvest Date", value: batch.harvestDate },
-                  { label: "Quantity", value: batch.quantity.toLocaleString() },
-                  { label: "Total Weight", value: batch.weight },
-                  { label: "Status", value: statusNorm || batch.status },
+                  { label: lang === "vi" ? "Tên sản phẩm" : "Product Name", value: batch.productName ?? batch.product },
+                  { label: lang === "vi" ? "Danh mục" : "Category", value: batch.category },
+                  { label: lang === "vi" ? "Mã lô hàng" : "Batch Code", value: batch.batchCode ?? batch.id, mono: true },
+                  { label: lang === "vi" ? "Ngày thu hoạch" : "Harvest Date", value: batch.harvestDate },
+                  { label: lang === "vi" ? "Số lượng" : "Quantity", value: `${batch.quantity.toLocaleString()} ${batch.unit ?? "units"}` },
+                  { label: lang === "vi" ? "Tổng khối lượng" : "Total Weight", value: batch.weight },
+                  { label: lang === "vi" ? "Trạng thái" : "Status", value: statusNorm || batch.status },
                 ].map(({ label, value, mono }) => (
                   <div key={label} className="flex justify-between items-start gap-3">
                     <span className="text-gray-400 text-sm flex-shrink-0">{label}</span>
@@ -275,16 +279,16 @@ export function BatchDetailPage() {
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#E8F5E9" }}>
                   <Building2 style={{ color: "#2E7D32", width: 16, height: 16 }} />
                 </div>
-                <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Farm &amp; Producer</h3>
+                <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Trang Trại & Nhà Sản Xuất" : "Farm & Producer"}</h3>
               </div>
               <div className="space-y-3.5">
                 {[
-                  { label: "Farm Name", value: batch.farm },
-                  { label: "Farmer", value: batch.farmer },
-                  { label: "Location", value: batch.location },
-                  { label: "Production Area", value: batch.productionArea || "—" },
-                  { label: "GPS Coordinates", value: batch.gps || batch.gpsLocation || "—" },
-                  { label: "Certification", value: "VietGAP Grade A" },
+                  { label: lang === "vi" ? "Tên trang trại" : "Farm Name", value: batch.farm },
+                  { label: lang === "vi" ? "Nông dân" : "Farmer", value: batch.farmer },
+                  { label: lang === "vi" ? "Địa điểm" : "Location", value: batch.location },
+                  { label: lang === "vi" ? "Khu vực sản xuất" : "Production Area", value: batch.productionArea || "—" },
+                  { label: lang === "vi" ? "Tọa độ GPS" : "GPS Coordinates", value: batch.gps || batch.gpsLocation || "—" },
+                  { label: lang === "vi" ? "Chứng nhận" : "Certification", value: "VietGAP Grade A" },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between items-start gap-3">
                     <span className="text-gray-400 text-sm flex-shrink-0">{label}</span>
@@ -299,7 +303,7 @@ export function BatchDetailPage() {
                     className="flex items-center gap-1.5 text-xs font-semibold mt-2 transition-colors"
                     style={{ color: "#2E7D32" }}
                   >
-                    <MapPin className="w-3.5 h-3.5" /> Open in Google Maps
+                    <MapPin className="w-3.5 h-3.5" /> {lang === "vi" ? "Mở trong Google Maps" : "Open in Google Maps"}
                   </a>
                 )}
               </div>
@@ -318,7 +322,7 @@ export function BatchDetailPage() {
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-36 h-36 rounded-2xl overflow-hidden flex items-center justify-center" style={{ background: "#F8FAF8", border: "2px dashed #E0E0E0" }}>
                     <img
-                      src={qrCode?.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.origin + "/public/trace/" + (batch.id || ""))}`}
+                      src={qrCode?.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.origin + "/trace/" + (batch.batchCode || batch.id || ""))}`}
                       alt="QR Code"
                       className="w-full h-full object-contain"
                     />
@@ -331,10 +335,10 @@ export function BatchDetailPage() {
                   )}
                   <div className="flex gap-2 w-full">
                     <button onClick={handleDownloadQr} className="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5">
-                      <Download className="w-3.5 h-3.5" /> Download
+                      <Download className="w-3.5 h-3.5" /> {lang === "vi" ? "Tải xuống" : "Download"}
                     </button>
                     <button className="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5" style={{ background: "#2E7D32" }}>
-                      Print
+                      {lang === "vi" ? "In" : "Print"}
                     </button>
                   </div>
                 </div>
@@ -347,20 +351,20 @@ export function BatchDetailPage() {
                     <Shield style={{ color: "#2E7D32", width: 20, height: 20 }} />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900" style={{ fontSize: 14 }}>Government Verified</div>
-                    <div className="text-xs text-gray-400">Ministry of Agriculture</div>
+                    <div className="font-semibold text-gray-900" style={{ fontSize: 14 }}>{lang === "vi" ? "Chính Phủ Xác Thực" : "Government Verified"}</div>
+                    <div className="text-xs text-gray-400">{lang === "vi" ? "Bộ Nông Nghiệp" : "Ministry of Agriculture"}</div>
                   </div>
                   <CheckCircle className="ml-auto w-5 h-5 text-green-500" />
                 </div>
                 {[
-                  { label: "VietGAP Certified", ok: true },
-                  { label: "Food Safety Standard", ok: true },
-                  { label: "Blockchain Secured", ok: true },
-                  { label: "Recall-Free", ok: !batch.status.toLowerCase().includes("recall") },
+                  { label: lang === "vi" ? "Chứng nhận VietGAP" : "VietGAP Certified", ok: true },
+                  { label: lang === "vi" ? "Tiêu chuẩn an toàn thực phẩm" : "Food Safety Standard", ok: true },
+                  { label: lang === "vi" ? "Bảo mật Blockchain" : "Blockchain Secured", ok: true },
+                  { label: lang === "vi" ? "Không thu hồi" : "Recall-Free", ok: !batch.status.toLowerCase().includes("recall") },
                 ].map(({ label, ok }) => (
                   <div key={label} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
                     <span className="text-sm text-gray-600">{label}</span>
-                    <span className={`text-xs font-semibold ${ok ? "text-green-600" : "text-red-500"}`}>{ok ? "✓ Pass" : "✗ Fail"}</span>
+                    <span className={`text-xs font-semibold ${ok ? "text-green-600" : "text-red-500"}`}>{ok ? (lang === "vi" ? "✓ Đạt" : "✓ Pass") : (lang === "vi" ? "✗ Không đạt" : "✗ Fail")}</span>
                   </div>
                 ))}
               </div>
@@ -376,7 +380,7 @@ export function BatchDetailPage() {
                 onClick={() => setShowEventModal(true)}
                 className="px-4 py-2 rounded-xl text-sm font-semibold bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2"
               >
-                <Plus className="w-4 h-4" /> Add Event
+                <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Sự Kiện" : "Add Event"}
               </button>
             </div>
             {timelineLoading ? (
@@ -384,15 +388,15 @@ export function BatchDetailPage() {
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center animate-pulse" style={{ background: "#E8F5E9" }}>
                   <Calendar className="w-5 h-5" style={{ color: "#2E7D32" }} />
                 </div>
-                <div className="text-sm text-gray-400">Loading timeline...</div>
+                <div className="text-sm text-gray-400">{lang === "vi" ? "Đang tải lịch sử..." : "Loading timeline..."}</div>
               </div>
             ) : timelineEvents.length === 0 ? (
               <div className="flex flex-col items-center py-16 gap-3">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "#F0F9F0" }}>
                   <Calendar className="w-7 h-7" style={{ color: "#A5D6A7" }} />
                 </div>
-                <div className="font-semibold text-gray-600">No timeline events yet</div>
-                <div className="text-sm text-gray-400">Events will appear as this batch moves through the supply chain</div>
+                <div className="font-semibold text-gray-600">{lang === "vi" ? "Chưa có sự kiện nào" : "No timeline events yet"}</div>
+                <div className="text-sm text-gray-400">{lang === "vi" ? "Các sự kiện sẽ xuất hiện khi lô hàng di chuyển qua chuỗi cung ứng" : "Events will appear as this batch moves through the supply chain"}</div>
               </div>
             ) : (
               <div className="relative">
@@ -418,17 +422,17 @@ export function BatchDetailPage() {
                           </div>
                           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: "#E8F5E9" }}>
                             <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                            <span className="text-xs font-semibold" style={{ color: "#2E7D32" }}>Verified</span>
+                            <span className="text-xs font-semibold" style={{ color: "#2E7D32" }}>{lang === "vi" ? "Xác thực" : "Verified"}</span>
                           </div>
                         </div>
                         <p className="text-sm text-gray-600 leading-relaxed mb-4">{event.description}</p>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                           {[
-                            { label: "Organization", value: event.organization },
-                            { label: "Location", value: event.location },
-                            { label: "Employee", value: event.employee },
-                            ...(event.temp ? [{ label: "Temperature", value: event.temp }] : []),
-                            ...(event.humidity ? [{ label: "Humidity", value: event.humidity }] : []),
+                            { label: lang === "vi" ? "Tổ chức" : "Organization", value: event.organization },
+                            { label: lang === "vi" ? "Địa điểm" : "Location", value: event.location },
+                            { label: lang === "vi" ? "Nhân viên" : "Employee", value: event.employee },
+                            ...(event.temp ? [{ label: lang === "vi" ? "Nhiệt độ" : "Temperature", value: event.temp }] : []),
+                            ...(event.humidity ? [{ label: lang === "vi" ? "Độ ẩm" : "Humidity", value: event.humidity }] : []),
                           ].map(({ label, value }) => (
                             <div key={label} className="p-2.5 rounded-xl" style={{ background: "#F8FAF8" }}>
                               <div className="text-xs text-gray-400 mb-0.5">{label}</div>
@@ -439,7 +443,7 @@ export function BatchDetailPage() {
                         <div className="rounded-xl p-3" style={{ background: "#F0F4F0" }}>
                           <div className="flex items-center gap-1 mb-1">
                             <Hash className="w-3 h-3 text-gray-400" />
-                            <span className="text-xs font-semibold text-gray-500">Blockchain Hash</span>
+                             <span className="text-xs font-semibold text-gray-500">{lang === "vi" ? "Mã xích Blockchain" : "Blockchain Hash"}</span>
                           </div>
                           <code className="text-xs text-gray-600 break-all leading-relaxed">{event.hash}</code>
                         </div>
@@ -517,22 +521,22 @@ export function BatchDetailPage() {
             ) : (
               <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 text-center px-4">
                 <Award className="w-12 h-12 text-gray-300 mb-3" />
-                <p className="text-gray-700 font-bold text-base">Chưa có phiếu chứng nhận kiểm định</p>
+                <p className="text-gray-700 font-bold text-base">{lang === "vi" ? "Chưa có phiếu chứng nhận kiểm định" : "No Inspection Certificates Available"}</p>
                 <p className="text-gray-500 text-xs mt-1 max-w-md">
-                  Lô hàng này chưa có phiếu chứng nhận chất lượng QA/QC. Nếu bạn là Nông trại (Farmer), hãy gửi yêu cầu kiểm định đến Đơn vị kiểm định bên thứ 3.
+                  {lang === "vi" ? "Lô hàng này chưa có phiếu chứng nhận chất lượng QA/QC. Nếu bạn là Nông trại (Farmer), hãy gửi yêu cầu kiểm định đến Đơn vị kiểm định bên thứ 3." : "This batch does not have a QA/QC certificate yet. If you are a Farmer, please submit an inspection request."}
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
                   <button
                     onClick={() => setShowRequestInspectionModal(true)}
                     className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5"
                   >
-                    <Plus className="w-4 h-4" /> Gửi Yêu Cầu Kiểm Định Mới
+                    <Plus className="w-4 h-4" /> {lang === "vi" ? "Gửi Yêu Cầu Kiểm Định Mới" : "New Inspection Request"}
                   </button>
                   <button
                     onClick={() => navigate("/app/quality-inspection")}
                     className="px-4 py-2.5 border border-gray-300 hover:bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl transition-all"
                   >
-                    Đến Trang Quản Lý Kiểm Định (QC)
+                    {lang === "vi" ? "Đến Trang Quản Lý Kiểm Định (QC)" : "Go to Quality Inspection"}
                   </button>
                 </div>
               </div>
@@ -547,17 +551,17 @@ export function BatchDetailPage() {
               <div>
                 <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
                   <Send className="w-5 h-5 text-emerald-700" />
-                  Nhật Ký Yêu Cầu Kiểm Định Lô Hàng ({batchRequests.length})
+                  {lang === "vi" ? `Nhật Ký Yêu Cầu Kiểm Định Lô Hàng (${batchRequests.length})` : `Batch Inspection Requests (${batchRequests.length})`}
                 </h3>
                 <p className="text-gray-500 text-xs mt-0.5">
-                  Theo dõi tiến độ yêu cầu lấy mẫu & chứng nhận QA/QC gửi đến Đơn vị kiểm định bên thứ 3
+                  {lang === "vi" ? "Theo dõi tiến độ yêu cầu lấy mẫu & chứng nhận QA/QC gửi đến Đơn vị kiểm định bên thứ 3" : "Track inspection and certification request progress"}
                 </p>
               </div>
               <button
                 onClick={() => setShowRequestInspectionModal(true)}
                 className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5 shrink-0"
               >
-                <Plus className="w-4 h-4" /> Gửi Yêu Cầu Kiểm Định Mới
+                <Plus className="w-4 h-4" /> {lang === "vi" ? "Gửi Yêu Cầu Kiểm Định Mới" : "New Inspection Request"}
               </button>
             </div>
 
@@ -574,30 +578,30 @@ export function BatchDetailPage() {
                         </span>
                         {isPending ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                            <Clock className="w-3.5 h-3.5" /> Chờ Đơn Vị QC Tiếp Nhận
+                            <Clock className="w-3.5 h-3.5" /> {lang === "vi" ? "Chờ Đơn Vị QC Tiếp Nhận" : "Awaiting QC Unit"}
                           </span>
                         ) : isApproved ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Đã Tiếp Nhận & Duyệt
+                            <CheckCircle2 className="w-3.5 h-3.5" /> {lang === "vi" ? "Đã Tiếp Nhận & Duyệt" : "Approved"}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                            <XCircle className="w-3.5 h-3.5" /> Từ Chối
+                            <XCircle className="w-3.5 h-3.5" /> {lang === "vi" ? "Từ Chối" : "Rejected"}
                           </span>
                         )}
                       </div>
 
                       <div className="space-y-1.5 text-xs text-gray-700">
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-400">Người gửi yêu cầu:</span>
+                          <span className="text-gray-400">{lang === "vi" ? "Người gửi yêu cầu:" : "Requester:"}</span>
                           <span className="font-semibold text-gray-900">{req.requestedByUserName || "Nông trại / Farmer"}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-400">Địa điểm hẹn kiểm tra:</span>
+                          <span className="text-gray-400">{lang === "vi" ? "Địa điểm hẹn kiểm tra:" : "Location:"}</span>
                           <span className="font-medium text-gray-800">{req.location || "Kho nông sản"}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-400">Thời gian tạo:</span>
+                          <span className="text-gray-400">{lang === "vi" ? "Thời gian tạo:" : "Created:"}</span>
                           <span className="font-mono text-gray-600">{new Date(req.createdAt).toLocaleDateString("vi-VN")}</span>
                         </div>
                         {req.description && (
@@ -613,7 +617,7 @@ export function BatchDetailPage() {
                           onClick={() => navigate("/app/quality-inspection")}
                           className="text-xs text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1"
                         >
-                          Mở trang Quản Lý Kiểm Định (QC) &rarr;
+                          {lang === "vi" ? "Mở trang Quản Lý Kiểm Định (QC) →" : "Open Quality Inspection →"}
                         </button>
                       </div>
                     </div>
@@ -623,15 +627,15 @@ export function BatchDetailPage() {
             ) : (
               <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 text-center px-4">
                 <Send className="w-12 h-12 text-gray-300 mb-3" />
-                <p className="text-gray-700 font-bold text-base">Chưa gửi yêu cầu kiểm định nào cho lô này</p>
+                <p className="text-gray-700 font-bold text-base">{lang === "vi" ? "Chưa gửi yêu cầu kiểm định nào cho lô này" : "No inspection requests sent for this batch"}</p>
                 <p className="text-gray-500 text-xs mt-1 max-w-md">
-                  Bạn có thể gửi yêu cầu trực tiếp đến Đơn vị Kiểm định bên thứ 3 (QUATEST, SGS, Vinacontrol...) để họ đến kho lấy mẫu nghiệm thu chất lượng.
+                  {lang === "vi" ? "Bạn có thể gửi yêu cầu trực tiếp đến Đơn vị Kiểm định bên thứ 3 (QUATEST, SGS, Vinacontrol...) để họ đến kho lấy mẫu nghiệm thu chất lượng." : "You can send requests directly to third-party Inspection Units."}
                 </p>
                 <button
                   onClick={() => setShowRequestInspectionModal(true)}
                   className="mt-4 px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5"
                 >
-                  <Plus className="w-4 h-4" /> Gửi Yêu Cầu Kiểm Định Ngay
+>>>>>>> origin/main
                 </button>
               </div>
             )}
@@ -643,11 +647,11 @@ export function BatchDetailPage() {
           <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>System Audit Trail</h3>
-                <p className="text-gray-400 text-xs mt-0.5">All system actions related to this batch</p>
+                <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Nhật Ký Kiểm Toán Hệ Thống" : "System Audit Trail"}</h3>
+                <p className="text-gray-400 text-xs mt-0.5">{lang === "vi" ? "Tất cả hành động liên quan đến lô hàng này" : "All system actions related to this batch"}</p>
               </div>
               <button className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
-                <Download className="w-3.5 h-3.5" /> Export
+                  <Download className="w-3.5 h-3.5" /> {lang === "vi" ? "Xuất" : "Export"}
               </button>
             </div>
             <div className="divide-y divide-gray-50">

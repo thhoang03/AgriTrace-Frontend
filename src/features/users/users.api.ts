@@ -140,6 +140,16 @@ export const usersApi = {
   toggleStatus: (id: string, isActive: boolean) =>
     patch<any>(`/users/${id}/status`, { isActive }),
 
+  getProfile: async () => {
+    const response = await get<any>("/users/profile");
+    return adaptUserListItem(response.data);
+  },
+
+  updateProfile: async (data: { fullName?: string; phone?: string }) => {
+    const response = await put<any>("/users/profile", data);
+    return adaptUserListItem(response.data);
+  },
+
   resetPassword: (id: string, newPassword: string) =>
     post<void>(`/users/${id}/reset-password`, { newPassword }),
 };

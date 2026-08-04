@@ -9,8 +9,8 @@ interface QRGeneratorWidgetProps {
 
 export const QRGeneratorWidget: React.FC<QRGeneratorWidgetProps> = ({ lang = "en" }) => {
   const navigate = useNavigate();
-  const [batchCode, setBatchCode] = useState("BTH-2024-001");
-  const [productName, setProductName] = useState(lang === "vi" ? "Gạo ST25 Sóc Trăng Premium" : "ST25 Premium Jasmine Rice");
+  const [batchCode, setBatchCode] = useState("RICE-20260112-001");
+  const [productName, setProductName] = useState(lang === "vi" ? "Gạo Lài Thơm" : "Jasmine Rice");
   const [copied, setCopied] = useState(false);
 
   const qrUrl = `https://agritrace.vn/trace/${encodeURIComponent(batchCode.trim() || "BTH-2024-001")}`;
@@ -97,9 +97,9 @@ export const QRGeneratorWidget: React.FC<QRGeneratorWidgetProps> = ({ lang = "en
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 <span className="text-xs text-green-200">{lang === "vi" ? "Mẫu nhanh:" : "Quick samples:"}</span>
                 {[
-                  { code: "BTH-2024-001", name: "Gạo ST25 Sóc Trăng" },
-                  { code: "BTH-2024-002", name: "Xoài Cát Chu Đồng Tháp" },
-                  { code: "BTH-2024-004", name: "Thanh Long Bình Thuận" },
+                  { code: "RICE-20260112-001", name: "Jasmine Rice" },
+                  { code: "COFFEE-20260110-001", name: "Arabica Coffee" },
+                  { code: "DRAGONFRUIT-20260108-001", name: "Dragon Fruit" },
                 ].map((s) => (
                   <button
                     key={s.code}

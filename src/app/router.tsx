@@ -23,6 +23,7 @@ import { AnalyticsPage } from "../features/analytics/AnalyticsPage";
 import { PublicLineagePage } from "../pages/PublicLineagePage";
 import { NotificationsPage } from "../features/notifications/NotificationsPage";
 import { EventRequestsPage } from "../features/event-requests/EventRequestsPage";
+import { NotFoundPage } from "../pages/NotFoundPage";
 
 export const router = createBrowserRouter([
   { path: "/", Component: HomePage },
@@ -55,4 +56,5 @@ export const router = createBrowserRouter([
       { path: "notifications", Component: NotificationsPage },
     ],
   },
+  { path: "*", Component: NotFoundPage },
 ]);
