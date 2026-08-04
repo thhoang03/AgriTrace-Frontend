@@ -23,6 +23,7 @@ import { useOrganizationsList } from "./organizations.queries";
 import { useAuth } from "../../features/auth/auth.store";
 import { useOrganizationTypes } from "../../features/organizationTypes/organizationType.queries";
 import type { Organization } from "./organizations.types";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
 
 const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
@@ -51,6 +52,7 @@ interface Alert {
 
 export function OrganizationsPage() {
   const { user } = useAuth();
+  const { lang } = useLanguage();
   const isManager = user?.role === "MANAGER";
   const { data: orgTypes = [], isLoading: typesLoading } =
     useOrganizationTypes();
@@ -258,18 +260,28 @@ export function OrganizationsPage() {
               className="text-white"
               style={{ fontSize: 24, fontWeight: 700 }}
             >
-              Organization Management
+              {lang === "vi" ? "Quản Lý Tổ Chức & Đơn Vị" : "Organization Management"}
             </h1>
             <p className="text-green-100 text-sm mt-1">
-              Manage organizations in the supply chain
+              {lang === "vi" ? "Quản lý danh sách các tổ chức, doanh nghiệp trong chuỗi cung ứng" : "Manage organizations in the supply chain"}
             </p>
           </div>
           <div className="flex items-center gap-6">
+            {["ACTIVE", "INACTIVE"].map((s) => (
+              <div key={s} className="text-center">
+                <div className="font-bold text-white" style={{ fontSize: 20 }}>
+                  {orgs.filter((o) => o.status === s).length}
+                </div>
+                <div className="text-green-200 text-xs">
+                  {s === "ACTIVE" ? (lang === "vi" ? "HOẠT ĐỘNG" : "ACTIVE") : (lang === "vi" ? "NGƯNG ĐỘNG" : "INACTIVE")}
+                </div>
+              </div>
+            ))}
             <div className="text-center">
               <div className="font-bold text-white" style={{ fontSize: 20 }}>
                 {totalCount}
               </div>
-              <div className="text-green-200 text-xs">TOTAL ORGANIZATIONS</div>
+              <div className="text-green-200 text-xs">{lang === "vi" ? "TỔNG CỘNG" : "TOTAL"}</div>
             </div>
           </div>
         </div>
@@ -288,7 +300,7 @@ export function OrganizationsPage() {
                 type="text"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Search organizations..."
+                placeholder={lang === "vi" ? "Tìm kiếm tổ chức..." : "Search organizations..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
                 style={{ background: "#F8FAF8" }}
               />
@@ -304,16 +316,18 @@ export function OrganizationsPage() {
               style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
             >
               <SlidersHorizontal className="w-4 h-4" />
-              Filters
+              {lang === "vi" ? "Bộ Lọc" : "Filters"}
               {activeFilterCount > 0 && <span className="w-5 h-5 rounded-full text-xs flex items-center justify-center" style={{ background: showFilters ? "rgba(255,255,255,0.2)" : "#2E7D32", color: "white" }}>{activeFilterCount}</span>}
             </button>
-            <button
-              onClick={openAdd}
-              className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-              style={{ background: "#2E7D32" }}
-            >
-              <Plus className="w-4 h-4" /> Add Organization
-            </button>
+            {!isManager && (
+              <button
+                onClick={openAdd}
+                className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                style={{ background: "#2E7D32" }}
+              >
+                <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Tổ Chức" : "Add Organization"}
+              </button>
+            )}
           </div>
 
           {showFilters && (
@@ -364,18 +378,14 @@ export function OrganizationsPage() {
           className="bg-white rounded-2xl overflow-hidden"
           style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
         >
-          <div className="px-6 py-4 border-b border-gray-100">
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <span className="text-sm text-gray-500">
-              Showing{" "}
-              <span className="font-medium text-gray-800">
-                {totalCount}
-              </span>{" "}
-              organizations
+              {lang === "vi" ? `Hiển thị ${orgs.length} tổ chức` : `Showing ${orgs.length} organizations`}
             </span>
           </div>
           {isLoading ? (
             <div className="flex items-center justify-center py-16 text-gray-400 text-sm">
-              Loading...
+              {lang === "vi" ? "Đang tải dữ liệu..." : "Loading..."}
             </div>
           ) : (
             <>
@@ -383,11 +393,11 @@ export function OrganizationsPage() {
                 <table className="w-full">
                 <thead>
                   <tr style={{ background: "#F8FAF8" }}>
-                    <SortHeader label="Organization" sortKey="name" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label="Type" sortKey="type" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label="Address" sortKey="address" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label="Status" sortKey="status" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                    <SortHeader label={lang === "vi" ? "TỔ CHỨC" : "Organization"} sortKey="name" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "LOẠI HÌNH" : "Type"} sortKey="type" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "ĐỊA CHỈ" : "Address"} sortKey="address" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">

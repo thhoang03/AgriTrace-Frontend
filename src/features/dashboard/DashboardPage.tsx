@@ -10,36 +10,33 @@ import {
 import { useAuth } from "../auth/auth.store";
 import { useAnalyticsOverview, useBatchDistribution } from "../analytics/analytics.queries";
 import { useRecentActivities } from "./dashboard.queries";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1400&q=80";
 
 const PIE_COLORS = ["#2E7D32", "#66BB6A", "#42A5F5", "#FFB300", "#AB47BC", "#A5D6A7"];
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string, lang: string = "en"): string {
   if (!dateStr) return "";
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "Just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 1) return lang === "vi" ? "Vừa xong" : "Just now";
+  if (diffMin < 60) return lang === "vi" ? `${diffMin} phút trước` : `${diffMin}m ago`;
   const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffHr < 24) return lang === "vi" ? `${diffHr} giờ trước` : `${diffHr}h ago`;
   const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 7) return `${diffDay}d ago`;
-  return date.toLocaleDateString("en-VN", { day: "numeric", month: "short" });
+  if (diffDay < 7) return lang === "vi" ? `${diffDay} ngày trước` : `${diffDay}d ago`;
+  return date.toLocaleDateString(lang === "vi" ? "vi-VN" : "en-VN", { day: "numeric", month: "short" });
 }
 
-const quickActions = [
-  { label: "Create Batch", icon: Plus, color: "#2E7D32", bg: "#E8F5E9", to: "/app/batches" },
-  { label: "Generate QR", icon: QrCode, color: "#1976D2", bg: "#E3F2FD", to: "/app/batches" },
-  { label: "Inspection", icon: FlaskConical, color: "#F57C00", bg: "#FFF3E0", to: "/app/inspection" },
-  { label: "Reports", icon: FileText, color: "#7B1FA2", bg: "#F3E5F5", to: "/app/reports" },
-];
+// quickActions are defined inside the component to support i18n
 
 export function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { lang } = useLanguage();
   const { data: analyticsData, isLoading: overviewLoading, isError: overviewError, refetch: refetchOverview } = useAnalyticsOverview();
   const { data: distData, isLoading: distLoading } = useBatchDistribution();
 
@@ -47,7 +44,16 @@ export function DashboardPage() {
   const activities = rawActivities ?? [];
 
   const now = new Date();
-  const timeGreeting = now.getHours() < 12 ? "Good morning" : now.getHours() < 17 ? "Good afternoon" : "Good evening";
+  const timeGreeting = lang === "vi"
+    ? (now.getHours() < 12 ? "Chào buổi sáng" : now.getHours() < 17 ? "Chào buổi chiều" : "Chào buổi tối")
+    : (now.getHours() < 12 ? "Good morning" : now.getHours() < 17 ? "Good afternoon" : "Good evening");
+
+  const quickActions = [
+    { label: lang === "vi" ? "Tạo Lô Hàng" : "Create Batch", icon: Plus, color: "#2E7D32", bg: "#E8F5E9", to: "/app/batches" },
+    { label: lang === "vi" ? "Tạo Mã QR" : "Generate QR", icon: QrCode, color: "#1976D2", bg: "#E3F2FD", to: "/app/batches" },
+    { label: lang === "vi" ? "Kiểm Định" : "Inspection", icon: FlaskConical, color: "#F57C00", bg: "#FFF3E0", to: "/app/inspection" },
+    { label: lang === "vi" ? "Báo Cáo" : "Reports", icon: FileText, color: "#7B1FA2", bg: "#F3E5F5", to: "/app/reports" },
+  ];
 
   const overview = analyticsData?.data;
 
@@ -63,12 +69,12 @@ export function DashboardPage() {
       }));
 
   const statCards = overview ? [
-    { label: "Total Batches", value: overview.totalBatches.toLocaleString(), change: "+12%", up: true, icon: Package, color: "#2E7D32", bg: "#E8F5E9" },
-    { label: "Active Batches", value: overview.activeBatches.toLocaleString(), change: "+8%", up: true, icon: Leaf, color: "#1976D2", bg: "#E3F2FD" },
-    { label: "Organizations", value: overview.totalOrganizations.toLocaleString(), change: "+5%", up: true, icon: Cog, color: "#F57C00", bg: "#FFF3E0" },
-    { label: "Total Events", value: overview.totalEvents.toLocaleString(), change: "+15%", up: true, icon: Truck, color: "#7B1FA2", bg: "#F3E5F5" },
-    { label: "Total Recalls", value: overview.totalRecalls.toLocaleString(), change: "+1", up: false, icon: ShoppingCart, color: "#00695C", bg: "#E0F2F1" },
-    { label: "Recalled Batches", value: overview.recalledBatches.toLocaleString(), change: overview.recalledBatches > 0 ? "+2" : "0", up: false, icon: AlertTriangle, color: "#E53935", bg: "#FFEBEE" },
+    { label: lang === "vi" ? "Tổng Lô Hàng" : "Total Batches", value: overview.totalBatches.toLocaleString(), change: "+12%", up: true, icon: Package, color: "#2E7D32", bg: "#E8F5E9" },
+    { label: lang === "vi" ? "Lô Đang Hoạt Động" : "Active Batches", value: overview.activeBatches.toLocaleString(), change: "+8%", up: true, icon: Leaf, color: "#1976D2", bg: "#E3F2FD" },
+    { label: lang === "vi" ? "Tổ Chức" : "Organizations", value: overview.totalOrganizations.toLocaleString(), change: "+5%", up: true, icon: Cog, color: "#F57C00", bg: "#FFF3E0" },
+    { label: lang === "vi" ? "Tổng Sự Kiện" : "Total Events", value: overview.totalEvents.toLocaleString(), change: "+15%", up: true, icon: Truck, color: "#7B1FA2", bg: "#F3E5F5" },
+    { label: lang === "vi" ? "Lệnh Thu Hồi" : "Total Recalls", value: overview.totalRecalls.toLocaleString(), change: "+1", up: false, icon: ShoppingCart, color: "#00695C", bg: "#E0F2F1" },
+    { label: lang === "vi" ? "Lô Bị Thu Hồi" : "Recalled Batches", value: overview.recalledBatches.toLocaleString(), change: overview.recalledBatches > 0 ? "+2" : "0", up: false, icon: AlertTriangle, color: "#E53935", bg: "#FFEBEE" },
   ] : [];
 
   const isLoading = overviewLoading || distLoading;
@@ -81,7 +87,7 @@ export function DashboardPage() {
           <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(27,94,32,0.92) 0%, rgba(46,125,50,0.75) 60%, rgba(0,0,0,0.3) 100%)" }} />
           <div className="relative z-10 h-full flex items-center px-8">
             <div>
-              <div className="text-green-200 text-sm mb-1">Loading...</div>
+              <div className="text-green-200 text-sm mb-1">{lang === "vi" ? "Đang tải..." : "Loading..."}</div>
               <div className="text-white font-bold" style={{ fontSize: 26, fontWeight: 700 }}>{user?.name}</div>
             </div>
           </div>
@@ -127,9 +133,9 @@ export function DashboardPage() {
         <div className="px-6 -mt-6 relative z-10">
           <div className="bg-white rounded-2xl p-8 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-            <div className="font-semibold text-gray-700 mb-2">Failed to load dashboard data</div>
+            <div className="font-semibold text-gray-700 mb-2">{lang === "vi" ? "Không thể tải dữ liệu dashboard" : "Failed to load dashboard data"}</div>
             <button onClick={() => refetchOverview()} className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "#2E7D32" }}>
-              Retry
+              {lang === "vi" ? "Thử lại" : "Retry"}
             </button>
           </div>
         </div>
@@ -155,11 +161,11 @@ export function DashboardPage() {
               onClick={() => refetchOverview()}
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-white/15 hover:bg-white/25 transition-colors"
             >
-              <RefreshCw className="w-3.5 h-3.5" /> Refresh
+              <RefreshCw className="w-3.5 h-3.5" /> {lang === "vi" ? "Làm mới" : "Refresh"}
             </button>
             <div className="text-right text-green-100 text-sm">
-              <div>Today</div>
-              <div className="text-white font-semibold">{now.toLocaleDateString("en-VN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
+              <div>{lang === "vi" ? "Hôm nay" : "Today"}</div>
+              <div className="text-white font-semibold">{now.toLocaleDateString(lang === "vi" ? "vi-VN" : "en-VN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
             </div>
           </div>
         </div>
@@ -194,8 +200,8 @@ export function DashboardPage() {
           <div className="lg:col-span-2 bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Monthly Production</h3>
-                <p className="text-gray-400 text-xs mt-0.5">Quantity (kg) vs Batches</p>
+                <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Sản Xuất Hàng Tháng" : "Monthly Production"}</h3>
+                <p className="text-gray-400 text-xs mt-0.5">{lang === "vi" ? "Số lượng (kg) so với lô hàng" : "Quantity (kg) vs Batches"}</p>
               </div>
             </div>
             {overview?.monthlyProduction && overview.monthlyProduction.length > 0 ? (
@@ -212,15 +218,15 @@ export function DashboardPage() {
               </ResponsiveContainer>
             ) : (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-                <div className="text-sm">No production data available</div>
+                <div className="text-sm">{lang === "vi" ? "Chưa có dữ liệu sản xuất" : "No production data available"}</div>
               </div>
             )}
           </div>
 
           <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="mb-4">
-              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Batch Status</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Distribution by stage</p>
+              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Trạng Thái Lô Hàng" : "Batch Status"}</h3>
+              <p className="text-gray-400 text-xs mt-0.5">{lang === "vi" ? "Phân bổ theo giai đoạn" : "Distribution by stage"}</p>
             </div>
             {pieData.length > 0 ? (
               <>
@@ -248,7 +254,7 @@ export function DashboardPage() {
               </>
             ) : (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-                <div className="text-sm">No status data available</div>
+                <div className="text-sm">{lang === "vi" ? "Chưa có dữ liệu trạng thái" : "No status data available"}</div>
               </div>
             )}
           </div>
@@ -257,8 +263,8 @@ export function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
           <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="mb-5">
-              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Inspection Results</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Pass/Fail/Pending</p>
+              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Kết Quả Kiểm Định" : "Inspection Results"}</h3>
+              <p className="text-gray-400 text-xs mt-0.5">{lang === "vi" ? "Đạt/Không đạt/Chờ" : "Pass/Fail/Pending"}</p>
             </div>
             {overview?.inspectionResults && overview.inspectionResults.length > 0 ? (
               <ResponsiveContainer width="100%" height={180}>
@@ -275,15 +281,15 @@ export function DashboardPage() {
               </ResponsiveContainer>
             ) : (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-                <div className="text-sm">No inspection data available</div>
+                <div className="text-sm">{lang === "vi" ? "Chưa có dữ liệu kiểm định" : "No inspection data available"}</div>
               </div>
             )}
           </div>
 
           <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="mb-5">
-              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Recall Trend</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Monthly recall incidents</p>
+              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Xu Hướng Thu Hồi" : "Recall Trend"}</h3>
+              <p className="text-gray-400 text-xs mt-0.5">{lang === "vi" ? "Số vụ thu hồi hàng tháng" : "Monthly recall incidents"}</p>
             </div>
             {overview?.recallTrend && overview.recallTrend.length > 0 ? (
               <ResponsiveContainer width="100%" height={180}>
@@ -303,7 +309,7 @@ export function DashboardPage() {
               </ResponsiveContainer>
             ) : (
               <div className="flex flex-col items-center justify-center h-48 text-gray-400">
-                <div className="text-sm">No recall data available</div>
+                <div className="text-sm">{lang === "vi" ? "Chưa có dữ liệu thu hồi" : "No recall data available"}</div>
               </div>
             )}
           </div>
@@ -312,8 +318,8 @@ export function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Recent Activities</h3>
-              <button className="text-sm font-medium" style={{ color: "#2E7D32" }}>View all</button>
+              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Hoạt Động Gần Đây" : "Recent Activities"}</h3>
+              <button className="text-sm font-medium" style={{ color: "#2E7D32" }}>{lang === "vi" ? "Xem tất cả" : "View all"}</button>
             </div>
             {activities.length > 0 ? (
               <div className="space-y-1">
@@ -333,7 +339,7 @@ export function DashboardPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gray-700 truncate">{activity.message}</p>
                       <p className="text-xs text-gray-400 mt-0.5">
-                        {formatRelativeTime(activity.timestamp)}
+                        {formatRelativeTime(activity.timestamp, lang)}
                       </p>
                     </div>
                   </div>
@@ -342,14 +348,14 @@ export function DashboardPage() {
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-gray-400">
                 <Package className="w-8 h-8 mb-2 opacity-50" />
-                <div className="text-sm">No recent activities</div>
+                <div className="text-sm">{lang === "vi" ? "Chưa có hoạt động nào" : "No recent activities"}</div>
               </div>
             )}
           </div>
 
           <div className="space-y-5">
             <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-              <h3 className="font-semibold text-gray-900 mb-4" style={{ fontSize: 15 }}>Quick Actions</h3>
+              <h3 className="font-semibold text-gray-900 mb-4" style={{ fontSize: 15 }}>{lang === "vi" ? "Thao Tác Nhanh" : "Quick Actions"}</h3>
               <div className="grid grid-cols-2 gap-3">
                 {quickActions.map(({ label, icon: Icon, color, bg, to }) => (
                   <button
@@ -374,16 +380,16 @@ export function DashboardPage() {
                     <AlertTriangle className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <div className="font-semibold text-red-800 text-sm">Active Recall Alert</div>
+                    <div className="font-semibold text-red-800 text-sm">{lang === "vi" ? "Cảnh Báo Thu Hồi Đang Hoạt Động" : "Active Recall Alert"}</div>
                     <p className="text-red-600 text-xs mt-1 leading-relaxed">
-                      {overview.totalRecalls} active recalls requiring attention.
+                      {lang === "vi" ? `${overview.totalRecalls} lệnh thu hồi cần xử lý.` : `${overview.totalRecalls} active recalls requiring attention.`}
                     </p>
                     <button
                       onClick={() => navigate("/app/recall")}
                       className="mt-3 text-xs font-semibold text-white px-3 py-1.5 rounded-lg"
                       style={{ background: "#E53935" }}
                     >
-                      View Recalls
+                      {lang === "vi" ? "Xem Thu Hồi" : "View Recalls"}
                     </button>
                   </div>
                 </div>
@@ -393,10 +399,10 @@ export function DashboardPage() {
             <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <div className="flex items-center gap-2 mb-3">
                 <Bell className="w-4 h-4" style={{ color: "#FFB300" }} />
-                <span className="font-semibold text-gray-900 text-sm">Pending Inspections</span>
+                <span className="font-semibold text-gray-900 text-sm">{lang === "vi" ? "Kiểm Định Đang Chờ" : "Pending Inspections"}</span>
               </div>
               <div className="flex flex-col items-center justify-center py-6 text-gray-400">
-                <div className="text-sm">No pending inspections</div>
+                <div className="text-sm">{lang === "vi" ? "Không có kiểm định đang chờ" : "No pending inspections"}</div>
               </div>
             </div>
           </div>

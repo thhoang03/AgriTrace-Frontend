@@ -14,6 +14,7 @@ import { useInspections, useCreateInspection, useConcludeInspection, useAddLabTe
 import { supplyChainApi } from "../supply-chain/supply-chain.api";
 import type { SupplyChainEvent } from "../supply-chain/supply-chain.types";
 import { useEffect } from "react";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const statusConfig: Record<InspectionStatus, { bg: string; color: string; icon: React.ElementType; label: string }> = {
   Pending: { bg: "#FFF9C4", color: "#F57F17", icon: Clock, label: "Pending" },
@@ -23,6 +24,7 @@ const statusConfig: Record<InspectionStatus, { bg: string; color: string; icon: 
 
 export function InspectionPage() {
   const navigate = useNavigate();
+  const { lang } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<InspectionStatus | "All">("All");
   const [showFilters, setShowFilters] = useState(false);
@@ -163,7 +165,7 @@ export function InspectionPage() {
         <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
           <FlaskConical className="w-5 h-5 animate-pulse" style={{ color: "#2E7D32" }} />
         </div>
-        <div className="text-sm text-gray-500">Loading inspections...</div>
+        <div className="text-sm text-gray-500">{lang === "vi" ? "Đang tải dữ liệu kiểm định..." : "Loading inspections..."}</div>
       </div>
     );
   }
@@ -171,9 +173,9 @@ export function InspectionPage() {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="text-sm text-red-500">Failed to load inspections</div>
+        <div className="text-sm text-red-500">{lang === "vi" ? "Không thể tải dữ liệu kiểm định" : "Failed to load inspections"}</div>
         <button onClick={() => refetch()} className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "#2E7D32" }}>
-          Retry
+          {lang === "vi" ? "Thử lại" : "Retry"}
         </button>
       </div>
     );
@@ -200,8 +202,8 @@ export function InspectionPage() {
               <FlaskConical className="w-4 h-4 text-green-300" />
               <span className="text-green-200 text-xs font-medium uppercase tracking-widest">AgriTrace</span>
             </div>
-            <h1 className="text-white" style={{ fontSize: 26, fontWeight: 800 }}>Quality Inspection</h1>
-            <p className="text-green-100 text-sm mt-0.5">Batch inspection and lab test management</p>
+            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>{lang === "vi" ? "Kiểm Định Chất Lượng" : "Quality Inspection"}</h1>
+            <p className="text-green-100 text-sm mt-0.5">{lang === "vi" ? "Quản lý các bản kiểm định, thử nghiệm phòng lab và kết quả chứng nhận" : "Manage quality inspections, lab tests, and certification results"}</p>
           </div>
           <div className="ml-auto flex items-center gap-3">
             {[

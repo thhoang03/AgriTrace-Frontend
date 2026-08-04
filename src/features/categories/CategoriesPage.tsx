@@ -8,6 +8,7 @@ import {
 } from "./categories.queries";
 import { useAuth } from "../auth/auth.store";
 import type { Category } from "./categories.types";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
 
 const EMPTY_FORM = { name: "", description: "" };
@@ -16,6 +17,7 @@ interface Alert { type: "success" | "error"; message: string; }
 
 export function CategoriesPage() {
   const { user } = useAuth();
+  const { lang } = useLanguage();
   const isAdmin = user?.role === "ADMIN";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "Inactive">("All");
@@ -155,13 +157,30 @@ export function CategoriesPage() {
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 80%, white 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
         <div className="relative z-10 h-full flex items-center px-8 justify-between">
           <div>
-            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>Category Management</h1>
-            <p className="text-green-100 text-sm mt-1">Manage product categories in the supply chain</p>
+            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>
+              {lang === "vi" ? "Quản Lý Danh Mục" : "Category Management"}
+            </h1>
+            <p className="text-green-100 text-sm mt-1">
+              {lang === "vi" ? "Quản lý các danh mục sản phẩm nông nghiệp trong chuỗi cung ứng" : "Manage product categories in the supply chain"}
+            </p>
           </div>
           <div className="flex items-center gap-6">
+            {["ACTIVE", "INACTIVE"].map((s) => {
+              const count = categories.filter((c) =>
+                s === "ACTIVE" ? c.isActive : !c.isActive
+              ).length;
+              return (
+                <div key={s} className="text-center">
+                  <div className="font-bold text-white" style={{ fontSize: 20 }}>{count}</div>
+                  <div className="text-green-200 text-xs">
+                    {s === "ACTIVE" ? (lang === "vi" ? "HOẠT ĐỘNG" : "ACTIVE") : (lang === "vi" ? "NGƯNG ĐỘNG" : "INACTIVE")}
+                  </div>
+                </div>
+              );
+            })}
             <div className="text-center">
               <div className="font-bold text-white" style={{ fontSize: 20 }}>{totalCount}</div>
-              <div className="text-green-200 text-xs">TOTAL CATEGORIES</div>
+              <div className="text-green-200 text-xs">{lang === "vi" ? "TỔNG CỘNG" : "TOTAL"}</div>
             </div>
           </div>
         </div>
@@ -173,7 +192,14 @@ export function CategoriesPage() {
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1 min-w-48 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search categories..." className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none" style={{ background: "#F8FAF8" }} />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                placeholder={lang === "vi" ? "Tìm kiếm danh mục..." : "Search categories..."}
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
+                style={{ background: "#F8FAF8" }}
+              />
               {search && (
                 <button onClick={() => { setSearch(""); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                   <X className="w-3.5 h-3.5" />
@@ -191,7 +217,7 @@ export function CategoriesPage() {
             </button>
             {isAdmin && (
               <button onClick={openAdd} className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity" style={{ background: "#2E7D32" }}>
-                <Plus className="w-4 h-4" /> Add Category
+                <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Danh Mục" : "Add Category"}
               </button>
             )}
           </div>
@@ -227,20 +253,22 @@ export function CategoriesPage() {
         {/* Table */}
         <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3">
-            <span className="text-sm text-gray-500">Showing <span className="font-medium text-gray-800">{totalCount}</span> categories</span>
+            <span className="text-sm text-gray-500">
+              {lang === "vi" ? `Hiển thị ${displayed.length} danh mục` : `Showing ${displayed.length} categories`}
+            </span>
           </div>
           {isLoading ? (
-            <div className="flex items-center justify-center py-16 text-gray-400 text-sm">Loading...</div>
+            <div className="flex items-center justify-center py-16 text-gray-400 text-sm">{lang === "vi" ? "Đang tải..." : "Loading..."}</div>
           ) : (
             <>
               <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr style={{ background: "#F8FAF8" }}>
-                    <SortHeader label="Category" sortKey="name" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label="Description" sortKey="description" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label="Status" sortKey="status" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                    <SortHeader label={lang === "vi" ? "DANH MỤC" : "Category"} sortKey="name" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "MÔ TẢ" : "Description"} sortKey="description" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">

@@ -12,6 +12,7 @@ import { BatchDeleteModal } from "./BatchDeleteModal";
 import { BatchEditModal } from "./BatchEditModal";
 import { BatchSplitModal } from "./BatchSplitModal";
 import { BatchMergeModal } from "./BatchMergeModal";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1566385101042-1a0aa0c1268c?w=1400&q=80";
 
@@ -48,6 +49,7 @@ type SortField = "product" | "harvestDate" | "quantity" | "status";
 
 export function BatchManagementPage() {
   const navigate = useNavigate();
+  const { lang } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<BatchStatus | "All">("All");
   const [showFilters, setShowFilters] = useState(false);
@@ -156,7 +158,7 @@ export function BatchManagementPage() {
         <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
           <Package className="w-5 h-5 animate-pulse" style={{ color: "#2E7D32" }} />
         </div>
-        <div className="text-sm text-gray-500">Loading batches...</div>
+        <div className="text-sm text-gray-500">{lang === "vi" ? "Đang tải dữ liệu lô hàng..." : "Loading batches..."}</div>
       </div>
     );
   }
@@ -164,7 +166,7 @@ export function BatchManagementPage() {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="text-red-500 text-sm">Error loading batches. Please refresh.</div>
+        <div className="text-red-500 text-sm">{lang === "vi" ? "Lỗi khi tải dữ liệu. Vui lòng thử lại." : "Error loading batches. Please refresh."}</div>
       </div>
     );
   }
@@ -181,19 +183,27 @@ export function BatchManagementPage() {
               <Leaf className="w-4 h-4 text-green-300" />
               <span className="text-green-200 text-xs font-medium uppercase tracking-widest">AgriTrace</span>
             </div>
-            <h1 className="text-white" style={{ fontSize: 26, fontWeight: 800 }}>Batch Management</h1>
-            <p className="text-green-100 text-sm mt-0.5">Track and manage all agricultural product batches</p>
+            <h1 className="text-white" style={{ fontSize: 26, fontWeight: 800 }}>
+              {lang === "vi" ? "Quản Lý Lô Hàng" : "Batch Management"}
+            </h1>
+            <p className="text-green-100 text-sm mt-0.5">
+              {lang === "vi" ? "Theo dõi và quản lý tất cả các lô hàng nông sản hệ thống" : "Track and manage all agricultural product batches"}
+            </p>
           </div>
           <div className="ml-auto flex items-center gap-3">
             <div className="text-center bg-white/10 rounded-xl px-4 py-2.5 backdrop-blur-sm">
               <div className="text-white font-bold" style={{ fontSize: 22 }}>{normalizedBatches.length}</div>
-              <div className="text-green-200 text-xs">Total Batches</div>
+              <div className="text-green-200 text-xs">
+                {lang === "vi" ? "Tổng Lô Hàng" : "Total Batches"}
+              </div>
             </div>
             <div className="text-center bg-white/10 rounded-xl px-4 py-2.5 backdrop-blur-sm">
               <div className="text-white font-bold" style={{ fontSize: 22 }}>
                 {normalizedBatches.filter((b) => b.status === "Recalled").length}
               </div>
-              <div className="text-red-200 text-xs">Recalled</div>
+              <div className="text-red-200 text-xs">
+                {lang === "vi" ? "Bị Thu Hồi" : "Recalled"}
+              </div>
             </div>
           </div>
         </div>
@@ -204,6 +214,16 @@ export function BatchManagementPage() {
         <div className="bg-white rounded-2xl p-3 flex flex-wrap gap-2" style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.07)" }}>
           {statusCounts.filter((s) => s.count > 0).map(({ status, count }) => {
             const cfg = statusConfig[status] ?? { bg: "#F3F4F6", color: "#6B7280", label: status };
+            const statusLabelMap: Record<string, string> = {
+              Harvested: "Đã thu hoạch",
+              Processing: "Đang chế biến",
+              Packaged: "Đã đóng gói",
+              "In Transit": "Đang vận chuyển",
+              Distributed: "Đã phân phối",
+              "At Retail": "Tại điểm bán",
+              Recalled: "Bị thu hồi",
+            };
+            const displayLabel = lang === "vi" ? (statusLabelMap[status] || status) : status;
             return (
               <button
                 key={status}
@@ -212,7 +232,7 @@ export function BatchManagementPage() {
                 style={{ background: cfg.bg }}
               >
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: cfg.color }} />
-                <span className="text-xs font-semibold" style={{ color: cfg.color }}>{status}</span>
+                <span className="text-xs font-semibold" style={{ color: cfg.color }}>{displayLabel}</span>
                 <span className="text-xs font-bold px-1.5 py-0.5 rounded-md text-white" style={{ background: cfg.color }}>
                   {count}
                 </span>
@@ -224,7 +244,7 @@ export function BatchManagementPage() {
               onClick={() => { setStatusFilter("All"); setPage(1); }}
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 ml-auto"
             >
-              <X className="w-3 h-3" /> Clear filter
+              <X className="w-3 h-3" /> {lang === "vi" ? "Xóa bộ lọc" : "Clear filter"}
             </button>
           )}
         </div>
@@ -240,7 +260,7 @@ export function BatchManagementPage() {
                 type="text"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Search by ID, product, farm, farmer..."
+                placeholder={lang === "vi" ? "Tìm kiếm theo Mã Lô, sản phẩm, trang trại, nông dân..." : "Search by ID, product, farm, farmer..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all"
                 style={{ background: "#F8FAF8" }}
               />
@@ -256,7 +276,7 @@ export function BatchManagementPage() {
               style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
             >
               <SlidersHorizontal className="w-4 h-4" />
-              Filters
+              {lang === "vi" ? "Bộ Lọc" : "Filters"}
               {statusFilter !== "All" && (
                 <span className="w-5 h-5 rounded-full text-xs flex items-center justify-center" style={{ background: showFilters ? "rgba(255,255,255,0.2)" : "#2E7D32", color: "white" }}>1</span>
               )}
@@ -266,14 +286,14 @@ export function BatchManagementPage() {
                 onClick={handleExport}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
               >
-                <Download className="w-4 h-4" /> Export
+                <Download className="w-4 h-4" /> {lang === "vi" ? "Xuất dữ liệu" : "Export"}
               </button>
               <button
                 onClick={() => navigate("/app/batches/new")}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90"
                 style={{ background: "linear-gradient(135deg, #2E7D32, #388E3C)" }}
               >
-                <Plus className="w-4 h-4" /> New Batch
+                <Plus className="w-4 h-4" /> {lang === "vi" ? "+ Tạo Lô Hàng" : "+ New Batch"}
               </button>
             </div>
           </div>
@@ -286,11 +306,21 @@ export function BatchManagementPage() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${statusFilter === "All" ? "text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                   style={statusFilter === "All" ? { background: "#2E7D32" } : {}}
                 >
-                  All ({normalizedBatches.length})
+                  {lang === "vi" ? "Tất cả" : "All"} ({normalizedBatches.length})
                 </button>
                 {allStatuses.map((s) => {
                   const cfg = statusConfig[s];
                   const count = normalizedBatches.filter((b) => b.status === s).length;
+                  const statusLabelMap: Record<string, string> = {
+                    Harvested: "Đã thu hoạch",
+                    Processing: "Đang chế biến",
+                    Packaged: "Đã đóng gói",
+                    "In Transit": "Đang vận chuyển",
+                    Distributed: "Đã phân phối",
+                    "At Retail": "Tại điểm bán",
+                    Recalled: "Bị thu hồi",
+                  };
+                  const displayLabel = lang === "vi" ? (statusLabelMap[s] || s) : s;
                   return (
                     <button
                       key={s}
@@ -303,7 +333,7 @@ export function BatchManagementPage() {
                         outlineOffset: 2,
                       }}
                     >
-                      {s} ({count})
+                      {displayLabel} ({count})
                     </button>
                   );
                 })}
@@ -316,12 +346,13 @@ export function BatchManagementPage() {
         <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <span className="text-sm text-gray-500">
-              Showing <span className="font-semibold text-gray-800">{paginated.length}</span> of{" "}
-              <span className="font-semibold text-gray-800">{sorted.length}</span> batches
+              {lang === "vi"
+                ? <>Hiển thị <span className="font-semibold text-gray-800">{paginated.length}</span> / <span className="font-semibold text-gray-800">{sorted.length}</span> lô hàng</>
+                : <>Showing <span className="font-semibold text-gray-800">{paginated.length}</span> of <span className="font-semibold text-gray-800">{sorted.length}</span> batches</>}
             </span>
             <div className="flex items-center gap-2 text-xs text-gray-400">
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              Live data
+              {lang === "vi" ? "Dữ liệu trực tiếp" : "Live data"}
             </div>
           </div>
 
@@ -331,11 +362,11 @@ export function BatchManagementPage() {
                 <Package className="w-8 h-8" style={{ color: "#A5D6A7" }} />
               </div>
               <div className="text-center">
-                <div className="font-semibold text-gray-700 mb-1">No batches found</div>
+                <div className="font-semibold text-gray-700 mb-1">{lang === "vi" ? "Không tìm thấy lô hàng nào" : "No batches found"}</div>
                 <div className="text-sm text-gray-400">
                   {search || statusFilter !== "All"
-                    ? "Try adjusting your search or filter criteria"
-                    : "Create your first batch to get started"}
+                    ? (lang === "vi" ? "Thử điều chỉnh từ khóa tìm kiếm hoặc bộ lọc" : "Try adjusting your search or filter criteria")
+                    : (lang === "vi" ? "Tạo lô hàng đầu tiên để bắt đầu" : "Create your first batch to get started")}
                 </div>
               </div>
               {!search && statusFilter === "All" && (
@@ -344,7 +375,7 @@ export function BatchManagementPage() {
                   className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold"
                   style={{ background: "#2E7D32" }}
                 >
-                  <Plus className="w-4 h-4" /> Create First Batch
+                  <Plus className="w-4 h-4" /> {lang === "vi" ? "Tạo Lô Hàng Đầu Tiên" : "Create First Batch"}
                 </button>
               )}
             </div>
@@ -358,46 +389,56 @@ export function BatchManagementPage() {
                         className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("product")}
                       >
-                        <div className="flex items-center gap-1.5">Product <SortIcon field="product" /></div>
+                        <div className="flex items-center gap-1.5">{lang === "vi" ? "Sản Phẩm" : "Product"} <SortIcon field="product" /></div>
                       </th>
                       <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        Batch ID
+                        {lang === "vi" ? "Mã Lô Hàng" : "Batch ID"}
                       </th>
                       <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        Farm / Farmer
+                        {lang === "vi" ? "Trang Trại / Nông Dân" : "Farm / Farmer"}
                       </th>
                       <th
                         className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("harvestDate")}
                       >
-                        <div className="flex items-center gap-1.5">Harvest Date <SortIcon field="harvestDate" /></div>
+                        <div className="flex items-center gap-1.5">{lang === "vi" ? "Ngày Thu Hoạch" : "Harvest Date"} <SortIcon field="harvestDate" /></div>
                       </th>
                       <th
                         className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("quantity")}
                       >
-                        <div className="flex items-center gap-1.5">Quantity <SortIcon field="quantity" /></div>
+                        <div className="flex items-center gap-1.5">{lang === "vi" ? "Sản Lượng" : "Quantity"} <SortIcon field="quantity" /></div>
                       </th>
                       <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        Remaining Qty
+                        {lang === "vi" ? "Số Lượng Còn" : "Remaining Qty"}
                       </th>
                       <th
                         className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("status")}
                       >
-                        <div className="flex items-center gap-1.5">Status <SortIcon field="status" /></div>
+                        <div className="flex items-center gap-1.5">{lang === "vi" ? "Trạng Thái" : "Status"} <SortIcon field="status" /></div>
                       </th>
                       <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        State
+                        {lang === "vi" ? "Tình Trạng" : "State"}
                       </th>
                       <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        Actions
+                        {lang === "vi" ? "Thao Tác" : "Actions"}
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {paginated.map((batch) => {
                       const cfg = statusConfig[batch.status] ?? { bg: "#F3F4F6", color: "#6B7280", label: batch.status };
+                      const statusLabelMap: Record<string, string> = {
+                        Harvested: "Đã thu hoạch",
+                        Processing: "Đang chế biến",
+                        Packaged: "Đã đóng gói",
+                        "In Transit": "Đang vận chuyển",
+                        Distributed: "Đã phân phối",
+                        "At Retail": "Tại điểm bán",
+                        Recalled: "Bị thu hồi",
+                      };
+                      const statusLabel = lang === "vi" ? (statusLabelMap[batch.status] || batch.status) : batch.status;
                       return (
                         <tr
                           key={batch.id}
@@ -405,19 +446,9 @@ export function BatchManagementPage() {
                           onClick={() => navigate(`/app/batches/${batch.id}`)}
                         >
                           <td className="px-4 py-3.5">
-                            <div className="flex items-center gap-3">
-                              <img
-                                src={batch.productImage || batch.image}
-                                alt={batch.productName ?? batch.product}
-                                className="w-10 h-10 rounded-xl object-cover flex-shrink-0"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=80&q=60";
-                                }}
-                              />
-                              <div>
-                                <div className="text-sm font-semibold text-gray-900">{batch.productName ?? batch.product}</div>
-                                <div className="text-xs text-gray-400">{batch.category}</div>
-                              </div>
+                            <div>
+                              <div className="text-sm font-semibold text-gray-900">{batch.productName ?? batch.product}</div>
+                              <div className="text-xs text-gray-400">{batch.category}</div>
                             </div>
                           </td>
                           <td className="px-4 py-3.5">
@@ -454,14 +485,14 @@ export function BatchManagementPage() {
                           </td>
                           <td className="px-4 py-3.5">
                             <span className="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap" style={{ background: cfg.bg, color: cfg.color }}>
-                              {cfg.label}
+                              {statusLabel}
                             </span>
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="flex items-center gap-1.5">
                               <span className={`w-2 h-2 rounded-full ${batch.isDeleted ? "bg-orange-500" : "bg-green-500"}`}></span>
                               <span className={`text-xs font-medium ${batch.isDeleted ? "text-orange-700" : "text-green-700"}`}>
-                                {batch.isDeleted ? "Inactive" : "Active"}
+                                {batch.isDeleted ? (lang === "vi" ? "Ngưng hoạt động" : "Inactive") : (lang === "vi" ? "Hoạt động" : "Active")}
                               </span>
                             </div>
                           </td>

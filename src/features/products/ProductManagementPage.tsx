@@ -2,18 +2,20 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   Search, Plus, Eye, Edit2, Trash2, RotateCcw, ToggleLeft, ToggleRight,
-  ChevronLeft, ChevronRight, X, SlidersHorizontal, Package,
+  ChevronLeft, ChevronRight, X, SlidersHorizontal,
 } from "lucide-react";
 import { useProductsList, useDeleteProduct, useUpdateProductStatus } from "./products.queries";
 import { useCategoriesList } from "../categories/categories.queries";
 import { useOrganizationsList } from "../organizations/organizations.queries";
 import { ProductFormModal } from "./ProductFormModal";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1400&q=80";
 
 export function ProductManagementPage() {
   const navigate = useNavigate();
+  const { lang } = useLanguage();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "Inactive">("All");
   const [organizationFilter, setOrganizationFilter] = useState<string>("");
@@ -115,13 +117,19 @@ export function ProductManagementPage() {
         <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(27,94,32,0.9) 0%, rgba(46,125,50,0.6) 100%)" }} />
         <div className="relative z-10 h-full flex items-center px-8">
           <div>
-            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>Product Management</h1>
-            <p className="text-green-100 text-sm mt-1">Manage agricultural products and categories</p>
+            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>
+              {lang === "vi" ? "Quản Lý Sản Phẩm" : "Product Management"}
+            </h1>
+            <p className="text-green-100 text-sm mt-1">
+              {lang === "vi" ? "Quản lý danh mục và nông sản hệ thống" : "Manage agricultural products and categories"}
+            </p>
           </div>
           <div className="ml-auto flex items-center gap-3">
             <div className="text-center bg-white/10 rounded-xl px-4 py-2">
               <div className="text-white font-bold" style={{ fontSize: 20 }}>{totalCount}</div>
-              <div className="text-green-200 text-xs">Total Products</div>
+              <div className="text-green-200 text-xs">
+                {lang === "vi" ? "Tổng Sản Phẩm" : "Total Products"}
+              </div>
             </div>
           </div>
         </div>
@@ -136,7 +144,7 @@ export function ProductManagementPage() {
                 type="text"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Search by name, category, organization, unit..."
+                placeholder={lang === "vi" ? "Tìm kiếm theo tên sản phẩm, danh mục..." : "Search by product name, category..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all"
                 style={{ background: "#F8FAF8" }}
               />
@@ -152,7 +160,7 @@ export function ProductManagementPage() {
               style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
             >
               <SlidersHorizontal className="w-4 h-4" />
-              Filters
+              {lang === "vi" ? "Bộ Lọc" : "Filters"}
               {activeFilterCount > 0 && <span className="w-5 h-5 rounded-full text-xs flex items-center justify-center" style={{ background: showFilters ? "rgba(255,255,255,0.2)" : "#2E7D32", color: "white" }}>{activeFilterCount}</span>}
             </button>
             <div className="ml-auto flex items-center gap-2">
@@ -161,7 +169,7 @@ export function ProductManagementPage() {
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90"
                 style={{ background: "#2E7D32" }}
               >
-                <Plus className="w-4 h-4" /> Create Product
+                <Plus className="w-4 h-4" /> {lang === "vi" ? "Tạo Sản Phẩm" : "Create Product"}
               </button>
             </div>
           </div>
@@ -202,15 +210,15 @@ export function ProductManagementPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Status</label>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">{lang === "vi" ? "Trạng thái" : "Status"}</label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as "All" | "Active" | "Inactive")}
                     className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
                   >
-                    <option value="All">All Status</option>
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
+                    <option value="All">{lang === "vi" ? "Tất cả trạng thái" : "All Status"}</option>
+                    <option value="Active">{lang === "vi" ? "Hoạt động" : "Active"}</option>
+                    <option value="Inactive">{lang === "vi" ? "Ngưng hoạt động" : "Inactive"}</option>
                   </select>
                 </div>
                 <div className="flex items-end">
@@ -228,24 +236,24 @@ export function ProductManagementPage() {
 
         <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           {isLoading ? (
-            <div className="p-8 text-center text-gray-500">Loading products...</div>
+            <div className="p-8 text-center text-gray-500">{lang === "vi" ? "Đang tải dữ liệu sản phẩm..." : "Loading products..."}</div>
           ) : isError ? (
-            <div className="p-8 text-center text-red-500">Error loading products</div>
+            <div className="p-8 text-center text-red-500">{lang === "vi" ? "Lỗi khi tải danh sách sản phẩm" : "Error loading products"}</div>
           ) : filteredProducts.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">No products found</div>
+            <div className="p-8 text-center text-gray-500">{lang === "vi" ? "Không tìm thấy sản phẩm nào" : "No products found"}</div>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100">
-                      <SortHeader label="ID" sortKey="id" sort={sort} onSort={toggle} className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                      <SortHeader label="Name" sortKey="name" sort={sort} onSort={toggle} className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
-                      <SortHeader label="Category" sortKey="category" sort={sort} onSort={toggle} className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
-                      <SortHeader label="Organization" sortKey="organization" sort={sort} onSort={toggle} className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
-                      <SortHeader label="Unit" sortKey="unit" sort={sort} onSort={toggle} className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
-                      <SortHeader label="Status" sortKey="status" sort={sort} onSort={toggle} className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
-                      <th className="text-right px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                      <SortHeader label="ID" sortKey="id" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                      <SortHeader label={lang === "vi" ? "Tên Sản Phẩm" : "Name"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Danh Mục" : "Category"} sortKey="category" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Đơn Vị Tính" : "Unit"} sortKey="unit" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Trạng Thái" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <th className="text-right px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -255,12 +263,7 @@ export function ProductManagementPage() {
                         <tr key={prodId} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                           <td className="px-6 py-4 text-xs font-medium text-gray-500 font-mono">{String(prodId).slice(0, 8)}...</td>
                           <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: "#E8F5E9" }}>
-                                <Package className="w-5 h-5" style={{ color: "#2E7D32" }} />
-                              </div>
-                              <span className="text-sm font-medium text-gray-900">{product.name}</span>
-                            </div>
+                            <span className="text-sm font-semibold text-gray-900">{product.name}</span>
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600">{product.categoryName}</td>
                           <td className="px-6 py-4 text-sm text-gray-600">{product.organizationName || "—"}</td>
@@ -274,7 +277,7 @@ export function ProductManagementPage() {
                               }`}
                               style={{ background: product.isActive ? "#E8F5E9" : "#F5F5F5" }}
                             >
-                              {product.isActive ? "Active" : "Inactive"}
+                              {product.isActive ? (lang === "vi" ? "Hoạt động" : "Active") : (lang === "vi" ? "Ngưng hoạt động" : "Inactive")}
                             </span>
                           </td>
                           <td className="px-6 py-4">
@@ -282,30 +285,30 @@ export function ProductManagementPage() {
                               <button
                                 onClick={() => navigate(`/app/products/${prodId}`)}
                                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
-                                title="View"
+                                title={lang === "vi" ? "Xem chi tiết" : "View"}
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => setShowEditModal(prodId)}
                                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
-                                title="Edit"
+                                title={lang === "vi" ? "Chỉnh sửa" : "Edit"}
                               >
                                 <Edit2 className="w-4 h-4" />
                               </button>
                               {product.isActive ? (
                                 <button
                                   onClick={() => setShowDeleteModal(prodId)}
-                                  className="p-2 rounded-lg hover:bg-red-50 transition-colors text-red-400"
-                                  title="Deactivate"
+                                  className="p-2 rounded-lg hover:bg-red-50 transition-colors text-red-500 hover:text-red-700"
+                                  title={lang === "vi" ? "Ngưng hoạt động" : "Deactivate"}
                                 >
                                   <ToggleRight className="w-4 h-4" />
                                 </button>
                               ) : (
                                 <button
                                   onClick={() => handleToggleStatus(product)}
-                                  className="p-2 rounded-lg hover:bg-green-50 transition-colors text-green-500"
-                                  title="Activate"
+                                  className="p-2 rounded-lg hover:bg-green-50 transition-colors text-green-600 hover:text-green-800"
+                                  title={lang === "vi" ? "Kích hoạt lại" : "Activate"}
                                 >
                                   <ToggleLeft className="w-4 h-4" />
                                 </button>
@@ -322,7 +325,9 @@ export function ProductManagementPage() {
               <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                   <div className="text-sm text-gray-500">
-                    Showing {totalCount === 0 ? 0 : ((page - 1) * perPage) + 1} to {Math.min(page * perPage, totalCount)} of {totalCount} products
+                    {lang === "vi"
+                      ? `Hiển thị ${((page - 1) * perPage) + 1} đến ${Math.min(page * perPage, totalCount)} trong số ${totalCount} sản phẩm`
+                      : `Showing ${((page - 1) * perPage) + 1} to ${Math.min(page * perPage, totalCount)} of ${totalCount} products`}
                   </div>
                   <div className="flex items-center gap-2">
                     <label className="text-xs text-gray-500">Rows/page</label>
@@ -399,21 +404,27 @@ export function ProductManagementPage() {
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Ngưng hoạt động sản phẩm</h3>
-            <p className="text-sm text-gray-600 mb-6">Bạn có chắc chắn muốn chuyển sản phẩm này sang trạng thái **Ngưng hoạt động (Inactive)** không?</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {lang === "vi" ? "Ngưng hoạt động sản phẩm" : "Deactivate Product"}
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              {lang === "vi"
+                ? "Bạn có chắc chắn muốn chuyển sản phẩm này sang trạng thái Ngưng hoạt động (Inactive) không?"
+                : "Are you sure you want to change this product status to Inactive?"}
+            </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteModal(null)}
                 className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
               >
-                Hủy bỏ
+                {lang === "vi" ? "Hủy bỏ" : "Cancel"}
               </button>
               <button
                 onClick={() => handleDelete(showDeleteModal)}
                 disabled={deleteProduct.isPending}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
               >
-                {deleteProduct.isPending ? "Đang xử lý..." : "Ngưng hoạt động"}
+                {deleteProduct.isPending ? (lang === "vi" ? "Đang xử lý..." : "Processing...") : (lang === "vi" ? "Ngưng hoạt động" : "Deactivate")}
               </button>
             </div>
           </div>

@@ -40,6 +40,7 @@ import type {
   UserStatus,
 } from "./users.types";
 import type { Organization } from "../organizations/organizations.types";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
 
 const BANNER_IMG =
@@ -265,10 +266,10 @@ const handleResetPassword = async (user: UserItem) => {
               className="text-white"
               style={{ fontSize: 24, fontWeight: 700 }}
             >
-              User Management
+              {lang === "vi" ? "Quản Lý Người Dùng" : "User Management"}
             </h1>
             <p className="text-green-100 text-sm mt-1">
-              Manage platform users, roles, and permissions
+              {lang === "vi" ? "Quản lý tài khoản, phân quyền và vai trò người dùng trong hệ thống" : "Manage platform users, roles, and permissions"}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -280,7 +281,9 @@ const handleResetPassword = async (user: UserItem) => {
                 >
                   {summary[s]}
                 </div>
-                <div className="text-green-200 text-xs">{s}</div>
+                <div className="text-green-200 text-xs">
+                  {s === "Active" ? (lang === "vi" ? "HOẠT ĐỘNG" : "Active") : s === "Inactive" ? (lang === "vi" ? "NGƯNG ĐỘNG" : "Inactive") : (lang === "vi" ? "CHỜ DUYỆT" : "Pending")}
+                </div>
               </div>
             ))}
           </div>
@@ -300,7 +303,7 @@ const handleResetPassword = async (user: UserItem) => {
                 type="text"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Search users..."
+                placeholder={lang === "vi" ? "Tìm kiếm người dùng..." : "Search users..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
                 style={{ background: "#F8FAF8" }}
               />
@@ -316,7 +319,7 @@ const handleResetPassword = async (user: UserItem) => {
               style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
             >
               <SlidersHorizontal className="w-4 h-4" />
-              Filters
+              {lang === "vi" ? "Bộ Lọc" : "Filters"}
               {activeFilterCount > 0 && <span className="w-5 h-5 rounded-full text-xs flex items-center justify-center" style={{ background: showFilters ? "rgba(255,255,255,0.2)" : "#2E7D32", color: "white" }}>{activeFilterCount}</span>}
             </button>
             <button
@@ -324,7 +327,7 @@ const handleResetPassword = async (user: UserItem) => {
               className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
               style={{ background: "#2E7D32" }}
             >
-              <Plus className="w-4 h-4" /> Add User
+              <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Người Dùng" : "Add User"}
             </button>
           </div>
 
@@ -396,34 +399,29 @@ const handleResetPassword = async (user: UserItem) => {
         >
           <div className="px-6 py-4 border-b border-gray-100">
             <span className="text-sm text-gray-500">
-              Showing{" "}
-              <span className="font-medium text-gray-800">
-                {totalCount}
-              </span>{" "}
-              users
+              {lang === "vi" ? `Hiển thị ${filtered.length} người dùng` : `Showing ${filtered.length} users`}
             </span>
           </div>
           <div className="overflow-x-auto">
             {isLoading ? (
               <div className="flex items-center justify-center py-10 text-gray-500">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading
-                users...
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {lang === "vi" ? "Đang tải dữ liệu người dùng..." : "Loading users..."}
               </div>
             ) : isError ? (
               <div className="py-10 text-center text-red-500">
-                Unable to load users right now.
+                {lang === "vi" ? "Không thể tải dữ liệu người dùng." : "Unable to load users right now."}
               </div>
             ) : (
               <table className="w-full">
                 <thead>
                   <tr style={{ background: "#F8FAF8" }}>
-                    <SortHeader label="User" sortKey="name" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label="Organization" sortKey="organization" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label="Org. Type" sortKey="orgType" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label="Role" sortKey="role" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label="Status" sortKey="status" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label="Contact" sortKey="contact" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                    <SortHeader label={lang === "vi" ? "NGƯỜI DÙNG" : "User"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "TỔ CHỨC" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "LOẠI ĐƠN VỊ" : "Org. Type"} sortKey="orgType" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "VAI TRÒ" : "Role"} sortKey="role" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "LIÊN HỆ" : "Contact"} sortKey="contact" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">

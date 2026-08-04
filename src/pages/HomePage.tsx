@@ -17,11 +17,12 @@ const HERO_IMG = "https://images.unsplash.com/photo-1480996408299-fc0e830b5db1?w
 
 // Sample batch suggestions database for search autocomplete
 const SAMPLE_BATCHES = [
-  { id: "BTH-2024-001", name: "Gạo ST25 Sóc Trăng", type: "Lúa gạo", org: "HTX Nông Nghiệp Mỹ Xuyên" },
-  { id: "BTH-2024-002", name: "Xoài Cát Chu Cao Lãnh", type: "Trái cây", org: "Trang Trại Xoài Đồng Tháp" },
-  { id: "BTH-2024-004", name: "Thanh Long Bình Thuận", type: "Trái cây", org: "Hợp Tác Xã Hàm Thuận" },
-  { id: "BTH-2024-005", name: "Cà Phê Arabica Đắk Lắk", type: "Cà phê", org: "Nông Trường Buôn Ma Thuột" },
+  { id: "RICE-20260112-001", name: "Jasmine Rice", type: "Lúa gạo", org: "AgriTrace Farm" },
+  { id: "COFFEE-20260110-001", name: "Arabica Coffee", type: "Cà phê", org: "AgriTrace Farm" },
+  { id: "DRAGONFRUIT-20260108-001", name: "Dragon Fruit", type: "Trái cây", org: "AgriTrace Farm" },
+  { id: "TOMATO-20260105-001", name: "Organic Tomato", type: "Rau củ", org: "AgriTrace Farm" },
 ];
+
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -305,7 +306,7 @@ export function HomePage() {
             {/* Clickable Quick Sample Chips */}
             <div className="flex flex-wrap items-center justify-center gap-2 mt-4 text-xs text-green-100">
               <span className="font-medium">{lang === "vi" ? "Thử nhanh các lô:" : "Try sample batches:"}</span>
-              {["BTH-2024-001", "BTH-2024-002", "BTH-2024-004"].map((code) => (
+              {["RICE-20260112-001", "COFFEE-20260110-001", "DRAGONFRUIT-20260108-001"].map((code) => (
                 <button
                   key={code}
                   onClick={() => {
