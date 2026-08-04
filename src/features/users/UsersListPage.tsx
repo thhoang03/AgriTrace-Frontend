@@ -96,6 +96,7 @@ function generatePassword(length = 12): string {
 export function UsersListPage() {
   const { user: currentUser } = useAuth();
   const isAdmin = currentUser?.role === "ADMIN";
+  const { lang } = useLanguage();
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "All">("All");
