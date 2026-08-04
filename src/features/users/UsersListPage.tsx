@@ -5,12 +5,16 @@ import {
   Edit2,
   Key,
   X,
-  Filter,
   Loader2,
-  Power,
   CheckCircle,
   AlertCircle,
   Sparkles,
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight,
+  SlidersHorizontal,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import { useAuth } from "../auth/auth.store";
 import { useOrganizationsList } from "../organizations/organizations.queries";
@@ -36,6 +40,7 @@ import type {
   UserStatus,
 } from "./users.types";
 import type { Organization } from "../organizations/organizations.types";
+import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
 
 const BANNER_IMG =
   "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=1400&q=80";
@@ -95,6 +100,9 @@ export function UsersListPage() {
   const [roleFilter, setRoleFilter] = useState<UserRole | "All">("All");
   const [orgTypeFilter, setOrgTypeFilter] = useState<string | "All">("All");
   const [statusFilter, setStatusFilter] = useState<UserStatus | "All">("All");
+  const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState<CreateUserRequest>(emptyUserForm);
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
@@ -115,6 +123,8 @@ export function UsersListPage() {
     role: roleFilter === "All" ? undefined : roleFilter,
     orgType: orgTypeFilter === "All" ? undefined : orgTypeFilter,
     status: statusFilter === "All" ? undefined : statusFilter,
+    page,
+    limit: perPage,
   });
 
   const updateUser = useUpdateUser();
@@ -134,10 +144,45 @@ export function UsersListPage() {
     () => filterUsers(users, { search, role: roleFilter, orgType: orgTypeFilter, status: statusFilter }),
     [users, search, roleFilter, orgTypeFilter, statusFilter]
   );
+
+  const { sort, toggle } = useColumnSort();
+
+  const userSortValue = (u: UserItem, key: string): string | number | boolean => {
+    switch (key) {
+      case "name": return u.fullName;
+      case "organization": return u.organization;
+      case "orgType": return u.organizationType;
+      case "role": return u.role;
+      case "status": return u.status;
+      case "contact": return u.phone;
+      default: return "";
+    }
+  };
+
+  const sortedUsers = sortRows(filtered, sort, (u) =>
+    userSortValue(u, sort?.key ?? ""),
+  );
   const roles = ["All", ...getRoleOptions(users)];
   const orgTypes = ["All", ...getOrgTypeOptions(users)];
   const statuses = getStatusOptions();
   const summary = useMemo(() => getStatusSummary(users), [users]);
+
+  const totalCount = data?.data?.totalCount ?? 0;
+  const totalPages = Math.ceil(totalCount / perPage);
+
+  const activeFilterCount =
+    (roleFilter !== "All" ? 1 : 0) +
+    (orgTypeFilter !== "All" ? 1 : 0) +
+    (statusFilter !== "All" ? 1 : 0);
+
+  const handleResetFilters = () => {
+    setSearch("");
+    setRoleFilter("All");
+    setOrgTypeFilter("All");
+    setStatusFilter("All");
+    setPage(1);
+    setShowFilters(false);
+  };
 
   const handleCreateUser = async () => {
     if (!form.fullName || !form.email || !form.password)
@@ -254,48 +299,26 @@ const handleResetPassword = async (user: UserItem) => {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 placeholder="Search users..."
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
                 style={{ background: "#F8FAF8" }}
               />
+              {search && (
+                <button onClick={() => { setSearch(""); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-gray-400" />
-              <select
-                value={roleFilter}
-                onChange={(e) =>
-                  setRoleFilter(e.target.value as UserRole | "All")
-                }
-                className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
-              >
-                {roles.map((r) => (
-                  <option key={r}>{r}</option>
-                ))}
-              </select>
-              <select
-                value={orgTypeFilter}
-                onChange={(e) =>
-                  setOrgTypeFilter(e.target.value)
-                }
-                className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
-              >
-                {orgTypes.map((o) => (
-                  <option key={o}>{o}</option>
-                ))}
-              </select>
-              <select
-                value={statusFilter}
-                onChange={(e) =>
-                  setStatusFilter(e.target.value as UserStatus | "All")
-                }
-                className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
-              >
-                {statuses.map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
-              </select>
-            </div>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
+              style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              Filters
+              {activeFilterCount > 0 && <span className="w-5 h-5 rounded-full text-xs flex items-center justify-center" style={{ background: showFilters ? "rgba(255,255,255,0.2)" : "#2E7D32", color: "white" }}>{activeFilterCount}</span>}
+            </button>
             <button
               onClick={() => setShowAdd(true)}
               className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
@@ -304,6 +327,66 @@ const handleResetPassword = async (user: UserItem) => {
               <Plus className="w-4 h-4" /> Add User
             </button>
           </div>
+
+          {showFilters && (
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Role</label>
+                  <select
+                    value={roleFilter}
+                    onChange={(e) => {
+                      setRoleFilter(e.target.value as UserRole | "All");
+                      setPage(1);
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                  >
+                    {roles.map((r) => (
+                      <option key={r}>{r}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Org. Type</label>
+                  <select
+                    value={orgTypeFilter}
+                    onChange={(e) => {
+                      setOrgTypeFilter(e.target.value);
+                      setPage(1);
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                  >
+                    {orgTypes.map((o) => (
+                      <option key={o}>{o}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Status</label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value as UserStatus | "All");
+                      setPage(1);
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                  >
+                    {statuses.map((s) => (
+                      <option key={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <button
+                    onClick={handleResetFilters}
+                    className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Reset Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Table */}
@@ -315,7 +398,7 @@ const handleResetPassword = async (user: UserItem) => {
             <span className="text-sm text-gray-500">
               Showing{" "}
               <span className="font-medium text-gray-800">
-                {filtered.length}
+                {totalCount}
               </span>{" "}
               users
             </span>
@@ -334,26 +417,17 @@ const handleResetPassword = async (user: UserItem) => {
               <table className="w-full">
                 <thead>
                   <tr style={{ background: "#F8FAF8" }}>
-                    {[
-                      "User",
-                      "Organization",
-                      "Org. Type",
-                      "Role",
-                      "Status",
-                      "Contact",
-                      "Actions",
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                      >
-                        {h}
-                      </th>
-                    ))}
+                    <SortHeader label="User" sortKey="name" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label="Organization" sortKey="organization" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label="Org. Type" sortKey="orgType" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label="Role" sortKey="role" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label="Status" sortKey="status" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label="Contact" sortKey="contact" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {filtered.map((user) => {
+                  {sortedUsers.map((user) => {
 const roleCfg = roleColors[user.role.toUpperCase()] || {
                        bg: "#F5F5F5",
                        color: "#666",
@@ -437,7 +511,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                           </div>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                          <div className="flex items-center gap-1 opacity-100 transition-opacity">
                              <button
                                onClick={() => setSelectedUser(user)}
                                className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"
@@ -452,17 +526,17 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                              >
                                <Key className="w-3.5 h-3.5" />
                              </button>
-                             <button
-                               onClick={() => handleStatusToggle(user)}
-                               className={`p-1.5 rounded-lg transition-colors ${
-                                 user.status === "Active" 
-                                   ? "hover:bg-red-50 text-red-500" 
-                                   : "hover:bg-green-50 text-green-500"
-                               }`}
-                               title={user.status === "Active" ? "Deactivate" : "Activate"}
-                             >
-                               <Power className="w-3.5 h-3.5" />
-                             </button>
+<button
+                                onClick={() => handleStatusToggle(user)}
+                                className={`p-1.5 rounded-lg transition-colors ${
+                                   user.status === "Active" 
+                                    ? "hover:bg-red-50 text-red-400" 
+                                    : "hover:bg-green-50 text-green-500"
+                                }`}
+                                title={user.status === "Active" ? "Deactivate" : "Activate"}
+                              >
+                                {user.status === "Active" ? <ToggleRight className="w-3.5 h-3.5" /> : <ToggleLeft className="w-3.5 h-3.5" />}
+                              </button>
                           </div>
                         </td>
                       </tr>
@@ -471,6 +545,78 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                 </tbody>
               </table>
             )}
+          </div>
+
+          <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+              <div className="text-sm text-gray-500">
+                Showing {totalCount === 0 ? 0 : ((page - 1) * perPage) + 1} to {Math.min(page * perPage, totalCount)} of {totalCount} users
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-gray-500">Rows/page</label>
+                <select
+                  value={perPage}
+                  onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+                  className="px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                >
+                  {[5, 10, 20, 50].map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setPage(Math.max(1, page - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                title="Previous"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              {page > 1 && (
+                <>
+                  <button
+                    onClick={() => setPage(1)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                    style={page === 1 ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                  >
+                    1
+                  </button>
+                  {page > 2 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                </>
+              )}
+              {[page - 1, page, page + 1].filter((p) => p > 1 && p < totalPages).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                  style={p === page ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                >
+                  {p}
+                </button>
+              ))}
+              {page < totalPages && (
+                <>
+                  {page < totalPages - 1 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                  <button
+                    onClick={() => setPage(totalPages)}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                    style={page === totalPages ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => setPage(Math.min(totalPages, page + 1))}
+                disabled={page === totalPages}
+                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                title="Next"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

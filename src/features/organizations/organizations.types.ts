@@ -3,6 +3,7 @@ export type OrganizationStatus = "ACTIVE" | "INACTIVE";
 
 export interface Organization {
   organizationId: number;
+  id?: string;
   name: string;
   type: OrganizationType;
   organizationTypeId?: string;
