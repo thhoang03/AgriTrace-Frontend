@@ -12,6 +12,7 @@ import type { EventType } from "../auth/permissions";
 import { QrScannerButton } from "./QrScannerButton";
 import { fetchDeviceLocation } from "../../utils/locationUtils";
 import { MapPickerModal } from "../../components/common/MapPickerModal";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 
 
@@ -58,6 +59,7 @@ function formatEventTime(eventTime?: string): { date: string; time: string } {
 export function SupplyChainPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { lang } = useLanguage();
   const [showForm, setShowForm] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const orgType = user?.organizationType;
@@ -173,17 +175,17 @@ export function SupplyChainPage() {
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 80%, white 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
         <div className="relative z-10 h-full flex items-center px-8 justify-between">
           <div>
-            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>Supply Chain Events</h1>
-            <p className="text-green-100 text-sm mt-1">Track and record blockchain-secured supply chain events</p>
+            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>{lang === "vi" ? "Sự Kiện Chuỗi Cung Ứng" : "Supply Chain Events"}</h1>
+            <p className="text-green-100 text-sm mt-1">{lang === "vi" ? "Theo dõi và ghi nhận các sự kiện chuỗi cung ứng được bảo mật bằng Blockchain" : "Track and record blockchain-secured supply chain events"}</p>
           </div>
           <div className="flex items-center gap-6">
             <div className="text-center">
               <div className="font-bold text-white" style={{ fontSize: 20 }}>{events.length}</div>
-              <div className="text-green-200 text-xs">EVENTS</div>
+              <div className="text-green-200 text-xs">{lang === "vi" ? "SỰ KIỆN" : "EVENTS"}</div>
             </div>
             <div className="text-center">
               <div className="font-bold text-white" style={{ fontSize: 20 }}>{events.filter((e) => e.currentHash).length}</div>
-              <div className="text-green-200 text-xs">VERIFIED</div>
+              <div className="text-green-200 text-xs">{lang === "vi" ? "XÁC THỰC" : "VERIFIED"}</div>
             </div>
           </div>
         </div>

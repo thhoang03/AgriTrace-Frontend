@@ -36,6 +36,7 @@ import type {
   UserStatus,
 } from "./users.types";
 import type { Organization } from "../organizations/organizations.types";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const BANNER_IMG =
   "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=1400&q=80";
@@ -220,10 +221,10 @@ const handleResetPassword = async (user: UserItem) => {
               className="text-white"
               style={{ fontSize: 24, fontWeight: 700 }}
             >
-              User Management
+              {lang === "vi" ? "Quản Lý Người Dùng" : "User Management"}
             </h1>
             <p className="text-green-100 text-sm mt-1">
-              Manage platform users, roles, and permissions
+              {lang === "vi" ? "Quản lý tài khoản, phân quyền và vai trò người dùng trong hệ thống" : "Manage platform users, roles, and permissions"}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -235,7 +236,9 @@ const handleResetPassword = async (user: UserItem) => {
                 >
                   {summary[s]}
                 </div>
-                <div className="text-green-200 text-xs">{s}</div>
+                <div className="text-green-200 text-xs">
+                  {s === "Active" ? (lang === "vi" ? "HOẠT ĐỘNG" : "Active") : s === "Inactive" ? (lang === "vi" ? "NGƯNG ĐỘNG" : "Inactive") : (lang === "vi" ? "CHỜ DUYỆT" : "Pending")}
+                </div>
               </div>
             ))}
           </div>
@@ -255,7 +258,7 @@ const handleResetPassword = async (user: UserItem) => {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search users..."
+                placeholder={lang === "vi" ? "Tìm kiếm người dùng..." : "Search users..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
                 style={{ background: "#F8FAF8" }}
               />
@@ -270,7 +273,9 @@ const handleResetPassword = async (user: UserItem) => {
                 className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
               >
                 {roles.map((r) => (
-                  <option key={r}>{r}</option>
+                  <option key={r} value={r}>
+                    {r === "All" ? (lang === "vi" ? "Tất cả vai trò" : "All Roles") : r}
+                  </option>
                 ))}
               </select>
               <select
@@ -281,7 +286,9 @@ const handleResetPassword = async (user: UserItem) => {
                 className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
               >
                 {orgTypes.map((o) => (
-                  <option key={o}>{o}</option>
+                  <option key={o} value={o}>
+                    {o === "All" ? (lang === "vi" ? "Tất cả loại đơn vị" : "All Org Types") : o}
+                  </option>
                 ))}
               </select>
               <select
@@ -292,7 +299,9 @@ const handleResetPassword = async (user: UserItem) => {
                 className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
               >
                 {statuses.map((s) => (
-                  <option key={s}>{s}</option>
+                  <option key={s} value={s}>
+                    {s === "All" ? (lang === "vi" ? "Tất cả trạng thái" : "All Status") : s === "Active" ? (lang === "vi" ? "Hoạt động" : "Active") : s === "Inactive" ? (lang === "vi" ? "Ngưng hoạt động" : "Inactive") : (lang === "vi" ? "Chờ duyệt" : "Pending")}
+                  </option>
                 ))}
               </select>
             </div>
@@ -301,7 +310,7 @@ const handleResetPassword = async (user: UserItem) => {
               className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
               style={{ background: "#2E7D32" }}
             >
-              <Plus className="w-4 h-4" /> Add User
+              <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Người Dùng" : "Add User"}
             </button>
           </div>
         </div>
@@ -313,35 +322,30 @@ const handleResetPassword = async (user: UserItem) => {
         >
           <div className="px-6 py-4 border-b border-gray-100">
             <span className="text-sm text-gray-500">
-              Showing{" "}
-              <span className="font-medium text-gray-800">
-                {filtered.length}
-              </span>{" "}
-              users
+              {lang === "vi" ? `Hiển thị ${filtered.length} người dùng` : `Showing ${filtered.length} users`}
             </span>
           </div>
           <div className="overflow-x-auto">
             {isLoading ? (
               <div className="flex items-center justify-center py-10 text-gray-500">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading
-                users...
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {lang === "vi" ? "Đang tải dữ liệu người dùng..." : "Loading users..."}
               </div>
             ) : isError ? (
               <div className="py-10 text-center text-red-500">
-                Unable to load users right now.
+                {lang === "vi" ? "Không thể tải dữ liệu người dùng." : "Unable to load users right now."}
               </div>
             ) : (
               <table className="w-full">
                 <thead>
                   <tr style={{ background: "#F8FAF8" }}>
                     {[
-                      "User",
-                      "Organization",
-                      "Org. Type",
-                      "Role",
-                      "Status",
-                      "Contact",
-                      "Actions",
+                      lang === "vi" ? "NGƯỜI DÙNG" : "User",
+                      lang === "vi" ? "TỔ CHỨC" : "Organization",
+                      lang === "vi" ? "LOẠI ĐƠN VỊ" : "Org. Type",
+                      lang === "vi" ? "VAI TRÒ" : "Role",
+                      lang === "vi" ? "TRẠNG THÁI" : "Status",
+                      lang === "vi" ? "LIÊN HỆ" : "Contact",
+                      lang === "vi" ? "THAO TÁC" : "Actions",
                     ].map((h) => (
                       <th
                         key={h}

@@ -8,6 +8,7 @@ import {
 } from "./categories.queries";
 import { useAuth } from "../auth/auth.store";
 import type { Category } from "./categories.types";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const EMPTY_FORM = { name: "", description: "" };
 
@@ -24,6 +25,7 @@ function normalizeText(text: string): string {
 
 export function CategoriesPage() {
   const { user } = useAuth();
+  const { lang } = useLanguage();
   const isAdmin = user?.role === "ADMIN";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -140,8 +142,12 @@ export function CategoriesPage() {
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 80%, white 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
         <div className="relative z-10 h-full flex items-center px-8 justify-between">
           <div>
-            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>Category Management</h1>
-            <p className="text-green-100 text-sm mt-1">Manage product categories in the supply chain</p>
+            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>
+              {lang === "vi" ? "Quản Lý Danh Mục" : "Category Management"}
+            </h1>
+            <p className="text-green-100 text-sm mt-1">
+              {lang === "vi" ? "Quản lý các danh mục sản phẩm nông nghiệp trong chuỗi cung ứng" : "Manage product categories in the supply chain"}
+            </p>
           </div>
           <div className="flex items-center gap-6">
             {["ACTIVE", "INACTIVE"].map((s) => {
@@ -151,13 +157,15 @@ export function CategoriesPage() {
               return (
                 <div key={s} className="text-center">
                   <div className="font-bold text-white" style={{ fontSize: 20 }}>{count}</div>
-                  <div className="text-green-200 text-xs">{s}</div>
+                  <div className="text-green-200 text-xs">
+                    {s === "ACTIVE" ? (lang === "vi" ? "HOẠT ĐỘNG" : "ACTIVE") : (lang === "vi" ? "NGƯNG ĐỘNG" : "INACTIVE")}
+                  </div>
                 </div>
               );
             })}
             <div className="text-center">
               <div className="font-bold text-white" style={{ fontSize: 20 }}>{categories.length}</div>
-              <div className="text-green-200 text-xs">TOTAL</div>
+              <div className="text-green-200 text-xs">{lang === "vi" ? "TỔNG CỘNG" : "TOTAL"}</div>
             </div>
           </div>
         </div>
@@ -169,22 +177,26 @@ export function CategoriesPage() {
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1 min-w-48 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search categories..." className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none" style={{ background: "#F8FAF8" }} />
+              <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={lang === "vi" ? "Tìm kiếm danh mục..." : "Search categories..."} className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none" style={{ background: "#F8FAF8" }} />
             </div>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-gray-400" />
               <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white">
-                {["All", "ACTIVE", "INACTIVE"].map((s) => <option key={s}>{s}</option>)}
+                <option value="All">{lang === "vi" ? "Tất cả trạng thái" : "All Status"}</option>
+                <option value="ACTIVE">{lang === "vi" ? "Hoạt động" : "ACTIVE"}</option>
+                <option value="INACTIVE">{lang === "vi" ? "Ngưng hoạt động" : "INACTIVE"}</option>
               </select>
             </div>
             <div className="flex items-center gap-2">
               <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white">
-                {sortOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                <option value="newest">{lang === "vi" ? "Mới nhất" : "Newest"}</option>
+                <option value="oldest">{lang === "vi" ? "Cũ nhất" : "Oldest"}</option>
+                <option value="name">{lang === "vi" ? "Theo tên" : "Name"}</option>
               </select>
             </div>
             {isAdmin && (
               <button onClick={openAdd} className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity" style={{ background: "#2E7D32" }}>
-                <Plus className="w-4 h-4" /> Add Category
+                <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Danh Mục" : "Add Category"}
               </button>
             )}
           </div>
@@ -193,16 +205,23 @@ export function CategoriesPage() {
         {/* Table */}
         <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap items-center gap-3">
-            <span className="text-sm text-gray-500">Showing <span className="font-medium text-gray-800">{displayed.length}</span> categories</span>
+            <span className="text-sm text-gray-500">
+              {lang === "vi" ? `Hiển thị ${displayed.length} danh mục` : `Showing ${displayed.length} categories`}
+            </span>
           </div>
           {isLoading ? (
-            <div className="flex items-center justify-center py-16 text-gray-400 text-sm">Loading...</div>
+            <div className="flex items-center justify-center py-16 text-gray-400 text-sm">{lang === "vi" ? "Đang tải..." : "Loading..."}</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr style={{ background: "#F8FAF8" }}>
-                    {["Category", "Description", "Status", "Actions"].map((h) => (
+                    {[
+                      lang === "vi" ? "DANH MỤC" : "Category",
+                      lang === "vi" ? "MÔ TẢ" : "Description",
+                      lang === "vi" ? "TRẠNG THÁI" : "Status",
+                      lang === "vi" ? "THAO TÁC" : "Actions"
+                    ].map((h) => (
                       <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                     ))}
                   </tr>

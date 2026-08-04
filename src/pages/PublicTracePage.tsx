@@ -119,10 +119,10 @@ export function PublicTracePage() {
               {lang === "vi" ? "Trở về Trang Chủ" : "Return to Home Page"}
             </button>
             <button
-              onClick={() => navigate("/trace/BTH-2024-001")}
+              onClick={() => navigate("/trace/RICE-20260112-001")}
               className="w-full py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 text-xs font-semibold"
             >
-              {lang === "vi" ? "Xem Lô Mẫu: BTH-2024-001" : "View Sample Batch: BTH-2024-001"}
+              {lang === "vi" ? "Xem Lô Mẫu: RICE-20260112-001" : "View Sample Batch: RICE-20260112-001"}
             </button>
           </div>
         </div>
@@ -335,7 +335,7 @@ export function PublicTracePage() {
 
                             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-semibold border border-emerald-100">
                               <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>Verified</span>
+                              <span>{lang === "vi" ? "Xác thực" : "Verified"}</span>
                             </div>
                           </div>
 
@@ -410,18 +410,18 @@ export function PublicTracePage() {
                     <CheckCircle className="w-4 h-4 text-emerald-600" />
                     <span>{lang === "vi" ? "Kiểm tra vi sinh & dư lượng bảo vệ thực vật: ĐẠT CHUẨN (0% dư lượng)" : "Chemical & Microbiological Safety Test: PASSED (0% residue)"}</span>
                   </div>
-                  <span className="font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">PASSED</span>
+                  <span className="font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">{lang === "vi" ? "ĐẠT" : "PASSED"}</span>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {inspections.map((insp, idx) => (
                     <div key={idx} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
                       <div>
-                        <div className="font-bold text-gray-900 text-xs">{insp.inspectorName || "Quality Assurance Inspector"}</div>
-                        <div className="text-[11px] text-gray-400 mt-0.5">{insp.createdAt ? new Date(insp.createdAt).toLocaleString() : "Recently tested"}</div>
+                      <div className="font-bold text-gray-900 text-xs">{insp.inspectorName || (lang === "vi" ? "Kiểm định viên chất lượng" : "Quality Assurance Inspector")}</div>
+                        <div className="text-[11px] text-gray-400 mt-0.5">{insp.createdAt ? new Date(insp.createdAt).toLocaleString() : (lang === "vi" ? "Mới kiểm tra" : "Recently tested")}</div>
                       </div>
                       <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-bold">
-                        {insp.result || "PASSED"}
+                        {insp.result || (lang === "vi" ? "ĐẠT" : "PASSED")}
                       </span>
                     </div>
                   ))}

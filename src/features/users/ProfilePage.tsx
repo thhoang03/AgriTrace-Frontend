@@ -7,14 +7,11 @@ import {
 import { useAuth } from "../auth/auth.store";
 import { authApi } from "../auth/auth.api";
 import { usersApi } from "./users.api";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export function ProfilePage() {
   const { user, updateUser } = useAuth();
-
-  // Language state (default 'vi' for Vietnamese or 'en')
-  const [lang, setLang] = useState<"vi" | "en">(() => {
-    return (localStorage.getItem("agritrace_profile_lang") as any) || "vi";
-  });
+  const { lang, setLang } = useLanguage();
 
   // Avatar Default
   const defaultAvatar = user?.name
@@ -71,10 +68,7 @@ export function ProfilePage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Save language preference
-  useEffect(() => {
-    localStorage.setItem("agritrace_profile_lang", lang);
-  }, [lang]);
+
 
   // Sync document theme when `theme` state changes
   useEffect(() => {

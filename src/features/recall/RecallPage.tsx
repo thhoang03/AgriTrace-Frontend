@@ -8,6 +8,7 @@ import { severityConfig, statusConfig, type RecallSeverity, type RecallStatus } 
 import type { CreateRecallRequest, RecallItem } from "./recalls.api";
 import { batchesApi, type Batch } from "../batches/batches.api";
 import { QrScannerModal } from "./QrScannerModal";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const getSeverityName = (severity: number): RecallSeverity => {
   switch (severity) {
@@ -47,6 +48,7 @@ function mapStatusName(name: string): RecallStatus {
 export function RecallPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { lang } = useLanguage();
   // Allow Manager and Admin to perform recall actions
   const canRecall = user?.role === "Manager" || user?.role === "Admin" || user?.role === "ADMIN" || true;
 
@@ -141,8 +143,8 @@ export function RecallPage() {
               <AlertTriangle className="w-7 h-7 text-white" />
             </div>
             <div>
-              <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>Recall Management</h1>
-              <p className="text-red-200 text-sm mt-1">Monitor, scan QR codes, and issue product safety recalls</p>
+              <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>{lang === "vi" ? "Quản Lý Thu Hồi" : "Recall Management"}</h1>
+              <p className="text-red-200 text-sm mt-1">{lang === "vi" ? "Giám sát, quét mã QR và phát hành lệnh thu hồi an toàn sản phẩm" : "Monitor, scan QR codes, and issue product safety recalls"}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -150,7 +152,7 @@ export function RecallPage() {
               onClick={() => setShowQrModal(true)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-700 bg-white transition-all hover:bg-red-50 shadow-md"
             >
-              <QrCode className="w-4 h-4 text-red-600" /> Scan Batch QR
+              <QrCode className="w-4 h-4 text-red-600" /> {lang === "vi" ? "Quét QR Lô Hàng" : "Scan Batch QR"}
             </button>
             {canRecall && (
               <button
@@ -158,7 +160,7 @@ export function RecallPage() {
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
                 style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.3)" }}
               >
-                <Plus className="w-4 h-4" /> Create Recall
+                <Plus className="w-4 h-4" /> {lang === "vi" ? "+ Tạo Lệnh Thu Hồi" : "Create Recall"}
               </button>
             )}
           </div>
@@ -169,9 +171,9 @@ export function RecallPage() {
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
           {[
-            { label: "Active Recalls", count: activeCount, icon: AlertTriangle, bg: "#FFEBEE", color: "#C62828", desc: "Requiring immediate action" },
-            { label: "Resolved Recalls", count: resolvedCount, icon: CheckCircle, bg: "#E8F5E9", color: "#2E7D32", desc: "Successfully closed" },
-            { label: "Pending Review", count: pendingCount, icon: Clock, bg: "#FFF9C4", color: "#F57F17", desc: "Awaiting investigation" },
+            { label: lang === "vi" ? "Đang Thu Hồi" : "Active Recalls", count: activeCount, icon: AlertTriangle, bg: "#FFEBEE", color: "#C62828", desc: lang === "vi" ? "Yêu cầu xử lý ngay" : "Requiring immediate action" },
+            { label: lang === "vi" ? "Đã Giải Quyết" : "Resolved Recalls", count: resolvedCount, icon: CheckCircle, bg: "#E8F5E9", color: "#2E7D32", desc: lang === "vi" ? "Đã đóng thành công" : "Successfully closed" },
+            { label: lang === "vi" ? "Đang Chờ Duyệt" : "Pending Review", count: pendingCount, icon: Clock, bg: "#FFF9C4", color: "#F57F17", desc: lang === "vi" ? "Đang chờ điều tra" : "Awaiting investigation" },
           ].map(({ label, count, icon: Icon, bg, color, desc }) => (
             <div key={label} className="bg-white rounded-2xl p-6 flex items-center gap-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: bg }}>

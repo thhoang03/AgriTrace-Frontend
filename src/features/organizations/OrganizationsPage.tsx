@@ -19,6 +19,7 @@ import { organizationsApi } from "./organizations.api";
 import { useAuth } from "../../features/auth/auth.store";
 import { useOrganizationTypes } from "../../features/organizationTypes/organizationType.queries";
 import type { Organization } from "./organizations.types";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
   FARM: { bg: "#E8F5E9", color: "#1B5E20" },
@@ -46,6 +47,7 @@ interface Alert {
 
 export function OrganizationsPage() {
   const { user } = useAuth();
+  const { lang } = useLanguage();
   const isManager = user?.role === "MANAGER";
   const { data: orgTypes = [], isLoading: typesLoading } =
     useOrganizationTypes();
@@ -237,10 +239,10 @@ export function OrganizationsPage() {
               className="text-white"
               style={{ fontSize: 24, fontWeight: 700 }}
             >
-              Organization Management
+              {lang === "vi" ? "Quản Lý Tổ Chức & Đơn Vị" : "Organization Management"}
             </h1>
             <p className="text-green-100 text-sm mt-1">
-              Manage organizations in the supply chain
+              {lang === "vi" ? "Quản lý danh sách các tổ chức, doanh nghiệp trong chuỗi cung ứng" : "Manage organizations in the supply chain"}
             </p>
           </div>
           <div className="flex items-center gap-6">
@@ -249,14 +251,16 @@ export function OrganizationsPage() {
                 <div className="font-bold text-white" style={{ fontSize: 20 }}>
                   {orgs.filter((o) => o.status === s).length}
                 </div>
-                <div className="text-green-200 text-xs">{s}</div>
+                <div className="text-green-200 text-xs">
+                  {s === "ACTIVE" ? (lang === "vi" ? "HOẠT ĐỘNG" : "ACTIVE") : (lang === "vi" ? "NGƯNG ĐỘNG" : "INACTIVE")}
+                </div>
               </div>
             ))}
             <div className="text-center">
               <div className="font-bold text-white" style={{ fontSize: 20 }}>
                 {orgs.length}
               </div>
-              <div className="text-green-200 text-xs">TOTAL</div>
+              <div className="text-green-200 text-xs">{lang === "vi" ? "TỔNG CỘNG" : "TOTAL"}</div>
             </div>
           </div>
         </div>
@@ -275,7 +279,7 @@ export function OrganizationsPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search organizations..."
+                placeholder={lang === "vi" ? "Tìm kiếm tổ chức..." : "Search organizations..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
                 style={{ background: "#F8FAF8" }}
               />
@@ -287,7 +291,7 @@ export function OrganizationsPage() {
                 onChange={(e) => setTypeFilter(e.target.value)}
                 className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
               >
-                <option value="All">All</option>
+                <option value="All">{lang === "vi" ? "Tất cả loại hình" : "All Types"}</option>
                 {orgTypes.map((t) => (
                   <option key={t.id} value={t.code}>
                     {t.name}
@@ -299,18 +303,20 @@ export function OrganizationsPage() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
               >
-                {["All", "ACTIVE", "INACTIVE"].map((s) => (
-                  <option key={s}>{s}</option>
-                ))}
+                <option value="All">{lang === "vi" ? "Tất cả trạng thái" : "All Status"}</option>
+                <option value="ACTIVE">{lang === "vi" ? "Hoạt động" : "ACTIVE"}</option>
+                <option value="INACTIVE">{lang === "vi" ? "Ngưng hoạt động" : "INACTIVE"}</option>
               </select>
             </div>
-            <button
-              onClick={openAdd}
-              className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
-              style={{ background: "#2E7D32" }}
-            >
-              <Plus className="w-4 h-4" /> Add Organization
-            </button>
+            {!isManager && (
+              <button
+                onClick={openAdd}
+                className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+                style={{ background: "#2E7D32" }}
+              >
+                <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Tổ Chức" : "Add Organization"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -319,18 +325,14 @@ export function OrganizationsPage() {
           className="bg-white rounded-2xl overflow-hidden"
           style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
         >
-          <div className="px-6 py-4 border-b border-gray-100">
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <span className="text-sm text-gray-500">
-              Showing{" "}
-              <span className="font-medium text-gray-800">
-                {filtered.length}
-              </span>{" "}
-              organizations
+              {lang === "vi" ? `Hiển thị ${filtered.length} tổ chức` : `Showing ${filtered.length} organizations`}
             </span>
           </div>
           {loading ? (
             <div className="flex items-center justify-center py-16 text-gray-400 text-sm">
-              Loading...
+              {lang === "vi" ? "Đang tải dữ liệu..." : "Loading..."}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -338,11 +340,11 @@ export function OrganizationsPage() {
                 <thead>
                   <tr style={{ background: "#F8FAF8" }}>
                     {[
-                      "Organization",
-                      "Type",
-                      "Address",
-                      "Status",
-                      "Actions",
+                      lang === "vi" ? "TỔ CHỨC" : "Organization",
+                      lang === "vi" ? "LOẠI HÌNH" : "Type",
+                      lang === "vi" ? "ĐỊA CHỈ" : "Address",
+                      lang === "vi" ? "TRẠNG THÁI" : "Status",
+                      lang === "vi" ? "THAO TÁC" : "Actions"
                     ].map((h) => (
                       <th
                         key={h}
