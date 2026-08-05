@@ -160,7 +160,7 @@ export function PublicLineagePage() {
 
                     <div className="text-xs text-gray-500 pt-1">
                       {lang === "vi" ? "Số lượng lô:" : "Node Quantity:"}{" "}
-                      <span className="font-bold text-gray-900">{item.quantity} {item.unitCode || "KG"}</span>
+                      <span className="font-bold text-gray-900">{item.quantity}</span>
                     </div>
 
                     {item.parentBatchId && (

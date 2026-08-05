@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { notificationsApi } from "./notifications.api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 type NotifType = "ALL" | "RECALL" | "INSPECTION" | "BATCH" | "SYSTEM" | "CERTIFICATE";
 
@@ -22,7 +23,7 @@ const DEFAULT_CONFIG = { icon: Bell, color: "#6B7280", bg: "#F3F4F6", label: "No
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1614680376739-414d95ff43df?w=1400&q=80";
 
-const FILTER_TABS: { key: NotifType; label: string }[] = [
+const FILTER_TABS_EN: { key: NotifType; label: string }[] = [
   { key: "ALL",         label: "All"         },
   { key: "RECALL",      label: "Recall"      },
   { key: "INSPECTION",  label: "Inspection"  },
@@ -30,24 +31,33 @@ const FILTER_TABS: { key: NotifType; label: string }[] = [
   { key: "CERTIFICATE", label: "Certificate" },
   { key: "SYSTEM",      label: "System"      },
 ];
+const FILTER_TABS_VI: { key: NotifType; label: string }[] = [
+  { key: "ALL",         label: "Tất cả"      },
+  { key: "RECALL",      label: "Thu hồi"     },
+  { key: "INSPECTION",  label: "Kiểm định"   },
+  { key: "BATCH",       label: "Lô hàng"     },
+  { key: "CERTIFICATE", label: "Chứng nhận"  },
+  { key: "SYSTEM",      label: "Hệ thống"   },
+];
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string, lang: string = "en"): string {
   try {
     const d = new Date(dateStr);
     const diff = Date.now() - d.getTime();
     const s = Math.floor(diff / 1000);
-    if (s < 60) return `${s}s ago`;
+    if (s < 60) return lang === "vi" ? `${s} giây trước` : `${s}s ago`;
     const m = Math.floor(s / 60);
-    if (m < 60) return `${m}m ago`;
+    if (m < 60) return lang === "vi" ? `${m} phút trước` : `${m}m ago`;
     const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h ago`;
-    return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    if (h < 24) return lang === "vi" ? `${h} giờ trước` : `${h}h ago`;
+    return d.toLocaleDateString(lang === "vi" ? "vi-VN" : "en-GB", { day: "numeric", month: "short" });
   } catch {
     return "";
   }
 }
 
 export function NotificationsPage() {
+  const { lang } = useLanguage();
   const [filter, setFilter] = useState<NotifType>("ALL");
   const queryClient = useQueryClient();
 
@@ -91,13 +101,13 @@ export function NotificationsPage() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Bell className="w-5 h-5 text-green-300" />
-              <span className="text-green-200 text-sm font-medium">Notification Center</span>
+              <span className="text-green-200 text-sm font-medium">{lang === "vi" ? "Trung tâm thông báo" : "Notification Center"}</span>
             </div>
             <h1 className="text-white font-extrabold" style={{ fontSize: 26 }}>
-              Notifications
+              {lang === "vi" ? "Thông Báo" : "Notifications"}
             </h1>
             <p className="text-green-200 text-xs mt-1">
-              Stay updated on batch events, recalls, and system alerts
+              {lang === "vi" ? "Cập nhật thông tin các sự kiện lô hàng, thu hồi và cảnh báo" : "Stay updated on batch events, recalls, and system alerts"}
             </p>
           </div>
 
@@ -107,7 +117,7 @@ export function NotificationsPage() {
                 className="px-3 py-1.5 rounded-xl text-sm font-bold text-white"
                 style={{ background: "#E53935" }}
               >
-                {unreadCount} unread
+                {unreadCount} {lang === "vi" ? "chưa đọc" : "unread"}
               </div>
             )}
             <button
@@ -116,7 +126,7 @@ export function NotificationsPage() {
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white border border-white/20 hover:bg-white/10 transition-all disabled:opacity-50"
             >
               <Check className="w-4 h-4" />
-              Mark all read
+              {lang === "vi" ? "Đọc tất cả" : "Mark all read"}
             </button>
             <button
               onClick={() => refetch()}
@@ -132,15 +142,15 @@ export function NotificationsPage() {
         {/* Summary stat cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Total",       value: notifications.length, color: "#2E7D32", bg: "#E8F5E9" },
-            { label: "Unread",      value: unreadCount,          color: "#E53935", bg: "#FFEBEE" },
+            { label: lang === "vi" ? "Tổng số" : "Total",       value: notifications.length, color: "#2E7D32", bg: "#E8F5E9" },
+            { label: lang === "vi" ? "Chưa đọc" : "Unread",      value: unreadCount,          color: "#E53935", bg: "#FFEBEE" },
             {
-              label: "Recall Alerts",
+              label: lang === "vi" ? "Cảnh báo thu hồi" : "Recall Alerts",
               value: notifications.filter((n) => (n.type ?? "").toUpperCase() === "RECALL").length,
               color: "#C62828", bg: "#FFEBEE",
             },
             {
-              label: "Inspections",
+              label: lang === "vi" ? "Kiểm định" : "Inspections",
               value: notifications.filter((n) => (n.type ?? "").toUpperCase() === "INSPECTION").length,
               color: "#1565C0", bg: "#E3F2FD",
             },
@@ -171,7 +181,7 @@ export function NotificationsPage() {
         >
           {/* Filter tabs */}
           <div className="flex items-center gap-1 px-5 pt-5 pb-0 border-b border-gray-100 overflow-x-auto">
-            {FILTER_TABS.map(({ key, label }) => (
+            {(lang === "vi" ? FILTER_TABS_VI : FILTER_TABS_EN).map(({ key, label }) => (
               <button
                 key={key}
                 onClick={() => setFilter(key)}
@@ -263,7 +273,7 @@ export function NotificationsPage() {
                           />
                         )}
                         <span className="text-xs text-gray-400 ml-auto">
-                          {formatRelativeTime(n.createdAt)}
+                          {formatRelativeTime(n.createdAt, lang)}
                         </span>
                       </div>
                       <p className="text-sm font-semibold text-gray-800 mt-1">

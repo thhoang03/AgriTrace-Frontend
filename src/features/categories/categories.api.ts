@@ -40,12 +40,14 @@ export interface CategoryFilters {
   search?: string;
   page?: number;
   pageSize?: number;
+  status?: string;
 }
 
 // Adapter functions
 function adaptCategoryFromListItem(item: any): Category {
   return {
     categoryId: item.categoryId ?? 0,
+    id: String(item.id ?? item.categoryId ?? ""),
     name: item.name ?? "",
     description: item.description ?? "",
     isActive: item.isActive ?? true,
@@ -56,6 +58,7 @@ function adaptCategoryFromListItem(item: any): Category {
 function adaptCategoryFromDetail(item: any): Category {
   return {
     categoryId: item.categoryId ?? 0,
+    id: String(item.id ?? item.categoryId ?? ""),
     name: item.name ?? "",
     description: item.description ?? "",
     isActive: item.isActive ?? true,
@@ -68,6 +71,7 @@ export const categoriesApi = {
     const response = await get<CategoryPagedResponse>("/categories", {
       params: {
         search: filters?.search,
+        status: filters?.status,
         page: filters?.page,
         pageSize: filters?.pageSize,
       }

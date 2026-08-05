@@ -12,9 +12,10 @@ interface QRScannerModalProps {
 }
 
 const PRESET_QRS = [
-  { id: "BTH-2024-001", name: "Gạo ST25 Sóc Trăng", tag: "Lúa gạo Organic", icon: "🌾" },
-  { id: "BTH-2024-002", name: "Xoài Cát Chu Đồng Tháp", tag: "Trái cây VietGAP", icon: "🥭" },
-  { id: "BTH-2024-004", name: "Thanh Long Bình Thuận", tag: "Xuất khẩu GlobalGAP", icon: "🐉" },
+  { id: "RICE-20260112-001", name: "Jasmine Rice", tag: "Lúa gạo Organic", icon: "🌾" },
+  { id: "COFFEE-20260110-001", name: "Arabica Coffee", tag: "Cà phê GlobalGAP", icon: "☕" },
+  { id: "DRAGONFRUIT-20260108-001", name: "Dragon Fruit", tag: "Trái cây Xuất khẩu", icon: "🐉" },
+  { id: "TOMATO-20260105-001", name: "Organic Tomato", tag: "Cà chua hữu cơ", icon: "🍅" },
 ];
 
 export const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose, lang = "en" }) => {

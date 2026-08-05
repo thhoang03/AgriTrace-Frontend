@@ -19,7 +19,7 @@ export function BatchSplitModal({
   batchCode,
   productName,
   totalQuantity,
-  unit = "kg",
+  unit = "",
   unitId,
   onClose,
   onSplit,
@@ -55,7 +55,7 @@ export function BatchSplitModal({
     if (!isValid) {
       setError(
         totalAllocated > totalQuantity
-          ? `Total allocated (${totalAllocated}) exceeds parent quantity (${totalQuantity} ${unit}).`
+          ? `Total allocated (${totalAllocated}) exceeds parent quantity (${totalQuantity}).`
           : "Each child batch must have a quantity greater than 0."
       );
       return;
@@ -115,7 +115,7 @@ export function BatchSplitModal({
             <div>
               <div className="text-sm font-semibold text-blue-900">{productName}</div>
               <div className="text-xs text-blue-600 mt-0.5">
-                Parent batch · {totalQuantity.toLocaleString()} {unit} total
+                Parent batch · {totalQuantity.toLocaleString()} total
               </div>
             </div>
             <div className="text-right">
@@ -123,7 +123,7 @@ export function BatchSplitModal({
                 className="text-sm font-bold"
                 style={{ color: remaining < 0 ? "#DC2626" : "#2E7D32" }}
               >
-                {remaining.toLocaleString()} {unit}
+                {remaining.toLocaleString()}
               </div>
               <div className="text-xs text-gray-400">remaining</div>
             </div>
@@ -134,7 +134,7 @@ export function BatchSplitModal({
             <div className="flex justify-between text-xs text-gray-500 mb-1">
               <span>Allocated</span>
               <span>
-                {totalAllocated.toLocaleString()} / {totalQuantity.toLocaleString()} {unit}
+                {totalAllocated.toLocaleString()} / {totalQuantity.toLocaleString()}
               </span>
             </div>
             <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
@@ -176,7 +176,7 @@ export function BatchSplitModal({
                 </div>
                 <div className="flex-1">
                   <label className="text-xs text-gray-400 block mb-1">
-                    Quantity ({unit})
+                    Quantity
                   </label>
                   <input
                     type="number"
@@ -184,7 +184,7 @@ export function BatchSplitModal({
                     max={totalQuantity}
                     value={child.quantity || ""}
                     onChange={(e) => setQty(idx, e.target.value)}
-                    placeholder={`0 ${unit}`}
+                    placeholder="0"
                     className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none text-sm"
                   />
                 </div>

@@ -10,6 +10,7 @@ import {
 import { useAnalyticsOverview, useBatchDistribution } from "../analytics/analytics.queries";
 import { useReports, useGenerateReport } from "./reports.queries";
 import type { ReportType, ReportFormat, GenerateReportRequest } from "./reports.types";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1400&q=80";
 
@@ -59,6 +60,7 @@ function formatDate(dateStr: string): string {
 }
 
 export function ReportsPage() {
+  const { lang } = useLanguage();
   const { data: analyticsData, isLoading: overviewLoading, isError: overviewError } = useAnalyticsOverview();
   const { data: distData } = useBatchDistribution();
   const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useReports();
@@ -76,10 +78,10 @@ export function ReportsPage() {
   const batchDistribution = distData?.data?.items ?? [];
 
   const summaryCards = overview ? [
-    { label: "Total Production", value: `${(overview.totalBatches * 350).toLocaleString()} kg`, icon: Leaf, color: "#2E7D32", bg: "#E8F5E9" },
-    { label: "Batches Created", value: overview.totalBatches.toLocaleString(), icon: Package, color: "#1976D2", bg: "#E3F2FD" },
-    { label: "Recall Alerts", value: overview.totalRecalls.toLocaleString(), icon: AlertTriangle, color: "#E53935", bg: "#FFEBEE" },
-    { label: "Active Batches", value: overview.activeBatches.toLocaleString(), icon: CheckCircle, color: "#7B1FA2", bg: "#F3E5F5" },
+    { label: lang === "vi" ? "Tổng Sản Lượng" : "Total Production", value: `${(overview.totalBatches * 350).toLocaleString()} kg`, icon: Leaf, color: "#2E7D32", bg: "#E8F5E9" },
+    { label: lang === "vi" ? "Lô Hàng Đã Tạo" : "Batches Created", value: overview.totalBatches.toLocaleString(), icon: Package, color: "#1976D2", bg: "#E3F2FD" },
+    { label: lang === "vi" ? "Cảnh Báo Thu Hồi" : "Recall Alerts", value: overview.totalRecalls.toLocaleString(), icon: AlertTriangle, color: "#E53935", bg: "#FFEBEE" },
+    { label: lang === "vi" ? "Lô Đang Hoạt Động" : "Active Batches", value: overview.activeBatches.toLocaleString(), icon: CheckCircle, color: "#7B1FA2", bg: "#F3E5F5" },
   ] : [];
 
   const handleGenerate = async () => {
@@ -109,8 +111,8 @@ export function ReportsPage() {
           <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(27,94,32,0.9) 0%, rgba(46,125,50,0.6) 100%)" }} />
           <div className="relative z-10 h-full flex items-center px-8">
             <div>
-              <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>Analytics & Reports</h1>
-              <p className="text-green-100 text-sm mt-1">Loading...</p>
+              <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>{lang === "vi" ? "Báo Cáo & Thống Kê" : "Analytics & Reports"}</h1>
+              <p className="text-green-100 text-sm mt-1">{lang === "vi" ? "Đang tải..." : "Loading..."}</p>
             </div>
           </div>
         </div>
@@ -169,8 +171,8 @@ export function ReportsPage() {
         <div className="absolute inset-0" style={{ background: "linear-gradient(90deg, rgba(27,94,32,0.9) 0%, rgba(46,125,50,0.6) 100%)" }} />
         <div className="relative z-10 h-full flex items-center px-8 justify-between">
           <div>
-            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>Analytics & Reports</h1>
-            <p className="text-green-100 text-sm mt-1">Supply chain performance insights</p>
+            <h1 className="text-white" style={{ fontSize: 24, fontWeight: 700 }}>{lang === "vi" ? "Báo Cáo & Thống Kê" : "Analytics & Reports"}</h1>
+            <p className="text-green-100 text-sm mt-1">{lang === "vi" ? "Phân tích hiệu suất chuỗi cung ứng" : "Supply chain performance insights"}</p>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -203,7 +205,7 @@ export function ReportsPage() {
           <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="mb-5">
               <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Monthly Production Volume</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Total quantity (kg) produced per month</p>
+              <p className="text-gray-400 text-xs mt-0.5">Total quantity produced per month</p>
             </div>
             {overview?.monthlyProduction && overview.monthlyProduction.length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
@@ -218,7 +220,7 @@ export function ReportsPage() {
                   <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} width={45} />
                   <Tooltip contentStyle={{ borderRadius: 10, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.12)", fontSize: 12 }} />
-                  <Area type="monotone" dataKey="quantity" name="Quantity (kg)" stroke="#2E7D32" strokeWidth={2.5} fill="url(#prodGrad)" dot={{ fill: "#2E7D32", r: 3 }} />
+                  <Area type="monotone" dataKey="quantity" name="Quantity" stroke="#2E7D32" strokeWidth={2.5} fill="url(#prodGrad)" dot={{ fill: "#2E7D32", r: 3 }} />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (

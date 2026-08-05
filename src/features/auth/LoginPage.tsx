@@ -1,17 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Leaf, Eye, EyeOff, Shield, Lock, User, ArrowLeft, KeyRound, Sparkles } from "lucide-react";
+import { Leaf, Eye, EyeOff, Shield, Lock, User, ArrowLeft } from "lucide-react";
 import { useAuth } from "./auth.store";
 import { toast } from "sonner";
 
 const BG_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1200&q=80";
 
-const DEMO_ACCOUNTS = [
-  { roleVi: "Nông Dân (Farmer)", roleEn: "Farmer Demo", email: "farmer@agritrace.vn", pass: "Password123!" },
-  { roleVi: "Cơ Sở Chế Biến", roleEn: "Processor Demo", email: "processor@agritrace.vn", pass: "Password123!" },
-  { roleVi: "Đơn Vị Kiểm Tra", roleEn: "Inspector Demo", email: "inspector@agritrace.vn", pass: "Password123!" },
-  { roleVi: "Quản Trị Viên", roleEn: "Admin Demo", email: "admin@agritrace.vn", pass: "Password123!" },
-];
+
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -43,10 +38,7 @@ export function LoginPage() {
     }
   };
 
-  const handleQuickFill = (email: string, pass: string) => {
-    setForm({ email, password: pass });
-    toast.info(lang === "vi" ? `Đã điền tài khoản mẫu ${email}` : `Filled sample demo account ${email}`);
-  };
+
 
   return (
     <div className="min-h-screen flex bg-[#F5F7FA]">
@@ -122,7 +114,7 @@ export function LoginPage() {
         {/* Form Input */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-gray-700 mb-1 block">Email / Username</label>
+            <label className="text-xs font-semibold text-gray-700 mb-1 block">Email</label>
             <div className="relative">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -191,30 +183,6 @@ export function LoginPage() {
             🌱 Register Account / New Organization
           </button>
         </div>
-
-        {/* Quick Demo Accounts Fill Box */}
-        {/*
-        <div className="mt-4 p-4 rounded-2xl bg-green-50/60 border border-green-100 space-y-3">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-green-900">
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            <span>{lang === "vi" ? "Thử nghiệm nhanh tài khoản demo:" : "Quick Demo Test Login Accounts:"}</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            {DEMO_ACCOUNTS.map((acc, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => handleQuickFill(acc.email, acc.pass)}
-                className="p-2 rounded-xl bg-white border border-green-200 hover:border-green-600 hover:bg-green-100/50 text-left transition-all text-xs"
-              >
-                <div className="font-bold text-green-900">{lang === "vi" ? acc.roleVi : acc.roleEn}</div>
-                <div className="text-[10px] text-gray-500 font-mono truncate">{acc.email}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-        */}
 
         <p className="text-center text-xs text-gray-400 mt-6">
           © 2026 Ministry of Agriculture and Rural Development · Vietnam

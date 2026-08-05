@@ -2,41 +2,36 @@ import { useState, useRef, useEffect } from "react";
 import {
   Camera, Lock, Bell, Moon, Save, CheckCircle, AlertCircle,
   Eye, EyeOff, ShieldCheck, Globe, UserCheck, RefreshCw, Building2, Layers,
-  Sun, Smartphone,
 } from "lucide-react";
 import { useAuth } from "../auth/auth.store";
 import { authApi } from "../auth/auth.api";
-import { usersApi } from "./users.api";
+import { useProfile, useUpdateProfile } from "./users.queries";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export function ProfilePage() {
   const { user, updateUser } = useAuth();
-
-  // Language state (default 'vi' for Vietnamese or 'en')
-  const [lang, setLang] = useState<"vi" | "en">(() => {
-    return (localStorage.getItem("agritrace_profile_lang") as any) || "vi";
-  });
+  const { lang, setLang } = useLanguage();
+  const { data: dbProfile, isLoading: isProfileLoading } = useProfile();
+  const updateProfileMutation = useUpdateProfile();
 
   // Avatar Default
-  const defaultAvatar = user?.name
-    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=2E7D32&color=fff&rounded=true&size=160`
+  const defaultAvatar = (user?.name || dbProfile?.fullName)
+    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(dbProfile?.fullName || user?.name || "User")}&background=2E7D32&color=fff&rounded=true&size=160`
     : "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80";
 
   // Avatar State
   const [avatarUrl, setAvatarUrl] = useState<string>(user?.avatar || defaultAvatar);
 
-  // Editable Form Fields (ONLY Full Name and Phone Number)
-  const [fullName, setFullName] = useState(user?.name || "System Administrator");
-  const [phone, setPhone] = useState(user?.phone || "+84 987 654 321");
-  const [bio, setBio] = useState(
-    lang === "vi"
-      ? "Quản trị viên phụ trách giám sát hệ thống truy xuất nguồn gốc chuỗi cung ứng nông sản."
-      : "Lead administrator overseeing national agricultural blockchain traceability nodes."
-  );
+  // Editable Form Fields
+  const [fullName, setFullName] = useState(dbProfile?.fullName || user?.name || "");
+  const [phone, setPhone] = useState(dbProfile?.phone || user?.phone || "");
+  const [bio, setBio] = useState(() => localStorage.getItem("agritrace_user_bio") || "");
 
-  // Read-Only Fields (Pre-filled from Organizations & Account, cannot be edited)
-  const email = user?.email || "admin@agritrace.com";
-  const organizationName = user?.organizationName || "Bộ Nông Nghiệp & Phát Triển Nông Thôn Việt Nam";
-  const organizationType = user?.organizationType || "SYSTEM";
+  // Read-Only Fields from DB or Auth Context
+  const email = dbProfile?.email || user?.email || "";
+  const organizationName = dbProfile?.organization || user?.organizationName || "";
+  const organizationType = dbProfile?.organizationType || user?.organizationType || "";
+  const userId = dbProfile?.id || user?.id || "";
 
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -71,11 +66,6 @@ export function ProfilePage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Save language preference
-  useEffect(() => {
-    localStorage.setItem("agritrace_profile_lang", lang);
-  }, [lang]);
-
   // Sync document theme when `theme` state changes
   useEffect(() => {
     localStorage.setItem("agritrace_theme", theme);
@@ -91,14 +81,18 @@ export function ProfilePage() {
     }
   }, [theme]);
 
-  // Sync local user state
+  // Sync state when dbProfile or user updates
   useEffect(() => {
-    if (user) {
+    if (dbProfile) {
+      if (dbProfile.fullName) setFullName(dbProfile.fullName);
+      if (dbProfile.phone) setPhone(dbProfile.phone);
+      if (dbProfile.avatar) setAvatarUrl(dbProfile.avatar);
+    } else if (user) {
       if (user.name) setFullName(user.name);
       if (user.phone) setPhone(user.phone);
       if (user.avatar) setAvatarUrl(user.avatar);
     }
-  }, [user]);
+  }, [dbProfile, user]);
 
   // Toast alert trigger
   const triggerToast = (msg: string) => {
@@ -121,18 +115,20 @@ export function ProfilePage() {
     }
   };
 
-  // Save Profile Handler (Only saves Full Name and Phone)
+  // Save Profile Handler
   const handleSave = async () => {
     setSaveError("");
     setIsSaving(true);
     try {
-      if (user?.id) {
-        await usersApi.update(user.id, {
-          fullName,
-          phone,
-        }).catch(() => {});
+      if (bio !== undefined) {
+        localStorage.setItem("agritrace_user_bio", bio);
       }
-      
+
+      await updateProfileMutation.mutateAsync({
+        fullName,
+        phone,
+      });
+
       updateUser({
         name: fullName,
         phone,
@@ -142,14 +138,13 @@ export function ProfilePage() {
       setSaved(true);
       triggerToast(
         lang === "vi"
-          ? "Đã lưu thay đổi thông tin (Họ tên & SĐT) thành công! 🎉"
-          : "Profile updated successfully! (Full Name & Phone saved)"
+          ? "Đã lưu thay đổi thông tin cá nhân thành công! 🎉"
+          : "Profile updated successfully!"
       );
       setTimeout(() => setSaved(false), 3000);
     } catch (e: any) {
-      setSaveError(
-        e.message || (lang === "vi" ? "Lưu thông tin thất bại" : "Failed to save profile changes")
-      );
+      const msg = e?.response?.data?.message || e?.message || (lang === "vi" ? "Lưu thông tin thất bại" : "Failed to save profile changes");
+      setSaveError(msg);
     } finally {
       setIsSaving(false);
     }
@@ -188,17 +183,8 @@ export function ProfilePage() {
       setConfirmPwd("");
       triggerToast(successText + " 🔐");
     } catch (e: any) {
-      if (e?.response?.status === 400) {
-        setPwdError(e.response?.data?.message || (lang === "vi" ? "Mật khẩu hiện tại không chính xác." : "Current password is incorrect."));
-      } else {
-        // Fallback for mock demo account password update
-        const successText = lang === "vi" ? "Đổi mật khẩu thành công!" : "Password updated successfully!";
-        setPwdMsg(successText);
-        setCurrentPwd("");
-        setNewPwd("");
-        setConfirmPwd("");
-        triggerToast(successText + " 🔐");
-      }
+      const errDetail = e?.response?.data?.message || e?.message || (lang === "vi" ? "Mật khẩu hiện tại không chính xác." : "Current password is incorrect.");
+      setPwdError(errDetail);
     } finally {
       setIsChangingPwd(false);
     }
@@ -219,9 +205,19 @@ export function ProfilePage() {
 
   const strength = getPasswordStrength(newPwd);
 
-  const roleDisplay = user?.role === "STAFF" && organizationType
-    ? `${user.role} — ${organizationType}`
-    : user?.role || "ADMIN";
+  const userRole = dbProfile?.role || user?.role || "STAFF";
+  const roleDisplay = userRole === "STAFF" && organizationType
+    ? `${userRole} — ${organizationType}`
+    : userRole;
+
+  if (isProfileLoading && !user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] text-gray-500 text-sm">
+        <RefreshCw className="w-5 h-5 animate-spin mr-2" />
+        {lang === "vi" ? "Đang tải hồ sơ cá nhân..." : "Loading profile data..."}
+      </div>
+    );
+  }
 
   return (
     <div className="pb-16 dark:bg-gray-900 transition-colors">
@@ -283,21 +279,27 @@ export function ProfilePage() {
 
             <div>
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-gray-900 dark:text-white font-extrabold text-2xl tracking-tight">{fullName}</h1>
+                <h1 className="text-gray-900 dark:text-white font-extrabold text-2xl tracking-tight">{fullName || (lang === "vi" ? "Người dùng" : "User Profile")}</h1>
                 <span
                   className="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider"
                   style={{ background: "#E8F5E9", color: "#2E7D32" }}
                 >
                   {roleDisplay}
                 </span>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                  {organizationType}
-                </span>
+                {organizationType && (
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                    {organizationType}
+                  </span>
+                )}
               </div>
               <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 flex items-center gap-2 flex-wrap">
                 <span>{email}</span>
-                <span className="text-gray-300 dark:text-gray-600">•</span>
-                <span className="text-green-700 dark:text-green-400 font-semibold">{organizationName}</span>
+                {organizationName && (
+                  <>
+                    <span className="text-gray-300 dark:text-gray-600">•</span>
+                    <span className="text-green-700 dark:text-green-400 font-semibold">{organizationName}</span>
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -394,7 +396,7 @@ export function ProfilePage() {
                   />
                 </div>
 
-                {/* Organization Name (READ-ONLY PRE-FILLED FROM ORGANIZATIONS PAGE) */}
+                {/* Organization Name (READ-ONLY) */}
                 <div>
                   <label className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-1.5 block uppercase tracking-wider flex items-center gap-1">
                     {lang === "vi" ? "Cơ quan / Đơn vị" : "Organization"} <Lock className="w-3 h-3 text-gray-400" />
@@ -402,7 +404,7 @@ export function ProfilePage() {
                   <div className="relative">
                     <input
                       type="text"
-                      value={organizationName}
+                      value={organizationName || (lang === "vi" ? "Chưa thuộc đơn vị nào" : "No Organization")}
                       disabled
                       className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-600 dark:text-gray-400 outline-none cursor-not-allowed bg-gray-100 dark:bg-gray-900/60"
                     />
@@ -410,7 +412,7 @@ export function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Organization Type (READ-ONLY PRE-FILLED FROM ORGANIZATIONS PAGE) */}
+                {/* Organization Type (READ-ONLY) */}
                 <div className="md:col-span-2">
                   <label className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-1.5 block uppercase tracking-wider flex items-center gap-1">
                     {lang === "vi" ? "Phân loại đơn vị" : "Organization Type"} <Lock className="w-3 h-3 text-gray-400" />
@@ -418,15 +420,12 @@ export function ProfilePage() {
                   <div className="relative">
                     <input
                       type="text"
-                      value={`${organizationType} — ${lang === "vi" ? "Đơn vị chính thức được cấp phép" : "Official Registered Entity"}`}
+                      value={organizationType ? `${organizationType}` : (lang === "vi" ? "Hệ thống" : "System")}
                       disabled
                       className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-bold text-gray-600 dark:text-gray-400 outline-none cursor-not-allowed bg-gray-100 dark:bg-gray-900/60"
                     />
                     <Layers className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
                   </div>
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-1">
-                    🔒 {lang === "vi" ? "Cơ quan & Loại đơn vị được cấp mặc định từ hệ thống quản lý Organizations." : "Organization & Organization Type are assigned directly from the Organizations Management system."}
-                  </p>
                 </div>
 
                 {/* Bio / Description */}
@@ -583,10 +582,8 @@ export function ProfilePage() {
               <div className="divide-y divide-gray-100 dark:divide-gray-700">
                 {[
                   { label: lang === "vi" ? "Vai trò" : "Role", value: roleDisplay },
-                  { label: lang === "vi" ? "Loại đơn vị" : "Org Type", value: organizationType },
-                  { label: "User ID", value: user?.id || "70000000-0000-0000-0000-000000000001" },
-                  { label: lang === "vi" ? "Ngày tham gia" : "Member Since", value: "Jan 2024" },
-                  { label: lang === "vi" ? "Lần đăng nhập cuối" : "Last Login", value: lang === "vi" ? "Hôm nay, 09:24 SA" : "Today, 09:24 AM" },
+                  { label: lang === "vi" ? "Loại đơn vị" : "Org Type", value: organizationType || "N/A" },
+                  { label: "User ID", value: userId || "N/A" },
                 ].map(({ label, value }) => (
                   <div key={label} className="py-2.5 flex justify-between items-center text-xs">
                     <span className="text-gray-500 dark:text-gray-400 font-medium">{label}</span>
@@ -733,7 +730,7 @@ export function ProfilePage() {
               <div className="flex items-center gap-2 mb-3">
                 <Globe className="w-4 h-4 text-green-700 dark:text-green-400" />
                 <h4 className="font-extrabold text-gray-900 dark:text-white text-sm tracking-tight">
-                  {lang === "vi" ? "Ngôn Ngữ Displays" : "Language Preferences"}
+                  {lang === "vi" ? "Ngôn Ngữ Hiển Thị" : "Language Preferences"}
                 </h4>
               </div>
               <select
