@@ -72,6 +72,7 @@ export function OrganizationsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [alert, setAlert] = useState<Alert | null>(null);
+  const [togglingOrgId, setTogglingOrgId] = useState<string | null>(null);
 
   const selectedTypeId =
     typeFilter === "All"
@@ -181,7 +182,9 @@ export function OrganizationsPage() {
   };
 
   const handleToggleStatus = async (org: Organization) => {
-    const newStatus = org.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    if (togglingOrgId) return;
+    const newStatus = org.status?.toUpperCase() === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    setTogglingOrgId(String(org.organizationId));
     try {
       await organizationsApi.updateStatus(org.organizationId, {
         status: newStatus,
@@ -191,11 +194,12 @@ export function OrganizationsPage() {
       refetch();
       showAlert(
         newStatus === "ACTIVE" ? "success" : "error",
-
         `"${org.name}" has been ${newStatus === "ACTIVE" ? "activated" : "deactivated"}`,
       );
     } catch (e: any) {
       showAlert("error", e.message || "Failed to update status");
+    } finally {
+      setTogglingOrgId(null);
     }
   };
 
@@ -406,7 +410,7 @@ export function OrganizationsPage() {
                       bg: "#F5F5F5",
                       color: "#666",
                     };
-                    const isActive = org.status === "ACTIVE";
+                    const isActive = org.status?.toUpperCase() === "ACTIVE";
                     return (
                       <tr
                         key={org.organizationId}
@@ -483,10 +487,13 @@ export function OrganizationsPage() {
                             </button>
                             <button
                               onClick={() => handleToggleStatus(org)}
-                              className={`p-1.5 rounded-lg transition-colors ${isActive ? "hover:bg-red-50 text-red-400" : "hover:bg-green-50 text-green-500"}`}
+                              disabled={togglingOrgId === String(org.organizationId)}
+                              className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isActive ? "hover:bg-red-50 text-red-400" : "hover:bg-green-50 text-green-500"}`}
                               title={isActive ? "Deactivate" : "Activate"}
                             >
-                              {isActive ? (
+                              {togglingOrgId === String(org.organizationId) ? (
+                                <RotateCcw className="w-3.5 h-3.5 animate-spin" />
+                              ) : isActive ? (
                                 <ToggleRight className="w-3.5 h-3.5" />
                               ) : (
                                 <ToggleLeft className="w-3.5 h-3.5" />

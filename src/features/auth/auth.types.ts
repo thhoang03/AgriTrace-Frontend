@@ -9,6 +9,7 @@ export type OrganizationType =
   | "SYSTEM";
 
 export type EventType =
+  | "CREATED"
   | "HARVEST"
   | "RECEIVE"
   | "PROCESSING"

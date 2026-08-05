@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, Beaker, Sparkles } from "lucide-react";
 import type { CreateLabTestRequest } from "./inspection.types";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface AddLabTestModalProps {
   onClose: () => void;
@@ -18,6 +19,7 @@ const COMMON_LAB_PRESETS = [
 ];
 
 export function AddLabTestModal({ onClose, onSubmit, isSubmitting = false }: AddLabTestModalProps) {
+  const { lang } = useLanguage();
   const [form, setForm] = useState({
     testName: "",
     measuredValue: "",
@@ -54,16 +56,16 @@ export function AddLabTestModal({ onClose, onSubmit, isSubmitting = false }: Add
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()} style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 py-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
         <div className="flex items-center justify-between mb-5 border-b border-gray-100 pb-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
               <Beaker className="w-5 h-5" style={{ color: "#2E7D32" }} />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 text-base">Thêm Chỉ Số Xét Nghiệm Lab (Lab Test)</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Ghi nhận chỉ số thử nghiệm phòng lab cho phiếu kiểm định</p>
+              <h3 className="font-bold text-gray-900 text-base">{lang === "vi" ? "Thêm Chỉ Số Xét Nghiệm Lab (Lab Test)" : "Add Lab Test"}</h3>
+              <p className="text-xs text-gray-500 mt-0.5">{lang === "vi" ? "Ghi nhận chỉ số thử nghiệm phòng lab cho phiếu kiểm định" : "Record lab test result for this inspection"}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
@@ -75,7 +77,7 @@ export function AddLabTestModal({ onClose, onSubmit, isSubmitting = false }: Add
         <div className="mb-4 bg-emerald-50/60 p-3 rounded-xl border border-emerald-100">
           <div className="text-xs font-semibold text-emerald-900 flex items-center gap-1.5 mb-2">
             <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            Gợi ý mẫu chỉ số nhanh (VietGAP / GlobalGAP):
+            {lang === "vi" ? "Gợi ý mẫu chỉ số nhanh (VietGAP / GlobalGAP):" : "Quick Presets (VietGAP / GlobalGAP):"}
           </div>
           <div className="flex flex-wrap gap-1.5">
             {COMMON_LAB_PRESETS.map((p) => (
@@ -94,12 +96,12 @@ export function AddLabTestModal({ onClose, onSubmit, isSubmitting = false }: Add
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-sm font-semibold text-gray-700 mb-1.5 block">
-              Tên chỉ số kiểm định / Xét nghiệm <span className="text-red-500">*</span>
+              {lang === "vi" ? "Tên chỉ số kiểm định / Xét nghiệm" : "Test Name"} <span className="text-red-500">*</span>
             </label>
             <input
               value={form.testName}
               onChange={(e) => setForm({ ...form, testName: e.target.value })}
-              placeholder="Ví dụ: Dư lượng thuốc BVTV, Vi sinh E.Coli..."
+              placeholder={lang === "vi" ? "Ví dụ: Dư lượng thuốc BVTV, Vi sinh E.Coli..." : "e.g. Pesticide residues, E.Coli..."}
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 font-medium text-gray-800 bg-white"
               required
             />
@@ -107,20 +109,20 @@ export function AddLabTestModal({ onClose, onSubmit, isSubmitting = false }: Add
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Kết quả đo thực tế</label>
+              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">{lang === "vi" ? "Kết quả đo thực tế" : "Measured Value"}</label>
               <input
                 value={form.measuredValue}
                 onChange={(e) => setForm({ ...form, measuredValue: e.target.value })}
-                placeholder="Ví dụ: 0.005"
+                placeholder={lang === "vi" ? "Ví dụ: 0.005" : "e.g. 0.005"}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 font-medium text-gray-800 bg-white"
               />
             </div>
             <div>
-              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Đơn vị tính (Unit)</label>
+              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">{lang === "vi" ? "Đơn vị tính (Unit)" : "Unit"}</label>
               <input
                 value={form.unit}
                 onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                placeholder="Ví dụ: mg/kg, CFU/g, %"
+                placeholder={lang === "vi" ? "Ví dụ: mg/kg, CFU/g, %" : "e.g. mg/kg, CFU/g, %"}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 font-medium text-gray-800 bg-white"
               />
             </div>
@@ -128,27 +130,27 @@ export function AddLabTestModal({ onClose, onSubmit, isSubmitting = false }: Add
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Ngưỡng tối thiểu (Min Standard)</label>
+              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">{lang === "vi" ? "Ngưỡng tối thiểu (Min Standard)" : "Min Standard Value"}</label>
               <input
                 value={form.minStandardValue}
                 onChange={(e) => setForm({ ...form, minStandardValue: e.target.value })}
-                placeholder="Ví dụ: 0"
+                placeholder={lang === "vi" ? "Ví dụ: 0" : "e.g. 0"}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 font-medium text-gray-800 bg-white"
               />
             </div>
             <div>
-              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Ngưỡng tối đa (Max Standard)</label>
+              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">{lang === "vi" ? "Ngưỡng tối đa (Max Standard)" : "Max Standard Value"}</label>
               <input
                 value={form.maxStandardValue}
                 onChange={(e) => setForm({ ...form, maxStandardValue: e.target.value })}
-                placeholder="Ví dụ: 0.01"
+                placeholder={lang === "vi" ? "Ví dụ: 0.01" : "e.g. 0.01"}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 font-medium text-gray-800 bg-white"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Đánh giá chỉ số</label>
+            <label className="text-sm font-semibold text-gray-700 mb-1.5 block">{lang === "vi" ? "Đánh giá chỉ số" : "Evaluation"}</label>
             <select
               value={form.result}
               onChange={(e) => setForm({ ...form, result: e.target.value as "pass" | "fail" })}
@@ -158,18 +160,18 @@ export function AddLabTestModal({ onClose, onSubmit, isSubmitting = false }: Add
                 appearance: "auto",
               }}
             >
-              <option value="pass">Đạt chuẩn (PASS)</option>
-              <option value="fail">Không đạt (FAIL)</option>
+              <option value="pass">{lang === "vi" ? "Đạt chuẩn (PASS)" : "Pass"}</option>
+              <option value="fail">{lang === "vi" ? "Không đạt (FAIL)" : "Fail"}</option>
             </select>
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Ghi chú / Nhận xét phòng Lab</label>
+            <label className="text-sm font-semibold text-gray-700 mb-1.5 block">{lang === "vi" ? "Ghi chú / Nhận xét phòng Lab" : "Lab Remark"}</label>
             <textarea
               value={form.remark}
               onChange={(e) => setForm({ ...form, remark: e.target.value })}
               rows={3}
-              placeholder="Nhập ghi chú chi tiết hoặc nhận xét từ phòng thí nghiệm..."
+              placeholder={lang === "vi" ? "Nhập ghi chú chi tiết hoặc nhận xét từ phòng thí nghiệm..." : "Enter detailed remarks..."}
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-none transition-all focus:border-green-500 bg-gray-50 text-gray-800"
             />
           </div>
@@ -181,7 +183,7 @@ export function AddLabTestModal({ onClose, onSubmit, isSubmitting = false }: Add
               disabled={isSubmitting}
               className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              Hủy bỏ
+              {lang === "vi" ? "Hủy bỏ" : "Cancel"}
             </button>
             <button
               type="submit"
@@ -189,7 +191,7 @@ export function AddLabTestModal({ onClose, onSubmit, isSubmitting = false }: Add
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 shadow-md shadow-emerald-700/20"
               style={{ background: "linear-gradient(135deg, #2E7D32, #388E3C)" }}
             >
-              {isSubmitting ? "Đang lưu..." : "Lưu Chỉ Số Xét Nghiệm"}
+              {isSubmitting ? (lang === "vi" ? "Đang lưu..." : "Saving...") : (lang === "vi" ? "Lưu Chỉ Số Xét Nghiệm" : "Save Lab Test")}
             </button>
           </div>
         </form>

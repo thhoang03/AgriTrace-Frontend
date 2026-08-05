@@ -13,10 +13,12 @@ import { QrScannerButton } from "./QrScannerButton";
 import { fetchDeviceLocation } from "../../utils/locationUtils";
 import { MapPickerModal } from "../../components/common/MapPickerModal";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { batchesApi } from "../batches/batches.api";
 
 
 
 const ALL_EVENT_TYPES: { value: EventType; label: string; emoji: string; color: string }[] = [
+  { value: "CREATED", label: "Created", emoji: "🌱", color: "#2E7D32" },
   { value: "HARVEST", label: "Harvest", emoji: "🌾", color: "#2E7D32" },
   { value: "RECEIVE", label: "Receive", emoji: "📥", color: "#1565C0" },
   { value: "PROCESSING", label: "Processing", emoji: "⚙️", color: "#1565C0" },
@@ -95,15 +97,44 @@ export function SupplyChainPage() {
   const eventTypes = ALL_EVENT_TYPES.filter((et) => allowedEventTypes.includes(et.value));
   const canSubmit = canCreateEvent(orgType, form.eventType);
 
-  const handleSearchBatch = () => {
-    if (searchBatchId.trim()) {
-      setActiveBatchId(searchBatchId.trim());
+  const handleSearchBatch = async () => {
+    if (!searchBatchId.trim()) return;
+    const q = searchBatchId.trim();
+
+    const localMatch = recentBatches.find(
+      (b) => b.id.toLowerCase() === q.toLowerCase() || b.batchCode?.toLowerCase() === q.toLowerCase()
+    );
+    if (localMatch) {
+      setActiveBatchId(localMatch.id);
       setError("");
+      return;
+    }
+
+    try {
+      const res = await batchesApi.getAll({ search: q, limit: 1 });
+      if (res.data && res.data.length > 0) {
+        setActiveBatchId(res.data[0].id);
+        setError("");
+      } else {
+        try {
+          const byIdRes = await batchesApi.getById(q);
+          if (byIdRes.data && byIdRes.data.id) {
+            setActiveBatchId(byIdRes.data.id);
+            setError("");
+          } else {
+            setActiveBatchId(q);
+          }
+        } catch {
+          setActiveBatchId(q);
+        }
+      }
+    } catch {
+      setActiveBatchId(q);
     }
   };
 
-  const handleSelectBatch = (batchId: string) => {
-    setSearchBatchId(batchId);
+  const handleSelectBatch = (batchId: string, displayCode?: string) => {
+    setSearchBatchId(displayCode || batchId);
     setActiveBatchId(batchId);
     setError("");
   };
@@ -153,10 +184,38 @@ export function SupplyChainPage() {
     }
   };
 
-  const handleQrScan = (raw: string) => {
+  const handleQrScan = async (raw: string) => {
     const scanned = raw.includes("/") ? raw.split("/").pop() ?? raw : raw;
     setSearchBatchId(scanned);
-    setActiveBatchId(scanned);
+    
+    const localMatch = recentBatches.find(
+      (b) => b.id.toLowerCase() === scanned.toLowerCase() || b.batchCode?.toLowerCase() === scanned.toLowerCase()
+    );
+    if (localMatch) {
+      setActiveBatchId(localMatch.id);
+      setError("");
+      return;
+    }
+
+    try {
+      const res = await batchesApi.getAll({ search: scanned, limit: 1 });
+      if (res.data && res.data.length > 0) {
+        setActiveBatchId(res.data[0].id);
+      } else {
+        try {
+          const byIdRes = await batchesApi.getById(scanned);
+          if (byIdRes.data && byIdRes.data.id) {
+            setActiveBatchId(byIdRes.data.id);
+          } else {
+            setActiveBatchId(scanned);
+          }
+        } catch {
+          setActiveBatchId(scanned);
+        }
+      }
+    } catch {
+      setActiveBatchId(scanned);
+    }
     setError("");
   };
 
@@ -282,7 +341,7 @@ export function SupplyChainPage() {
                     {recentBatches.slice(0, 6).map((batch: any) => (
                       <button
                         key={batch.id}
-                        onClick={() => handleSelectBatch(batch.id)}
+                        onClick={() => handleSelectBatch(batch.id, batch.batchCode || batch.id)}
                         className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-green-300 hover:bg-green-50/50 transition-all text-left"
                       >
                         <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 font-bold text-white" style={{ background: "#2E7D32" }}>
@@ -329,7 +388,7 @@ export function SupplyChainPage() {
                     {recentBatches.slice(0, 5).map((batch: any) => (
                       <button
                         key={batch.id}
-                        onClick={() => handleSelectBatch(batch.id)}
+                        onClick={() => handleSelectBatch(batch.id, batch.batchCode || batch.id)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
                           activeBatchId === batch.id
                             ? "border-green-400 bg-green-50 text-green-700"

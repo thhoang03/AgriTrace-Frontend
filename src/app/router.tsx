@@ -47,6 +47,8 @@ export const router = createBrowserRouter([
       { path: "supply-chain", Component: SupplyChainPage },
       { path: "event-requests", Component: EventRequestsPage },
       { path: "inspection", Component: InspectionPage },
+      { path: "inspection/:id", Component: InspectionPage },
+      { path: "inspections/:id", Component: InspectionPage },
       { path: "recall", Component: RecallPage },
       { path: "reports", Component: ReportsPage },
       { path: "analytics", Component: AnalyticsPage },
