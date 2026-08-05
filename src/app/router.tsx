@@ -2,6 +2,8 @@ import { createBrowserRouter } from "react-router";
 import { AppLayout } from "../components/layout/AppLayout";
 import { HomePage } from "../pages/HomePage";
 import { LoginPage } from "../features/auth/LoginPage";
+import { ForgotPasswordPage } from "../features/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "../features/auth/ResetPasswordPage";
 import { DashboardPage } from "../features/dashboard/DashboardPage";
 import { BatchManagementPage } from "../features/batches/BatchManagementPage";
 import { BatchDetailPage } from "../features/batches/BatchDetailPage";
@@ -28,6 +30,8 @@ import { NotFoundPage } from "../pages/NotFoundPage";
 export const router = createBrowserRouter([
   { path: "/", Component: HomePage },
   { path: "/login", Component: LoginPage },
+  { path: "/forgot-password", Component: ForgotPasswordPage },
+  { path: "/reset-password", Component: ResetPasswordPage },
   { path: "/register", Component: RegisterPage },
   { path: "/trace/:id", Component: PublicTracePage },
   { path: "/trace/:id/lineage", Component: PublicLineagePage },
