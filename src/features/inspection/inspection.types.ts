@@ -1,13 +1,13 @@
 export type InspectionStatus = "Pending" | "Passed" | "Failed";
 
 export const InspectionTypeValues = [
-  { value: 1, label: "1. Nguyên liệu thô (Raw Material)" },
-  { value: 2, label: "2. Sơ chế & Chế biến (Processing)" },
-  { value: 3, label: "3. Đóng gói & Nhãn mác (Packaging)" },
-  { value: 4, label: "4. Lưu kho & Bảo quản (Storage)" },
-  { value: 5, label: "5. Vận chuyển & Logistics (Transportation)" },
-  { value: 6, label: "6. Phân phối Bán lẻ (Retail)" },
-  { value: 7, label: "7. Lấy mẫu đột xuất (Random Sampling)" },
+  { value: 1, label: { vi: "1. Nguyên liệu thô (Raw Material)", en: "1. Raw Material" } },
+  { value: 2, label: { vi: "2. Sơ chế & Chế biến (Processing)", en: "2. Processing" } },
+  { value: 3, label: { vi: "3. Đóng gói & Nhãn mác (Packaging)", en: "3. Packaging" } },
+  { value: 4, label: { vi: "4. Lưu kho & Bảo quản (Storage)", en: "4. Storage" } },
+  { value: 5, label: { vi: "5. Vận chuyển & Logistics (Transportation)", en: "5. Transportation" } },
+  { value: 6, label: { vi: "6. Phân phối Bán lẻ (Retail)", en: "6. Retail" } },
+  { value: 7, label: { vi: "7. Lấy mẫu đột xuất (Random Sampling)", en: "7. Random Sampling" } },
 ] as const;
 
 export type InspectionType = (typeof InspectionTypeValues)[number]["value"];
@@ -50,14 +50,14 @@ export interface InspectionItem {
   labTests: LabTest[];
 }
 
-export const InspectionTypeLabel: Record<InspectionType, string> = {
-  1: "Nguyên liệu thô (Raw Material)",
-  2: "Sơ chế & Chế biến (Processing)",
-  3: "Đóng gói (Packaging)",
-  4: "Lưu kho (Storage)",
-  5: "Vận chuyển (Transportation)",
-  6: "Bán lẻ (Retail)",
-  7: "Lấy mẫu đột xuất (Random Sampling)",
+export const InspectionTypeLabel: Record<InspectionType, { vi: string; en: string }> = {
+  1: { vi: "Nguyên liệu thô (Raw Material)", en: "Raw Material" },
+  2: { vi: "Sơ chế & Chế biến (Processing)", en: "Processing" },
+  3: { vi: "Đóng gói (Packaging)", en: "Packaging" },
+  4: { vi: "Lưu kho (Storage)", en: "Storage" },
+  5: { vi: "Vận chuyển (Transportation)", en: "Transportation" },
+  6: { vi: "Bán lẻ (Retail)", en: "Retail" },
+  7: { vi: "Lấy mẫu đột xuất (Random Sampling)", en: "Random Sampling" },
 };
 
 export const StatusLabel: Record<InspectionStatus, string> = {

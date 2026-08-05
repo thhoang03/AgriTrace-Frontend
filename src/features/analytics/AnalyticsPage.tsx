@@ -4,6 +4,7 @@ import { Search, RefreshCw, Clock3, Package, Building2, Activity, AlertTriangle 
 import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useAnalyticsOverview, useBatchDistribution, useProcessingTime, useTraceback } from "./analytics.queries";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useProfile } from "../users/users.queries";
 
 const COLORS = ["#2E7D32", "#66BB6A", "#42A5F5", "#FFB300", "#AB47BC", "#E53935"];
 const cardClass = "rounded-2xl bg-white p-5 shadow-[0_2px_12px_rgba(0,0,0,0.06)]";
@@ -14,11 +15,13 @@ function LoadingCard() {
 
 export function AnalyticsPage() {
   const { lang } = useLanguage();
+  const { data: profileData } = useProfile();
+  const orgId = (profileData as any)?.organizationId ?? undefined;
   const [batchId, setBatchId] = useState("");
   const [tracebackId, setTracebackId] = useState("");
   const overview = useAnalyticsOverview();
-  const distribution = useBatchDistribution();
-  const processing = useProcessingTime();
+  const distribution = useBatchDistribution(orgId ? { organizationId: orgId } : undefined);
+  const processing = useProcessingTime(orgId ? { organizationId: orgId } : undefined);
   const traceback = useTraceback(tracebackId);
   const overviewData = overview.data?.data;
   const distributionData = distribution.data?.data as any;
