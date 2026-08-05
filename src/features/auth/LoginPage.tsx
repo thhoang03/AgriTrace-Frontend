@@ -114,7 +114,7 @@ export function LoginPage() {
         {/* Form Input */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-gray-700 mb-1 block">Email / Username</label>
+            <label className="text-xs font-semibold text-gray-700 mb-1 block">Email</label>
             <div className="relative">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
