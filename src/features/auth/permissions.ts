@@ -6,19 +6,19 @@ export const ROLE_ACCESS: Record<UserRole, string[]> = {
     "/app/supply-chain", "/app/event-requests", "/app/inspection", "/app/inspections", "/app/recall",
     "/app/reports", "/app/organizations", "/app/categories",
     "/app/users", "/app/products", "/app/profile",
-    "/app/analytics", "/app/notifications",
+    "/app/analytics", "/app/notifications", "/app/change-password",
   ],
   MANAGER: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
     "/app/supply-chain", "/app/event-requests", "/app/inspection", "/app/inspections", "/app/recall",
     "/app/reports", "/app/categories",
     "/app/users", "/app/products", "/app/profile",
-    "/app/analytics", "/app/notifications",
+    "/app/analytics", "/app/notifications", "/app/change-password",
   ],
   STAFF: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
     "/app/supply-chain", "/app/event-requests", "/app/inspection", "/app/inspections", "/app/profile",
-    "/app/notifications",
+    "/app/notifications", "/app/change-password",
   ],
 };
 
@@ -77,7 +77,7 @@ export function getAllowedEventTypes(
 ): EventType[] {
   if (role === "ADMIN") {
     return [
-      "HARVEST", "RECEIVE", "PROCESSING", "PACKAGING", "TRANSPORT",
+      "CREATED", "HARVEST", "RECEIVE", "PROCESSING", "PACKAGING", "TRANSPORT",
       "DISTRIBUTION", "RETAIL", "INSPECTION", "RECALL", "SPLIT", "MERGE"
     ];
   }

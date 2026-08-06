@@ -22,11 +22,9 @@ export function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      const needChange = await login(form.email, form.password);
-      toast.success(
-        lang === "vi" ? "Đăng nhập thành công!" : "Login successful!",
-      );
-      navigate(needChange ? "/app/change-password" : "/app/dashboard");
+      await login(form.email, form.password);
+      toast.success(lang === "vi" ? "Đăng nhập thành công!" : "Login successful!");
+      navigate("/app/dashboard");
     } catch (err: any) {
       const apiMsg =
         err?.response?.data?.message ||

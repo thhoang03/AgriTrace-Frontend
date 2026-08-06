@@ -149,7 +149,7 @@ function adaptBatchFromListItem(item: any): Batch {
     farmId: undefined,
     farm: item.organizationName ?? "",
     farmerId: undefined,
-    farmer: "",
+    farmer: item.farmerName ?? "",
     harvestDate: item.createdAt?.split("T")[0] ?? "",
     quantity: item.quantity ?? 0,
     remainingQuantity: item.remainingQuantity ?? item.quantity ?? 0,
@@ -183,7 +183,7 @@ function adaptBatchFromDetail(item: any): Batch {
     farmId: undefined,
     farm: item.organizationName ?? "",
     farmerId: undefined,
-    farmer: "",
+    farmer: item.farmerName ?? "",
     harvestDate: item.productionDate ?? item.createdAt?.split("T")[0] ?? "",
     quantity: item.quantity ?? 0,
     remainingQuantity: item.remainingQuantity ?? item.quantity ?? 0,
@@ -214,7 +214,22 @@ function adaptEventFromItem(item: any): TimelineEvent {
     code.includes("TRANS") ? "🚚" :
     code.includes("RETAIL") ? "🛒" :
     code.includes("INSPECT") || code.includes("QA") || code.includes("QC") ? "🔬" :
+    code.includes("RECALL") ? "🚨" :
+    code.includes("SPLIT") ? "✂️" :
+    code.includes("MERGE") ? "🔗" :
     code.includes("CREATE") ? "🌱" : "📍";
+
+  let desc = item.eventData ?? "Ghi nhận sự kiện chuỗi cung ứng cho lô nông sản.";
+  if (item.eventData && typeof item.eventData === "string" && item.eventData.trim().startsWith("{")) {
+    try {
+      const parsed = JSON.parse(item.eventData);
+      if (parsed.description) {
+        desc = parsed.description;
+      }
+    } catch {
+      // keep raw
+    }
+  }
 
   return {
     id: item.eventId ?? item.id ?? "",
@@ -225,7 +240,7 @@ function adaptEventFromItem(item: any): TimelineEvent {
     organization: item.organizationName ?? "Đơn vị vận hành",
     location: item.location ?? "Địa điểm lưu vết",
     employee: item.performedByName ?? item.performedByUserId ?? "Chuyên viên AgriTrace",
-    description: item.eventData ?? "Ghi nhận sự kiện chuỗi cung ứng cho lô nông sản.",
+    description: desc,
     temp: "",
     humidity: "",
     hash: item.currentHash ?? "",
@@ -342,4 +357,26 @@ export const batchesApi = {
   },
 
   deleteImage: async (imageId: number | string) => del(`/batches/images/${imageId}`),
+
+  split: async (batchId: string, splits: { quantity: number; unitId: string }[]) => {
+    const response = await post<{ parentBatchId: string; childBatchIds: string[] }>(
+      `/batches/${batchId}/split`,
+      { splits }
+    );
+    return response.data;
+  },
+
+  merge: async (data: {
+    sourceBatchIds: string[];
+    productId: string;
+    quantity: number;
+    unitId: string;
+    productionDate: string;
+  }) => {
+    const response = await post<{ newBatchId: string; batchCode: string }>(
+      `/batches/merge`,
+      data
+    );
+    return response.data;
+  },
 };

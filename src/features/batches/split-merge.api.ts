@@ -36,11 +36,11 @@ export interface MergeBatchResponse {
 }
 
 // Adapter functions
-function adaptSplitToNew(legacy: SplitBatchRequest): NewSplitBatchRequest {
+function adaptSplitToNew(legacy: any): NewSplitBatchRequest {
   return {
-    splits: legacy.children.map((c) => ({
-      quantity: c.quantity,
-      unitId: c.unitId ?? legacy.unitId ?? c.unit ?? "",
+    splits: (legacy.children || []).map((c: any) => ({
+      quantity: Number(c.quantity),
+      unitId: (c.unitId && c.unitId.length > 20) ? c.unitId : (legacy.unitId && legacy.unitId.length > 20) ? legacy.unitId : "00000000-0000-0000-0000-000000000000",
     })),
   };
 }
@@ -52,13 +52,13 @@ function adaptSplitFromNew(data: any): SplitBatchResponse {
   };
 }
 
-function adaptMergeToNew(legacy: MergeBatchRequest): NewMergeBatchRequest {
+function adaptMergeToNew(legacy: any): NewMergeBatchRequest {
   return {
-    sourceBatchIds: legacy.batchIds.map(String),
-    productId: String(legacy.productId ?? ""),
-    quantity: legacy.quantity,
-    unitId: legacy.unitId ?? legacy.unit ?? "",
-    productionDate: new Date().toISOString().split("T")[0],
+    sourceBatchIds: (legacy.batchIds || legacy.sourceBatchIds || []).map(String),
+    productId: legacy.productId && legacy.productId.length > 20 ? legacy.productId : "00000000-0000-0000-0000-000000000000",
+    quantity: Number(legacy.quantity),
+    unitId: legacy.unitId && legacy.unitId.length > 20 ? legacy.unitId : "00000000-0000-0000-0000-000000000000",
+    productionDate: legacy.productionDate || new Date().toISOString().split("T")[0],
   };
 }
 
