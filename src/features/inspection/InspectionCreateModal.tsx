@@ -4,6 +4,7 @@ import { useBatches } from "../batches/batches.queries";
 import { batchesApi } from "../batches/batches.api";
 import { QrScannerButton } from "../supply-chain/QrScannerButton";
 import { InspectionTypeValues, type InspectionType } from "./inspection.types";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface InspectionCreateModalProps {
   onClose: () => void;
@@ -17,6 +18,7 @@ interface InspectionCreateModalProps {
 }
 
 export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false }: InspectionCreateModalProps) {
+  const { lang } = useLanguage();
   const { data: batchesData, isLoading: isLoadingBatches } = useBatches({ limit: 100 });
   const batchOptions = (batchesData?.data ?? []).filter((batch) => !!batch.id);
 
@@ -54,7 +56,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
       await onSubmit(form);
       setErrorMessage('');
     } catch (err: any) {
-      const msg = err?.message || 'Lỗi khởi tạo phiếu kiểm định. Vui lòng thử lại.';
+      const msg = err?.message || (lang === "vi" ? 'Lỗi khởi tạo phiếu kiểm định. Vui lòng thử lại.' : 'Failed to create inspection. Please try again.');
       setErrorMessage(msg);
     }
   };
@@ -95,10 +97,10 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
         } catch {
           // Ignore
         }
-        setSearchError(`Không tìm thấy Lô hàng có mã hoặc ID "${q}" trên nền tảng AgriTrace.`);
+        setSearchError(lang === "vi" ? `Không tìm thấy Lô hàng có mã hoặc ID "${q}" trên nền tảng AgriTrace.` : `Batch with code or ID "${q}" not found on AgriTrace.`);
       }
     } catch {
-      setSearchError("Không thể tìm kiếm lô hàng lúc này. Vui lòng thử lại.");
+      setSearchError(lang === "vi" ? "Không thể tìm kiếm lô hàng lúc này. Vui lòng thử lại." : "Unable to search for batch at this moment. Please try again.");
     } finally {
       setIsSearchingBatch(false);
     }
@@ -117,7 +119,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
       setSearchedBatch(found);
       setForm((prev) => ({ ...prev, batchId: found.id }));
     } else {
-      const newOption = { id: scannedId, batchCode: scannedId, product: "Lô hàng quét từ mã QR" };
+      const newOption = { id: scannedId, batchCode: scannedId, product: lang === "vi" ? "Lô hàng quét từ mã QR" : "Batch scanned from QR code" };
       setSearchedBatch(newOption);
       setDynamicBatches((prev) => [...prev, newOption]);
       setForm((prev) => ({ ...prev, batchId: scannedId }));
@@ -133,8 +135,8 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
               <FlaskConical className="w-5 h-5" style={{ color: "#2E7D32" }} />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 text-base">Lập Phiếu Kiểm Định Mới (QA/QC)</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Xác thực lô hàng & ghi nhận đợt kiểm định chất lượng</p>
+              <h3 className="font-bold text-gray-900 text-base">{lang === "vi" ? "Lập Phiếu Kiểm Định Mới (QA/QC)" : "Create New Inspection (QA/QC)"}</h3>
+              <p className="text-xs text-gray-500 mt-0.5">{lang === "vi" ? "Xác thực lô hàng & ghi nhận đợt kiểm định chất lượng" : "Verify batch & record quality inspection"}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
@@ -146,7 +148,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-sm font-semibold text-gray-700">
-                Xác thực Lô nông sản (Batch) <span className="text-red-500">*</span>
+                {lang === "vi" ? "Xác thực Lô nông sản (Batch)" : "Verify Batch"} <span className="text-red-500">*</span>
               </label>
               <button
                 type="button"
@@ -154,9 +156,9 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
                 className="text-xs text-emerald-700 font-semibold hover:underline flex items-center gap-1"
               >
                 {selectMode === "search" ? (
-                  <><ListFilter className="w-3 h-3" /> Chọn từ danh sách lô gần đây</>
+                  <><ListFilter className="w-3 h-3" /> {lang === "vi" ? "Chọn từ danh sách lô gần đây" : "Select from recent batches"}</>
                 ) : (
-                  <><Search className="w-3 h-3" /> Tra cứu Mã Lô / Quét QR</>
+                  <><Search className="w-3 h-3" /> {lang === "vi" ? "Tra cứu Mã Lô / Quét QR" : "Search Batch / Scan QR"}</>
                 )}
               </button>
             </div>
@@ -169,7 +171,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSearchBatch(); } }}
-                    placeholder="Quét mã QR hoặc nhập Mã Lô (vd: RICE-20260112-001)..."
+                    placeholder={lang === "vi" ? "Quét mã QR hoặc nhập Mã Lô (vd: RICE-20260112-001)..." : "Scan QR code or enter Batch Code (e.g. RICE-20260112-001)..."}
                     className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 font-medium text-gray-800 bg-white"
                   />
                   <button
@@ -179,7 +181,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
                     className="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0"
                   >
                     {isSearchingBatch ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                    Tra cứu
+                    {lang === "vi" ? "Tra cứu" : "Search"}
                   </button>
                   <QrScannerButton onScan={handleQrScan} />
                 </div>
@@ -193,11 +195,11 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
                           {searchedBatch.batchCode || searchedBatch.id}
                         </div>
                         <div className="text-xs text-emerald-700 truncate mt-0.5 font-medium">
-                          {searchedBatch.product || searchedBatch.productName || "Lô nông sản"} {searchedBatch.farm ? `· ${searchedBatch.farm}` : ""}
+                          {searchedBatch.product || searchedBatch.productName || (lang === "vi" ? "Lô nông sản" : "Agri Batch")} {searchedBatch.farm ? `· ${searchedBatch.farm}` : ""}
                         </div>
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold px-2 py-1 bg-emerald-700 text-white rounded-lg shrink-0">Đã xác thực</span>
+                    <span className="text-[10px] font-bold px-2 py-1 bg-emerald-700 text-white rounded-lg shrink-0">{lang === "vi" ? "Đã xác thực" : "Verified"}</span>
                   </div>
                 )}
 
@@ -223,15 +225,15 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
                     style={{ appearance: "auto" }}
                     required
                   >
-                    <option value="">-- Chọn lô nông sản cần kiểm định --</option>
+                    <option value="">{lang === "vi" ? "-- Chọn lô nông sản cần kiểm định --" : "-- Select batch to inspect --"}</option>
                     {isLoadingBatches ? (
-                      <option disabled>Đang tải danh sách lô hàng...</option>
+                      <option disabled>{lang === "vi" ? "Đang tải danh sách lô hàng..." : "Loading batch list..."}</option>
                     ) : allBatches.length === 0 ? (
-                      <option disabled>Chưa có lô hàng nào</option>
+                      <option disabled>{lang === "vi" ? "Chưa có lô hàng nào" : "No batches available"}</option>
                     ) : (
                       allBatches.map((batch) => {
                         const code = batch.batchCode || batch.id.substring(0, 8);
-                        const prodName = batch.product || batch.productName || "Nông sản";
+                        const prodName = batch.product || batch.productName || (lang === "vi" ? "Nông sản" : "Agri Product");
                         const farmName = batch.farm ? ` (${batch.farm})` : "";
                         return (
                           <option key={batch.id} value={batch.id}>
@@ -249,7 +251,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
 
           <div>
             <label className="text-sm font-semibold text-gray-700 mb-1.5 block">
-              Loại hình kiểm định (Inspection Type) <span className="text-red-500">*</span>
+              {lang === "vi" ? "Loại hình kiểm định (Inspection Type)" : "Inspection Type"} <span className="text-red-500">*</span>
             </label>
             <select
               value={form.inspectionType}
@@ -258,14 +260,14 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
               style={{ appearance: "auto" }}
             >
               {InspectionTypeValues.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+                <option key={t.value} value={t.value}>{lang === "vi" ? t.label.vi : t.label.en}</option>
               ))}
             </select>
           </div>
 
           <div>
             <label className="text-sm font-semibold text-gray-700 mb-1.5 block">
-              Ngày lấy mẫu / Kiểm tra <span className="text-red-500">*</span>
+              {lang === "vi" ? "Ngày lấy mẫu / Kiểm tra" : "Inspection Date"} <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
@@ -277,12 +279,12 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-700 mb-1.5 block">Ghi chú kiểm định / Điều kiện mẫu</label>
+            <label className="text-sm font-semibold text-gray-700 mb-1.5 block">{lang === "vi" ? "Ghi chú kiểm định / Điều kiện mẫu" : "Inspection Notes / Sample Conditions"}</label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={3}
-              placeholder="Nhập các ghi chú ban đầu về mẫu thử, điều kiện môi trường..."
+              placeholder={lang === "vi" ? "Nhập các ghi chú ban đầu về mẫu thử, điều kiện môi trường..." : "Enter initial notes about sample, environmental conditions..."}
               className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-none transition-all focus:border-green-500 bg-gray-50 text-gray-800"
             />
           </div>
@@ -300,7 +302,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
               disabled={isSubmitting}
               className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              Hủy bỏ
+              {lang === "vi" ? "Hủy bỏ" : "Cancel"}
             </button>
             <button
               type="submit"
@@ -308,7 +310,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 shadow-md shadow-emerald-700/20"
               style={{ background: "linear-gradient(135deg, #2E7D32, #388E3C)" }}
             >
-              {isSubmitting ? "Đang khởi tạo..." : "Khởi Tạo Phiếu Kiểm Định"}
+              {isSubmitting ? (lang === "vi" ? "Đang khởi tạo..." : "Creating...") : (lang === "vi" ? "Khởi Tạo Phiếu Kiểm Định" : "Create Inspection")}
             </button>
           </div>
         </form>

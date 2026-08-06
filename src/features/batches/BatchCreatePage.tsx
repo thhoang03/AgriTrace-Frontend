@@ -11,6 +11,7 @@ import { useProductsList } from "../products/products.queries";
 import { lookupApi } from "../../lib/api/lookup";
 import { MapPickerModal } from "../../components/common/MapPickerModal";
 import { fetchDeviceLocation } from "../../utils/locationUtils";
+import { supplyChainApi } from "../supply-chain/supply-chain.api";
 
 const DEFAULT_UNITS = [
   { id: "10000000-0000-0000-0000-000000000001", code: "kg", name: "Kilogram (kg)" },
@@ -142,6 +143,20 @@ export function BatchCreatePage() {
   const createBatch = useCreateBatch();
   const { user } = useAuth();
 
+  // Fetch event types once at mount to find the CREATED / HARVEST event type ID
+  const [harvestEventTypeId, setHarvestEventTypeId] = useState<string>("");
+  useEffect(() => {
+    supplyChainApi.getEventTypes().then((types) => {
+      const found = types.find(
+        (t) =>
+          t.code?.toUpperCase() === "CREATED" ||
+          t.code?.toUpperCase() === "CREATE" ||
+          t.code?.toUpperCase() === "HARVEST",
+      );
+      if (found) setHarvestEventTypeId(found.id);
+    }).catch(() => {});
+  }, []);
+
   const [form, setForm] = useState<CreateBatchRequest>({
     productId: "",
     product: "",
@@ -241,7 +256,22 @@ export function BatchCreatePage() {
         expiryDate: form.expiryDate || undefined,
       };
       const result = await createBatch.mutateAsync(payload);
-      navigate(`/app/batches/${result.data.id}`);
+      const newBatchId = result.data.id;
+
+      // Log the initial HARVEST/CREATED event into the supply chain timeline
+      if (newBatchId && harvestEventTypeId) {
+        try {
+          await supplyChainApi.createEvent(newBatchId, {
+            eventType: harvestEventTypeId,
+            location: form.location || form.productionArea || "",
+            description: form.description || `Lô hàng ${payload.productId} được khởi tạo.`,
+          });
+        } catch {
+          // Non-critical: ignore if event creation fails
+        }
+      }
+
+      navigate(`/app/batches/${newBatchId}`);
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || "Không thể tạo lô hàng lúc này. Vui lòng thử lại.";
       setError(msg);
@@ -369,7 +399,7 @@ export function BatchCreatePage() {
                   </label>
 
                   <label className="space-y-1.5">
-                    <FieldLabel>Danh mục Nông sản (Tự động)</FieldLabel>
+                    <FieldLabel>Danh mục nông sản</FieldLabel>
                     <input
                       readOnly
                       value={form.category || "Theo sản phẩm đã chọn"}
@@ -515,7 +545,7 @@ export function BatchCreatePage() {
                   </div>
 
                   <label className="space-y-1.5">
-                    <FieldLabel>Trang trại / Nông trại sản xuất (Tự động)</FieldLabel>
+                    <FieldLabel>Đơn vị / Trang trại sản xuất</FieldLabel>
                     <div className="relative flex items-center">
                       <Building className="w-4 h-4 text-gray-400 absolute left-3" />
                       <input
@@ -527,7 +557,7 @@ export function BatchCreatePage() {
                   </label>
 
                   <label className="space-y-1.5">
-                    <FieldLabel>Người khởi tạo (Tự động)</FieldLabel>
+                    <FieldLabel>Người lập hồ sơ / Chuyên viên</FieldLabel>
                     <div className="relative flex items-center">
                       <UserCheck className="w-4 h-4 text-gray-400 absolute left-3" />
                       <input

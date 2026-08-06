@@ -11,6 +11,7 @@ import { useAnalyticsOverview, useBatchDistribution } from "../analytics/analyti
 import { useReports, useGenerateReport } from "./reports.queries";
 import type { ReportType, ReportFormat, GenerateReportRequest } from "./reports.types";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useProfile } from "../users/users.queries";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1400&q=80";
 
@@ -61,8 +62,10 @@ function formatDate(dateStr: string): string {
 
 export function ReportsPage() {
   const { lang } = useLanguage();
+  const { data: profileData } = useProfile();
+  const orgId = (profileData as any)?.organizationId ?? undefined;
   const { data: analyticsData, isLoading: overviewLoading, isError: overviewError } = useAnalyticsOverview();
-  const { data: distData } = useBatchDistribution();
+  const { data: distData } = useBatchDistribution(orgId ? { organizationId: orgId } : undefined);
   const { data: reportsData, isLoading: reportsLoading, refetch: refetchReports } = useReports();
   const generateMutation = useGenerateReport();
 

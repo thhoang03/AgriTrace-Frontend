@@ -3,32 +3,32 @@ import type { UserRole, OrganizationType, EventType } from "./auth.types";
 export const ROLE_ACCESS: Record<UserRole, string[]> = {
   ADMIN: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
-    "/app/supply-chain", "/app/event-requests", "/app/inspection", "/app/recall",
+    "/app/supply-chain", "/app/event-requests", "/app/inspection", "/app/inspections", "/app/recall",
     "/app/reports", "/app/organizations", "/app/categories",
     "/app/users", "/app/products", "/app/profile",
-    "/app/analytics", "/app/notifications",
+    "/app/analytics", "/app/notifications", "/app/change-password",
   ],
   MANAGER: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
-    "/app/supply-chain", "/app/event-requests", "/app/recall",
+    "/app/supply-chain", "/app/event-requests", "/app/inspection", "/app/inspections", "/app/recall",
     "/app/reports", "/app/categories",
     "/app/users", "/app/products", "/app/profile",
-    "/app/analytics", "/app/notifications",
+    "/app/analytics", "/app/notifications", "/app/change-password",
   ],
   STAFF: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
-    "/app/supply-chain", "/app/event-requests", "/app/profile",
-    "/app/notifications",
+    "/app/supply-chain", "/app/event-requests", "/app/inspection", "/app/inspections", "/app/profile",
+    "/app/notifications", "/app/change-password",
   ],
 };
 
 export const ORG_EVENT_PERMISSIONS: Record<OrganizationType, EventType[]> = {
-  FARM: ["HARVEST"],
+  FARM: ["CREATED", "HARVEST"],
   PROCESSOR: ["RECEIVE", "PROCESSING", "PACKAGING", "SPLIT", "MERGE"],
   DISTRIBUTOR: ["RECEIVE", "TRANSPORT", "DISTRIBUTION", "SPLIT", "MERGE"],
   RETAILER: ["RECEIVE", "RETAIL", "SPLIT"],
   INSPECTION: ["INSPECTION"],
-  SYSTEM: ["HARVEST", "RECEIVE", "PROCESSING", "PACKAGING", "TRANSPORT", "DISTRIBUTION", "RETAIL", "INSPECTION", "RECALL", "SPLIT", "MERGE"],
+  SYSTEM: ["CREATED", "HARVEST", "RECEIVE", "PROCESSING", "PACKAGING", "TRANSPORT", "DISTRIBUTION", "RETAIL", "INSPECTION", "RECALL", "SPLIT", "MERGE"],
 };
 
 export const RECALL_CREATOR_ROLES: UserRole[] = ["ADMIN"];
@@ -40,10 +40,6 @@ export function canAccessRoute(
   organizationType?: OrganizationType
 ): boolean {
   if (!role) return false;
-
-  if (path === "/app/inspection" || path.startsWith("/app/inspection/")) {
-    return role === "ADMIN" || organizationType === "INSPECTION";
-  }
 
   // Batch Management (/app/batches) is accessible ONLY by ADMIN or FARM (Farmer) organization type
   if (path === "/app/batches" || path.startsWith("/app/batches/")) {
@@ -81,7 +77,7 @@ export function getAllowedEventTypes(
 ): EventType[] {
   if (role === "ADMIN") {
     return [
-      "HARVEST", "RECEIVE", "PROCESSING", "PACKAGING", "TRANSPORT",
+      "CREATED", "HARVEST", "RECEIVE", "PROCESSING", "PACKAGING", "TRANSPORT",
       "DISTRIBUTION", "RETAIL", "INSPECTION", "RECALL", "SPLIT", "MERGE"
     ];
   }

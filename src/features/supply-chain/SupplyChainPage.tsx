@@ -13,10 +13,12 @@ import { QrScannerButton } from "./QrScannerButton";
 import { fetchDeviceLocation } from "../../utils/locationUtils";
 import { MapPickerModal } from "../../components/common/MapPickerModal";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { batchesApi } from "../batches/batches.api";
 
 
 
 const ALL_EVENT_TYPES: { value: EventType; label: string; emoji: string; color: string }[] = [
+  { value: "CREATED", label: "Created", emoji: "🌱", color: "#2E7D32" },
   { value: "HARVEST", label: "Harvest", emoji: "🌾", color: "#2E7D32" },
   { value: "RECEIVE", label: "Receive", emoji: "📥", color: "#1565C0" },
   { value: "PROCESSING", label: "Processing", emoji: "⚙️", color: "#1565C0" },
@@ -79,10 +81,11 @@ export function SupplyChainPage() {
   useEffect(() => {
     if (!activeBatchId && recentBatches.length > 0) {
       const firstBatch = recentBatches[0];
-      const targetId = firstBatch?.id || firstBatch?.batchCode || "";
-      if (targetId) {
-        setActiveBatchId(targetId);
-        setSearchBatchId(targetId);
+      const actualId = firstBatch?.id || firstBatch?.batchCode || "";
+      const displayCode = firstBatch?.batchCode || firstBatch?.id || "";
+      if (actualId) {
+        setActiveBatchId(actualId);
+        setSearchBatchId(displayCode);
       }
     }
   }, [recentBatches, activeBatchId]);
@@ -95,15 +98,44 @@ export function SupplyChainPage() {
   const eventTypes = ALL_EVENT_TYPES.filter((et) => allowedEventTypes.includes(et.value));
   const canSubmit = canCreateEvent(orgType, form.eventType);
 
-  const handleSearchBatch = () => {
-    if (searchBatchId.trim()) {
-      setActiveBatchId(searchBatchId.trim());
+  const handleSearchBatch = async () => {
+    if (!searchBatchId.trim()) return;
+    const q = searchBatchId.trim();
+
+    const localMatch = recentBatches.find(
+      (b) => b.id.toLowerCase() === q.toLowerCase() || b.batchCode?.toLowerCase() === q.toLowerCase()
+    );
+    if (localMatch) {
+      setActiveBatchId(localMatch.id);
       setError("");
+      return;
+    }
+
+    try {
+      const res = await batchesApi.getAll({ search: q, limit: 1 });
+      if (res.data && res.data.length > 0) {
+        setActiveBatchId(res.data[0].id);
+        setError("");
+      } else {
+        try {
+          const byIdRes = await batchesApi.getById(q);
+          if (byIdRes.data && byIdRes.data.id) {
+            setActiveBatchId(byIdRes.data.id);
+            setError("");
+          } else {
+            setActiveBatchId(q);
+          }
+        } catch {
+          setActiveBatchId(q);
+        }
+      }
+    } catch {
+      setActiveBatchId(q);
     }
   };
 
-  const handleSelectBatch = (batchId: string) => {
-    setSearchBatchId(batchId);
+  const handleSelectBatch = (batchId: string, displayCode?: string) => {
+    setSearchBatchId(displayCode || batchId);
     setActiveBatchId(batchId);
     setError("");
   };
@@ -115,7 +147,7 @@ export function SupplyChainPage() {
       return;
     }
     if (!form.batchId.trim()) {
-      setError("Please enter or scan a Batch ID");
+      setError("Please enter or scan a Batch Code");
       return;
     }
     if (!form.location.trim() || !form.description.trim()) {
@@ -130,14 +162,38 @@ export function SupplyChainPage() {
         return;
       }
 
+      // Resolve actual GUID batchId from user's input batchCode / GUID
+      let targetBatchId = form.batchId.trim();
+      const localMatch = recentBatches.find(
+        (b) => b.batchCode?.toLowerCase() === targetBatchId.toLowerCase() || b.id.toLowerCase() === targetBatchId.toLowerCase()
+      );
+      if (localMatch) {
+        targetBatchId = localMatch.id;
+      } else {
+        try {
+          const res = await batchesApi.getAll({ search: targetBatchId, limit: 1 });
+          if (res.data && res.data.length > 0) {
+            targetBatchId = res.data[0].id;
+          } else if (!targetBatchId.includes("-")) {
+            const byIdRes = await batchesApi.getById(targetBatchId);
+            if (byIdRes.data?.id) {
+              targetBatchId = byIdRes.data.id;
+            }
+          }
+        } catch {
+          // fallback to targetBatchId as is
+        }
+      }
+
       const payload: CreateEventRequest = {
         eventType: eventTypeId,
         location: form.location,
         description: form.description,
       };
-      const result = await createEventMutation.mutateAsync(payload);
+
+      const result = await supplyChainApi.createEvent(targetBatchId, payload);
       setShowForm(false);
-      setActiveBatchId(form.batchId);
+      setActiveBatchId(targetBatchId);
       setForm(getInitialForm(allowedEventTypes));
       refetchEvents();
       toast.success("Event recorded to blockchain", {
@@ -153,10 +209,38 @@ export function SupplyChainPage() {
     }
   };
 
-  const handleQrScan = (raw: string) => {
+  const handleQrScan = async (raw: string) => {
     const scanned = raw.includes("/") ? raw.split("/").pop() ?? raw : raw;
     setSearchBatchId(scanned);
-    setActiveBatchId(scanned);
+    
+    const localMatch = recentBatches.find(
+      (b) => b.id.toLowerCase() === scanned.toLowerCase() || b.batchCode?.toLowerCase() === scanned.toLowerCase()
+    );
+    if (localMatch) {
+      setActiveBatchId(localMatch.id);
+      setError("");
+      return;
+    }
+
+    try {
+      const res = await batchesApi.getAll({ search: scanned, limit: 1 });
+      if (res.data && res.data.length > 0) {
+        setActiveBatchId(res.data[0].id);
+      } else {
+        try {
+          const byIdRes = await batchesApi.getById(scanned);
+          if (byIdRes.data && byIdRes.data.id) {
+            setActiveBatchId(byIdRes.data.id);
+          } else {
+            setActiveBatchId(scanned);
+          }
+        } catch {
+          setActiveBatchId(scanned);
+        }
+      }
+    } catch {
+      setActiveBatchId(scanned);
+    }
     setError("");
   };
 
@@ -211,7 +295,11 @@ export function SupplyChainPage() {
           </div>
           <button
             onClick={() => {
-              setForm((prev) => ({ ...prev, batchId: prev.batchId || activeBatchId }));
+              const currentMatch = recentBatches.find(
+                (b) => b.id.toLowerCase() === activeBatchId.toLowerCase() || b.batchCode?.toLowerCase() === searchBatchId.toLowerCase()
+              );
+              const codeToDisplay = currentMatch?.batchCode || (searchBatchId && !searchBatchId.includes("-") ? searchBatchId : currentMatch?.batchCode || activeBatchId);
+              setForm((prev) => ({ ...prev, batchId: codeToDisplay }));
               setShowForm(true);
               setError("");
             }}
@@ -224,7 +312,9 @@ export function SupplyChainPage() {
 
         {/* Batch search */}
         <div className="bg-white rounded-2xl p-5 mb-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-          <label className="text-xs font-medium text-gray-500 mb-1.5 block">Batch ID</label>
+          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+            {lang === "vi" ? "Mã Lô Hàng (Batch Code)" : "Batch Code"}
+          </label>
           <div className="flex gap-2">
             <input
               value={searchBatchId}
@@ -232,7 +322,7 @@ export function SupplyChainPage() {
               onKeyDown={(e) => e.key === "Enter" && handleSearchBatch()}
               className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400"
               style={{ background: "#F8FAF8", maxWidth: 760 }}
-              placeholder="Enter Batch ID to view timeline..."
+              placeholder={lang === "vi" ? "Nhập Mã Lô Hàng (Batch Code) để xem hành trình..." : "Enter Batch Code to view timeline..."}
             />
             <QrScannerButton onScan={handleQrScan} />
             <button
@@ -282,7 +372,7 @@ export function SupplyChainPage() {
                     {recentBatches.slice(0, 6).map((batch: any) => (
                       <button
                         key={batch.id}
-                        onClick={() => handleSelectBatch(batch.id)}
+                        onClick={() => handleSelectBatch(batch.id, batch.batchCode || batch.id)}
                         className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-green-300 hover:bg-green-50/50 transition-all text-left"
                       >
                         <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 font-bold text-white" style={{ background: "#2E7D32" }}>
@@ -329,7 +419,7 @@ export function SupplyChainPage() {
                     {recentBatches.slice(0, 5).map((batch: any) => (
                       <button
                         key={batch.id}
-                        onClick={() => handleSelectBatch(batch.id)}
+                        onClick={() => handleSelectBatch(batch.id, batch.batchCode || batch.id)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
                           activeBatchId === batch.id
                             ? "border-green-400 bg-green-50 text-green-700"
@@ -500,8 +590,8 @@ export function SupplyChainPage() {
                   <Plus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg leading-snug tracking-tight">Add Supply Chain Event</h3>
-                  <p className="text-xs text-green-100 opacity-90">Record verified trace event to the immutable ledger</p>
+                  <h3 className="font-bold text-lg leading-snug tracking-tight">{lang === "vi" ? "Thêm Sự Kiện Chuỗi Cung Ứng" : "Add Supply Chain Event"}</h3>
+                  <p className="text-xs text-green-100 opacity-90">{lang === "vi" ? "Ghi lại sự kiện truy xuất xác thực vào sổ cái bất biến" : "Record verified trace event to the immutable ledger"}</p>
                 </div>
               </div>
               <button
@@ -517,11 +607,11 @@ export function SupplyChainPage() {
               <div>
                 <div className="flex items-center justify-between mb-2.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Select Event Type
+                    {lang === "vi" ? "Chọn Loại Sự Kiện" : "Select Event Type"}
                   </label>
                   {form.eventType && (
                     <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" /> Selected: {form.eventType}
+                      <CheckCircle className="w-3 h-3" /> {lang === "vi" ? "Đã chọn:" : "Selected:"} {form.eventType}
                     </span>
                   )}
                 </div>
@@ -548,7 +638,7 @@ export function SupplyChainPage() {
                 </div>
                 {!canSubmit && (
                   <p className="text-xs text-rose-500 mt-2 font-medium flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5" /> Your organization is not authorized to create this event type
+                    <AlertCircle className="w-3.5 h-3.5" /> {lang === "vi" ? "Tổ chức của bạn không có quyền tạo loại sự kiện này" : "Your organization is not authorized to create this event type"}
                   </p>
                 )}
               </div>
@@ -560,7 +650,7 @@ export function SupplyChainPage() {
                   <div className="flex items-center justify-between mb-2 min-h-[28px]">
                     <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
                       <Hash className="w-3.5 h-3.5 text-emerald-600" />
-                      Batch ID / Chọn lô hàng
+                      {lang === "vi" ? "Mã Lô Hàng" : "Batch Code"}
                     </label>
                     <QrScannerButton
                       onScan={handleQrScanModal}
@@ -569,31 +659,13 @@ export function SupplyChainPage() {
                   </div>
 
                   <div className="space-y-2">
-                    {recentBatches.length > 0 && (
-                      <select
-                        value={form.batchId}
-                        onChange={(e) => setForm({ ...form, batchId: e.target.value })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-200 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all text-gray-800 font-medium"
-                      >
-                        <option value="">-- Chọn lô hàng đã tạo từ danh sách --</option>
-                        {recentBatches.map((b: any) => {
-                          const bCode = b.batchCode || b.id;
-                          const pName = b.productName || b.product || "Sản phẩm";
-                          const label = `${bCode} - ${pName}${b.quantity ? ` (${b.quantity} ${b.unitName || b.unit || ''})` : ''}`;
-                          return (
-                            <option key={b.id || bCode} value={bCode}>
-                              {label}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    )}
+                    {/* Dropdown removed as requested */}
 
                     <input
                       value={form.batchId}
                       onChange={(e) => setForm({ ...form, batchId: e.target.value })}
                       className="w-full h-10 px-3.5 rounded-xl border border-gray-200 text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all"
-                      placeholder="Nhập mã Batch ID hoặc chọn lô hàng ở trên / quét mã QR..."
+                      placeholder={lang === "vi" ? "Nhập mã lô hàng hoặc quét mã QR..." : "Enter Batch ID or scan QR code..."}
                     />
                   </div>
                 </div>
@@ -603,7 +675,7 @@ export function SupplyChainPage() {
                   <div className="flex items-center justify-between mb-2 min-h-[28px]">
                     <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-emerald-600" />
-                      Location
+                      {lang === "vi" ? "Vị Trí" : "Location"}
                     </label>
                     <div className="flex items-center gap-1.5">
                       <button
@@ -614,7 +686,7 @@ export function SupplyChainPage() {
                         title="Get Current Computer / Device GPS Location"
                       >
                         <LocateFixed className={`w-3 h-3 ${locating ? "animate-spin" : ""}`} />
-                        {locating ? "Locating..." : "Device (GPS)"}
+                        {locating ? (lang === "vi" ? "Đang định vị..." : "Locating...") : (lang === "vi" ? "Thiết bị (GPS)" : "Device (GPS)")}
                       </button>
                       <button
                         type="button"
@@ -622,7 +694,7 @@ export function SupplyChainPage() {
                         className="text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-200 transition-colors flex items-center gap-1 shadow-xs"
                         title="Select Location from Interactive Map"
                       >
-                        <MapPin className="w-3 h-3 text-blue-600" /> Map Picker
+                        <MapPin className="w-3 h-3 text-blue-600" /> {lang === "vi" ? "Bản Đồ" : "Map Picker"}
                       </button>
                     </div>
                   </div>
@@ -630,7 +702,7 @@ export function SupplyChainPage() {
                     value={form.location}
                     onChange={(e) => setForm({ ...form, location: e.target.value })}
                     className="w-full h-10 px-3.5 rounded-xl border border-gray-200 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all"
-                    placeholder="e.g. Warehouse A, Da Lat or select on map..."
+                    placeholder={lang === "vi" ? "VD: Kho A, Đà Lạt hoặc chọn trên bản đồ..." : "e.g. Warehouse A, Da Lat or select on map..."}
                   />
                 </div>
 
@@ -638,14 +710,14 @@ export function SupplyChainPage() {
                 <div>
                   <label className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 block flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5 text-emerald-600" />
-                    Description / Activity Notes
+                    {lang === "vi" ? "Mô Tả / Ghi Chú" : "Description / Activity Notes"}
                   </label>
                   <textarea
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                     rows={3}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs outline-none resize-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all"
-                    placeholder="Describe what occurred at this supply chain stage (e.g. Harvested 500kg organic apples at Farm A)..."
+                    placeholder={lang === "vi" ? "Mô tả những gì đã xảy ra (VD: Thu hoạch 500kg táo hữu cơ tại Nông trại A)..." : "Describe what occurred at this supply chain stage (e.g. Harvested 500kg organic apples at Farm A)..."}
                   />
                 </div>
               </div>
@@ -664,7 +736,7 @@ export function SupplyChainPage() {
                   onClick={() => setShowForm(false)}
                   className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
                 >
-                  Cancel
+                  {lang === "vi" ? "Hủy bỏ" : "Cancel"}
                 </button>
                 <button
                   type="submit"
@@ -672,10 +744,10 @@ export function SupplyChainPage() {
                   className="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-700 to-green-700 hover:from-emerald-800 hover:to-green-800 shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {createEventMutation.isPending ? (
-                    "Saving to Ledger..."
+                    lang === "vi" ? "Đang lưu vào sổ cái..." : "Saving to Ledger..."
                   ) : (
                     <>
-                      <Hash className="w-4 h-4" /> Save to Blockchain
+                      <Hash className="w-4 h-4" /> {lang === "vi" ? "Lưu vào Blockchain" : "Save to Blockchain"}
                     </>
                   )}
                 </button>

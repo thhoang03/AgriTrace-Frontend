@@ -6,7 +6,7 @@ import {
   Edit2, Scissors, Merge, AlertCircle, Package, Plus, Send, Clock, CheckCircle2, XCircle,
 } from "lucide-react";
 import { useBatch, useBatchTimeline, useBatchQrCode } from "./batches.queries";
-import { useInspections } from "../inspection/inspection.queries";
+import { useBatchInspections } from "../inspection/inspection.queries";
 import { InspectionTypeLabel } from "../inspection/inspection.types";
 import { useEventRequests } from "../event-requests/event-requests.queries";
 import { BatchEditModal } from "./BatchEditModal";
@@ -57,17 +57,14 @@ export function BatchDetailPage() {
   const { data: batchData, isLoading, isError } = useBatch(id ?? "");
   const { data: timelineData, isLoading: timelineLoading } = useBatchTimeline(id ?? "");
   const { data: qrData } = useBatchQrCode(id ?? "");
-  const { data: inspectionsData } = useInspections();
   const { data: eventRequestsData, refetch: refetchRequests } = useEventRequests({ onlyMine: false });
 
   const batch = batchData?.data;
   const timelineEvents = timelineData?.data ?? [];
   const qrCode = qrData?.data;
 
-  const allInspections = inspectionsData?.data ?? [];
-  const batchInspections = batch
-    ? allInspections.filter(i => i.batchId === batch.id || (batch.batchCode && i.batchCode === batch.batchCode))
-    : [];
+  const { data: batchInspectionsData } = useBatchInspections(batch?.id ?? "");
+  const batchInspections = batchInspectionsData?.data ?? [];
 
   const allRequests = eventRequestsData?.items ?? [];
   const batchRequests = batch
@@ -648,36 +645,42 @@ export function BatchDetailPage() {
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Nhật Ký Kiểm Toán Hệ Thống" : "System Audit Trail"}</h3>
-                <p className="text-gray-400 text-xs mt-0.5">{lang === "vi" ? "Tất cả hành động liên quan đến lô hàng này" : "All system actions related to this batch"}</p>
+                <p className="text-gray-400 text-xs mt-0.5">{lang === "vi" ? "Tất cả sự kiện chuỗi cung ứng liên quan đến lô hàng này" : "All supply chain events related to this batch"}</p>
               </div>
-              <button className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
-                  <Download className="w-3.5 h-3.5" /> {lang === "vi" ? "Xuất" : "Export"}
-              </button>
+              <span className="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">
+                {timelineEvents.length} {lang === "vi" ? "sự kiện" : "events"}
+              </span>
             </div>
             <div className="divide-y divide-gray-50">
-              {[
-                { action: "Batch Created", user: "Tran Van Binh", ip: "203.162.4.191", time: "2024-06-15 06:25:33", type: "create" },
-                { action: "Processing Event Added", user: "Nguyen Van Cong", ip: "203.162.4.192", time: "2024-06-16 08:00:12", type: "update" },
-                { action: "Packaging Event Added", user: "Le Thi Lan", ip: "203.162.4.193", time: "2024-06-16 14:32:05", type: "update" },
-              ].map(({ action, user, ip, time, type }) => {
-                const style = auditTypeStyle[type] ?? auditTypeStyle.create;
-                return (
-                  <div key={time} className="px-6 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2.5 h-2.5 rounded-full" style={{ background: style.dot }} />
-                      <div>
-                        <div className="text-xs font-semibold text-gray-800">{action}</div>
-                        <div className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-2">
-                          <span>by {user}</span>
-                          <span>•</span>
-                          <span>{ip}</span>
+              {timelineEvents.length === 0 ? (
+                <div className="py-10 text-center text-sm text-gray-400">
+                  {lang === "vi" ? "Chưa có sự kiện nào được ghi nhận." : "No audit events recorded yet."}
+                </div>
+              ) : (
+                timelineEvents.map((event) => {
+                  const typeKey = event.stage?.toLowerCase().includes("creat") ? "create"
+                    : event.stage?.toLowerCase().includes("inspect") ? "inspect"
+                    : "update";
+                  const style = auditTypeStyle[typeKey] ?? auditTypeStyle.update;
+                  return (
+                    <div key={event.id} className="px-6 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ background: style.dot }} />
+                        <div>
+                          <div className="text-xs font-semibold text-gray-800">{event.icon} {event.stage}</div>
+                          <div className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-2">
+                            <span>by {event.employee}</span>
+                            <span>•</span>
+                            <span>{event.organization}</span>
+                            {event.location && <><span>•</span><span>{event.location}</span></>}
+                          </div>
                         </div>
                       </div>
+                      <span className="text-[11px] text-gray-400 font-mono whitespace-nowrap">{event.date} {event.time}</span>
                     </div>
-                    <span className="text-[11px] text-gray-400 font-mono">{time}</span>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         )}

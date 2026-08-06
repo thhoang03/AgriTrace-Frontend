@@ -25,26 +25,58 @@ import { useAuth } from "../../features/auth/auth.store";
 import { useOrganizationTypes } from "../../features/organizationTypes/organizationType.queries";
 import type { Organization } from "./organizations.types";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
+import {
+  SortHeader,
+  sortRows,
+  useColumnSort,
+} from "../../components/common/SortableHeader";
 
 const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
   FARM: { bg: "#E8F5E9", color: "#1B5E20" },
   PROCESSOR: { bg: "#E3F2FD", color: "#1565C0" },
   DISTRIBUTOR: { bg: "#F3E5F5", color: "#6A1B9A" },
-  RETAILER:    { bg: "#E0F2F1", color: "#004D40" },
-  INSPECTION:  { bg: "#FFF9C4", color: "#F57F17" },
-  SYSTEM:      { bg: "#EDE7F6", color: "#4A148C" },
+  RETAILER: { bg: "#E0F2F1", color: "#004D40" },
+  INSPECTION: { bg: "#FFF9C4", color: "#F57F17" },
+  SYSTEM: { bg: "#EDE7F6", color: "#4A148C" },
 };
 
-const ORG_TYPES = ["FARM", "PROCESSOR", "DISTRIBUTOR", "RETAILER", "INSPECTION", "SYSTEM"];
+const ORG_TYPES = [
+  "FARM",
+  "PROCESSOR",
+  "DISTRIBUTOR",
+  "RETAILER",
+  "INSPECTION",
+  "SYSTEM",
+];
 const ORG_TYPE_OPTIONS = [
   { code: "FARM", name: "Farm", id: "10000000-0000-0000-0000-000000000001" },
-  { code: "PROCESSOR", name: "Processor", id: "10000000-0000-0000-0000-000000000002" },
-  { code: "DISTRIBUTOR", name: "Distributor", id: "10000000-0000-0000-0000-000000000003" },
-  { code: "RETAILER", name: "Retailer", id: "10000000-0000-0000-0000-000000000004" },
-  { code: "INSPECTION", name: "Inspection", id: "10000000-0000-0000-0000-000000000005" },
+  {
+    code: "PROCESSOR",
+    name: "Processor",
+    id: "10000000-0000-0000-0000-000000000002",
+  },
+  {
+    code: "DISTRIBUTOR",
+    name: "Distributor",
+    id: "10000000-0000-0000-0000-000000000003",
+  },
+  {
+    code: "RETAILER",
+    name: "Retailer",
+    id: "10000000-0000-0000-0000-000000000004",
+  },
+  {
+    code: "INSPECTION",
+    name: "Inspection",
+    id: "10000000-0000-0000-0000-000000000005",
+  },
 ];
-const EMPTY_FORM = { name: "", organizationTypeId: "10000000-0000-0000-0000-000000000001", type: "FARM", address: "" };
+const EMPTY_FORM = {
+  name: "",
+  organizationTypeId: "10000000-0000-0000-0000-000000000001",
+  type: "FARM",
+  address: "",
+};
 
 interface Alert {
   type: "success" | "error";
@@ -73,15 +105,21 @@ export function OrganizationsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [alert, setAlert] = useState<Alert | null>(null);
+  const [togglingOrgId, setTogglingOrgId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
   const selectedTypeId =
     typeFilter === "All"
       ? undefined
-      : orgTypes.find((t) => t.code.toUpperCase() === typeFilter.toUpperCase())?.id;
+      : orgTypes.find((t) => t.code.toUpperCase() === typeFilter.toUpperCase())
+          ?.id;
 
-  const { data: orgData, isLoading, refetch } = useOrganizationsList({
+  const {
+    data: orgData,
+    isLoading,
+    refetch,
+  } = useOrganizationsList({
     search: search || undefined,
     status: statusFilter === "All" ? undefined : statusFilter,
     organizationTypeId: selectedTypeId,
@@ -100,13 +138,21 @@ export function OrganizationsPage() {
 
   const { sort, toggle } = useColumnSort();
 
-  const organizationSortValue = (o: Organization, key: string): string | number | boolean => {
+  const organizationSortValue = (
+    o: Organization,
+    key: string,
+  ): string | number | boolean => {
     switch (key) {
-      case "name": return o.name;
-      case "type": return o.type;
-      case "address": return o.address ?? "";
-      case "status": return o.status;
-      default: return "";
+      case "name":
+        return o.name;
+      case "type":
+        return o.type;
+      case "address":
+        return o.address ?? "";
+      case "status":
+        return o.status;
+      default:
+        return "";
     }
   };
 
@@ -120,8 +166,7 @@ export function OrganizationsPage() {
   };
 
   const activeFilterCount =
-    (typeFilter !== "All" ? 1 : 0) +
-    (statusFilter !== "All" ? 1 : 0);
+    (typeFilter !== "All" ? 1 : 0) + (statusFilter !== "All" ? 1 : 0);
 
   const handleResetFilters = () => {
     setSearch("");
@@ -139,10 +184,15 @@ export function OrganizationsPage() {
   };
   const openEdit = (org: Organization) => {
     setEditing(org);
-    const matched = ORG_TYPE_OPTIONS.find(t => t.code.toUpperCase() === org.type?.toUpperCase());
+    const matched = ORG_TYPE_OPTIONS.find(
+      (t) => t.code.toUpperCase() === org.type?.toUpperCase(),
+    );
     setForm({
       name: org.name,
-      organizationTypeId: matched?.id || org.organizationTypeId || "10000000-0000-0000-0000-000000000001",
+      organizationTypeId:
+        matched?.id ||
+        org.organizationTypeId ||
+        "10000000-0000-0000-0000-000000000001",
       type: org.type || "FARM",
       address: org.address,
     });
@@ -192,44 +242,59 @@ export function OrganizationsPage() {
     const newStatus = org.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
 
     // Optimistic update ngay lập tức
-    queryClient.setQueriesData<any>({ queryKey: ["organizations", "list"] }, (old: any) => {
-      if (!old?.data?.items) return old;
-      return {
-        ...old,
-        data: {
-          ...old.data,
-          items: old.data.items.map((o: any) =>
-            o.organizationId === org.organizationId ? { ...o, status: newStatus } : o
-          ),
-        },
-      };
-    });
-    if (detail?.organizationId === org.organizationId)
-      setDetail({ ...detail, status: newStatus });
-
-    try {
-      await organizationsApi.updateStatus(org.organizationId, { status: newStatus });
-      showAlert(
-        newStatus === "ACTIVE" ? "success" : "error",
-        `"${org.name}" has been ${newStatus === "ACTIVE" ? "activated" : "deactivated"}`,
-      );
-    } catch (e: any) {
-      // Rollback nếu API lỗi
-      queryClient.setQueriesData<any>({ queryKey: ["organizations", "list"] }, (old: any) => {
+    queryClient.setQueriesData<any>(
+      { queryKey: ["organizations", "list"] },
+      (old: any) => {
         if (!old?.data?.items) return old;
         return {
           ...old,
           data: {
             ...old.data,
             items: old.data.items.map((o: any) =>
-              o.organizationId === org.organizationId ? { ...o, status: org.status } : o
+              o.organizationId === org.organizationId
+                ? { ...o, status: newStatus }
+                : o,
             ),
           },
         };
+      },
+    );
+    if (detail?.organizationId === org.organizationId)
+      setDetail({ ...detail, status: newStatus });
+
+    try {
+      await organizationsApi.updateStatus(org.organizationId, {
+        status: newStatus,
       });
+      showAlert(
+        newStatus === "ACTIVE" ? "success" : "error",
+        `"${org.name}" has been ${newStatus === "ACTIVE" ? "activated" : "deactivated"}`,
+      );
+    } catch (e: any) {
+      // Rollback nếu API lỗi
+      queryClient.setQueriesData<any>(
+        { queryKey: ["organizations", "list"] },
+        (old: any) => {
+          if (!old?.data?.items) return old;
+          return {
+            ...old,
+            data: {
+              ...old.data,
+              items: old.data.items.map((o: any) =>
+                o.organizationId === org.organizationId
+                  ? { ...o, status: org.status }
+                  : o,
+              ),
+            },
+          };
+        },
+      );
       if (detail?.organizationId === org.organizationId)
         setDetail({ ...detail, status: org.status });
-      showAlert("error", e?.response?.data?.message || e?.message || "Failed to update status");
+      showAlert(
+        "error",
+        e?.response?.data?.message || e?.message || "Failed to update status",
+      );
     }
   };
 
@@ -294,10 +359,14 @@ export function OrganizationsPage() {
               className="text-white"
               style={{ fontSize: 24, fontWeight: 700 }}
             >
-              {lang === "vi" ? "Quản Lý Tổ Chức & Đơn Vị" : "Organization Management"}
+              {lang === "vi"
+                ? "Quản Lý Tổ Chức & Đơn Vị"
+                : "Organization Management"}
             </h1>
             <p className="text-green-100 text-sm mt-1">
-              {lang === "vi" ? "Quản lý danh sách các tổ chức, doanh nghiệp trong chuỗi cung ứng" : "Manage organizations in the supply chain"}
+              {lang === "vi"
+                ? "Quản lý danh sách các tổ chức, doanh nghiệp trong chuỗi cung ứng"
+                : "Manage organizations in the supply chain"}
             </p>
           </div>
           <div className="flex items-center gap-6">
@@ -307,7 +376,13 @@ export function OrganizationsPage() {
                   {s === "ACTIVE" ? activeCount : inactiveCount}
                 </div>
                 <div className="text-green-200 text-xs">
-                  {s === "ACTIVE" ? (lang === "vi" ? "HOẠT ĐỘNG" : "ACTIVE") : (lang === "vi" ? "NGƯNG ĐỘNG" : "INACTIVE")}
+                  {s === "ACTIVE"
+                    ? lang === "vi"
+                      ? "HOẠT ĐỘNG"
+                      : "ACTIVE"
+                    : lang === "vi"
+                      ? "NGƯNG ĐỘNG"
+                      : "INACTIVE"}
                 </div>
               </div>
             ))}
@@ -315,7 +390,9 @@ export function OrganizationsPage() {
               <div className="font-bold text-white" style={{ fontSize: 20 }}>
                 {totalCount}
               </div>
-              <div className="text-green-200 text-xs">{lang === "vi" ? "TỔNG CỘNG" : "TOTAL"}</div>
+              <div className="text-green-200 text-xs">
+                {lang === "vi" ? "TỔNG CỘNG" : "TOTAL"}
+              </div>
             </div>
           </div>
         </div>
@@ -333,13 +410,26 @@ export function OrganizationsPage() {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder={lang === "vi" ? "Tìm kiếm tổ chức..." : "Search organizations..."}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                placeholder={
+                  lang === "vi"
+                    ? "Tìm kiếm tổ chức..."
+                    : "Search organizations..."
+                }
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
                 style={{ background: "#F8FAF8" }}
               />
               {search && (
-                <button onClick={() => { setSearch(""); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button
+                  onClick={() => {
+                    setSearch("");
+                    setPage(1);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
@@ -347,11 +437,27 @@ export function OrganizationsPage() {
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
-              style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
+              style={
+                showFilters
+                  ? { background: "#2E7D32", border: "1px solid #2E7D32" }
+                  : {}
+              }
             >
               <SlidersHorizontal className="w-4 h-4" />
               {lang === "vi" ? "Bộ Lọc" : "Filters"}
-              {activeFilterCount > 0 && <span className="w-5 h-5 rounded-full text-xs flex items-center justify-center" style={{ background: showFilters ? "rgba(255,255,255,0.2)" : "#2E7D32", color: "white" }}>{activeFilterCount}</span>}
+              {activeFilterCount > 0 && (
+                <span
+                  className="w-5 h-5 rounded-full text-xs flex items-center justify-center"
+                  style={{
+                    background: showFilters
+                      ? "rgba(255,255,255,0.2)"
+                      : "#2E7D32",
+                    color: "white",
+                  }}
+                >
+                  {activeFilterCount}
+                </span>
+              )}
             </button>
             {!isManager && (
               <button
@@ -359,7 +465,8 @@ export function OrganizationsPage() {
                 className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
                 style={{ background: "#2E7D32" }}
               >
-                <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Tổ Chức" : "Add Organization"}
+                <Plus className="w-4 h-4" />{" "}
+                {lang === "vi" ? "Thêm Tổ Chức" : "Add Organization"}
               </button>
             )}
           </div>
@@ -368,10 +475,15 @@ export function OrganizationsPage() {
             <div className="mt-4 pt-4 border-t border-gray-100">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Type</label>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">
+                    Type
+                  </label>
                   <select
                     value={typeFilter}
-                    onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}
+                    onChange={(e) => {
+                      setTypeFilter(e.target.value);
+                      setPage(1);
+                    }}
                     className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
                   >
                     <option value="All">All</option>
@@ -383,10 +495,15 @@ export function OrganizationsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Status</label>
+                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">
+                    Status
+                  </label>
                   <select
                     value={statusFilter}
-                    onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+                    onChange={(e) => {
+                      setStatusFilter(e.target.value);
+                      setPage(1);
+                    }}
                     className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
                   >
                     {["All", "ACTIVE", "INACTIVE"].map((s) => (
@@ -414,7 +531,9 @@ export function OrganizationsPage() {
         >
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <span className="text-sm text-gray-500">
-              {lang === "vi" ? `Hiển thị ${orgs.length} tổ chức` : `Showing ${orgs.length} organizations`}
+              {lang === "vi"
+                ? `Hiển thị ${orgs.length} tổ chức`
+                : `Showing ${orgs.length} organizations`}
             </span>
           </div>
           {isLoading ? (
@@ -425,193 +544,252 @@ export function OrganizationsPage() {
             <>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                <thead>
-                  <tr style={{ background: "#F8FAF8" }}>
-                    <SortHeader label={lang === "vi" ? "TỔ CHỨC" : "Organization"} sortKey="name" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "LOẠI HÌNH" : "Type"} sortKey="type" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "ĐỊA CHỈ" : "Address"} sortKey="address" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {sortedOrgs.map((org) => {
-                    const typeCfg = TYPE_COLORS[org.type] || {
-                      bg: "#F5F5F5",
-                      color: "#666",
-                    };
-                    const isActive = org.status === "ACTIVE";
-                    return (
-                      <tr
-                        key={org.organizationId}
-                        className="hover:bg-green-50/20 transition-colors group"
-                      >
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-9 h-9 rounded-xl flex items-center justify-center"
-                              style={{ background: typeCfg.bg }}
-                            >
-                              <Building2
-                                className="w-4 h-4"
-                                style={{ color: typeCfg.color }}
-                              />
-                            </div>
-                            <div>
-                              <div className="text-sm font-semibold text-gray-900">
-                                {org.name}
+                  <thead>
+                    <tr style={{ background: "#F8FAF8" }}>
+                      <SortHeader
+                        label={lang === "vi" ? "TỔ CHỨC" : "Organization"}
+                        sortKey="name"
+                        sort={sort}
+                        onSort={toggle}
+                        className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                      />
+                      <SortHeader
+                        label={lang === "vi" ? "LOẠI HÌNH" : "Type"}
+                        sortKey="type"
+                        sort={sort}
+                        onSort={toggle}
+                        className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                      />
+                      <SortHeader
+                        label={lang === "vi" ? "ĐỊA CHỈ" : "Address"}
+                        sortKey="address"
+                        sort={sort}
+                        onSort={toggle}
+                        className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                      />
+                      <SortHeader
+                        label={lang === "vi" ? "TRẠNG THÁI" : "Status"}
+                        sortKey="status"
+                        sort={sort}
+                        onSort={toggle}
+                        className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                      />
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                        {lang === "vi" ? "THAO TÁC" : "Actions"}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {sortedOrgs.map((org) => {
+                      const typeCfg = TYPE_COLORS[org.type] || {
+                        bg: "#F5F5F5",
+                        color: "#666",
+                      };
+                      const isActive = org.status?.toUpperCase() === "ACTIVE";
+                      return (
+                        <tr
+                          key={org.organizationId}
+                          className="hover:bg-green-50/20 transition-colors group"
+                        >
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                                style={{ background: typeCfg.bg }}
+                              >
+                                <Building2
+                                  className="w-4 h-4"
+                                  style={{ color: typeCfg.color }}
+                                />
                               </div>
-                              <div className="text-xs text-gray-400">
-                                ID: {org.organizationId}
+                              <div>
+                                <div className="text-sm font-semibold text-gray-900">
+                                  {org.name}
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                  ID: {org.organizationId}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <span
-                            className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                            style={{
-                              background: typeCfg.bg,
-                              color: typeCfg.color,
-                            }}
-                          >
-                            {org.type}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4">
-                          <span className="text-sm text-gray-700">{org.address || "—"}</span>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-1.5 h-1.5 rounded-full"
-                              style={{
-                                background: isActive ? "#4CAF50" : "#9E9E9E",
-                              }}
-                            />
+                          </td>
+                          <td className="px-5 py-4">
                             <span
-                              className="text-sm"
+                              className="px-2.5 py-1 rounded-full text-xs font-semibold"
                               style={{
-                                color: isActive ? "#2E7D32" : "#757575",
+                                background: typeCfg.bg,
+                                color: typeCfg.color,
                               }}
                             >
-                              {org.status}
+                              {org.type}
                             </span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-1 transition-opacity">
-                            <button
-                              onClick={() => setDetail(org)}
-                              className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors"
-                              title="View Detail"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => openEdit(org)}
-                              className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"
-                              title="Edit"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleToggleStatus(org)}
-                              className={`p-1.5 rounded-lg transition-colors ${isActive ? "hover:bg-red-50 text-red-400" : "hover:bg-green-50 text-green-500"}`}
-                              title={isActive ? "Deactivate" : "Activate"}
-                            >
-                              {isActive ? (
-                                <ToggleRight className="w-3.5 h-3.5" />
-                              ) : (
-                                <ToggleLeft className="w-3.5 h-3.5" />
-                              )}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              {orgs.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                  <Building2 className="w-10 h-10 mb-3 opacity-30" />
-                  <p className="text-sm">No organizations found</p>
-                </div>
-              )}
-            </div>
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className="text-sm text-gray-700">
+                              {org.address || "—"}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-1.5 h-1.5 rounded-full"
+                                style={{
+                                  background: isActive ? "#4CAF50" : "#9E9E9E",
+                                }}
+                              />
+                              <span
+                                className="text-sm"
+                                style={{
+                                  color: isActive ? "#2E7D32" : "#757575",
+                                }}
+                              >
+                                {org.status}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-1 transition-opacity">
+                              <button
+                                onClick={() => setDetail(org)}
+                                className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors"
+                                title="View Detail"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => openEdit(org)}
+                                className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"
+                                title="Edit"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleToggleStatus(org)}
+                                disabled={
+                                  togglingOrgId === String(org.organizationId)
+                                }
+                                className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isActive ? "hover:bg-red-50 text-red-400" : "hover:bg-green-50 text-green-500"}`}
+                                title={isActive ? "Deactivate" : "Activate"}
+                              >
+                                {togglingOrgId ===
+                                String(org.organizationId) ? (
+                                  <RotateCcw className="w-3.5 h-3.5 animate-spin" />
+                                ) : isActive ? (
+                                  <ToggleRight className="w-3.5 h-3.5" />
+                                ) : (
+                                  <ToggleLeft className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {orgs.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                    <Building2 className="w-10 h-10 mb-3 opacity-30" />
+                    <p className="text-sm">No organizations found</p>
+                  </div>
+                )}
+              </div>
 
-            <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                <div className="text-sm text-gray-500">
-                  Showing {totalCount === 0 ? 0 : ((page - 1) * perPage) + 1} to {Math.min(page * perPage, totalCount)} of {totalCount} organizations
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-xs text-gray-500">Rows/page</label>
-                  <select
-                    value={perPage}
-                    onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
-                    className="px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none bg-white"
-                  >
-                    {[5, 10, 20, 50].map((n) => (
-                      <option key={n} value={n}>{n}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setPage(Math.max(1, page - 1))}
-                  disabled={page === 1}
-                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="Previous"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                {page > 1 && (
-                  <>
-                    <button
-                      onClick={() => setPage(1)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
-                      style={page === 1 ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+              <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                  <div className="text-sm text-gray-500">
+                    Showing {totalCount === 0 ? 0 : (page - 1) * perPage + 1} to{" "}
+                    {Math.min(page * perPage, totalCount)} of {totalCount}{" "}
+                    organizations
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs text-gray-500">Rows/page</label>
+                    <select
+                      value={perPage}
+                      onChange={(e) => {
+                        setPerPage(Number(e.target.value));
+                        setPage(1);
+                      }}
+                      className="px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none bg-white"
                     >
-                      1
-                    </button>
-                    {page > 2 && <span className="px-1 text-gray-400 text-sm">…</span>}
-                  </>
-                )}
-                {[page - 1, page, page + 1].filter((p) => p > 1 && p < totalPages).map((p) => (
+                      {[5, 10, 20, 50].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
                   <button
-                    key={p}
-                    onClick={() => setPage(p)}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
-                    style={p === page ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Previous"
                   >
-                    {p}
+                    <ChevronLeft className="w-4 h-4" />
                   </button>
-                ))}
-                {page < totalPages && (
-                  <>
-                    {page < totalPages - 1 && <span className="px-1 text-gray-400 text-sm">…</span>}
-                    <button
-                      onClick={() => setPage(totalPages)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
-                      style={page === totalPages ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
-                    >
-                      {totalPages}
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={() => setPage(Math.min(totalPages, page + 1))}
-                  disabled={page === totalPages}
-                  className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="Next"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+                  {page > 1 && (
+                    <>
+                      <button
+                        onClick={() => setPage(1)}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                        style={
+                          page === 1
+                            ? { background: "#2E7D32", borderColor: "#2E7D32" }
+                            : {}
+                        }
+                      >
+                        1
+                      </button>
+                      {page > 2 && (
+                        <span className="px-1 text-gray-400 text-sm">…</span>
+                      )}
+                    </>
+                  )}
+                  {[page - 1, page, page + 1]
+                    .filter((p) => p > 1 && p < totalPages)
+                    .map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                        style={
+                          p === page
+                            ? { background: "#2E7D32", borderColor: "#2E7D32" }
+                            : {}
+                        }
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  {page < totalPages && (
+                    <>
+                      {page < totalPages - 1 && (
+                        <span className="px-1 text-gray-400 text-sm">…</span>
+                      )}
+                      <button
+                        onClick={() => setPage(totalPages)}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                        style={
+                          page === totalPages
+                            ? { background: "#2E7D32", borderColor: "#2E7D32" }
+                            : {}
+                        }
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={() => setPage(Math.min(totalPages, page + 1))}
+                    disabled={page === totalPages}
+                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Next"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
             </>
           )}
         </div>
@@ -649,12 +827,20 @@ export function OrganizationsPage() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">Type</label>
+                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  Type
+                </label>
                 <select
                   value={form.organizationTypeId}
                   onChange={(e) => {
-                    const matched = ORG_TYPE_OPTIONS.find(t => t.id === e.target.value);
-                    setForm({ ...form, organizationTypeId: e.target.value, type: matched?.code || "FARM" });
+                    const matched = ORG_TYPE_OPTIONS.find(
+                      (t) => t.id === e.target.value,
+                    );
+                    setForm({
+                      ...form,
+                      organizationTypeId: e.target.value,
+                      type: matched?.code || "FARM",
+                    });
                   }}
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white focus:border-green-400"
                 >
