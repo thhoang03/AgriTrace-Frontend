@@ -75,8 +75,13 @@ export function BatchMergeModal({
       });
       onMerged?.(result.data.mergedBatchId);
       onClose();
-    } catch {
-      setError("Failed to merge batches. Please try again.");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.message ||
+        "Failed to merge batches. Please try again.";
+      setError(msg);
     }
   };
 

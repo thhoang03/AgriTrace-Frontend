@@ -68,8 +68,13 @@ export function BatchSplitModal({
       });
       onSplit?.(result.data.childBatchIds);
       onClose();
-    } catch {
-      setError("Failed to split batch. Please try again.");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.title ||
+        err?.message ||
+        "Failed to split batch. Please try again.";
+      setError(msg);
     }
   };
 

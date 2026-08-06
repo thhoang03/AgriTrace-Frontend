@@ -143,15 +143,15 @@ export function BatchCreatePage() {
   const createBatch = useCreateBatch();
   const { user } = useAuth();
 
-  // Fetch event types once at mount to find the HARVEST / CREATED event type ID
+  // Fetch event types once at mount to find the CREATED / HARVEST event type ID
   const [harvestEventTypeId, setHarvestEventTypeId] = useState<string>("");
   useEffect(() => {
     supplyChainApi.getEventTypes().then((types) => {
       const found = types.find(
         (t) =>
-          t.code?.toUpperCase() === "HARVEST" ||
           t.code?.toUpperCase() === "CREATED" ||
-          t.code?.toUpperCase() === "CREATE",
+          t.code?.toUpperCase() === "CREATE" ||
+          t.code?.toUpperCase() === "HARVEST",
       );
       if (found) setHarvestEventTypeId(found.id);
     }).catch(() => {});
@@ -399,7 +399,7 @@ export function BatchCreatePage() {
                   </label>
 
                   <label className="space-y-1.5">
-                    <FieldLabel>Danh mục Nông sản (Tự động)</FieldLabel>
+                    <FieldLabel>Danh mục nông sản</FieldLabel>
                     <input
                       readOnly
                       value={form.category || "Theo sản phẩm đã chọn"}
@@ -545,7 +545,7 @@ export function BatchCreatePage() {
                   </div>
 
                   <label className="space-y-1.5">
-                    <FieldLabel>Trang trại / Nông trại sản xuất (Tự động)</FieldLabel>
+                    <FieldLabel>Đơn vị / Trang trại sản xuất</FieldLabel>
                     <div className="relative flex items-center">
                       <Building className="w-4 h-4 text-gray-400 absolute left-3" />
                       <input
@@ -557,7 +557,7 @@ export function BatchCreatePage() {
                   </label>
 
                   <label className="space-y-1.5">
-                    <FieldLabel>Người khởi tạo (Tự động)</FieldLabel>
+                    <FieldLabel>Người lập hồ sơ / Chuyên viên</FieldLabel>
                     <div className="relative flex items-center">
                       <UserCheck className="w-4 h-4 text-gray-400 absolute left-3" />
                       <input
