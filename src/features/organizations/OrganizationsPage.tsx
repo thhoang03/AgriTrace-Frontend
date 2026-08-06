@@ -18,6 +18,7 @@ import {
   ChevronRight,
   SlidersHorizontal,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { organizationsApi } from "./organizations.api";
 import { useOrganizationsList } from "./organizations.queries";
 import { useAuth } from "../../features/auth/auth.store";
@@ -73,6 +74,8 @@ export function OrganizationsPage() {
   const [error, setError] = useState("");
   const [alert, setAlert] = useState<Alert | null>(null);
 
+  const queryClient = useQueryClient();
+
   const selectedTypeId =
     typeFilter === "All"
       ? undefined
@@ -85,6 +88,11 @@ export function OrganizationsPage() {
     page,
     pageSize: perPage,
   });
+
+  const { data: allOrgData } = useOrganizationsList({ pageSize: 1000 });
+  const allOrgs = allOrgData?.data?.items ?? [];
+  const activeCount = allOrgs.filter((o) => o.status === "ACTIVE").length;
+  const inactiveCount = allOrgs.filter((o) => o.status === "INACTIVE").length;
 
   const orgs = orgData?.data?.items ?? [];
   const totalCount = orgData?.data?.totalCount ?? 0;
@@ -182,20 +190,46 @@ export function OrganizationsPage() {
 
   const handleToggleStatus = async (org: Organization) => {
     const newStatus = org.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+
+    // Optimistic update ngay lập tức
+    queryClient.setQueriesData<any>({ queryKey: ["organizations", "list"] }, (old: any) => {
+      if (!old?.data?.items) return old;
+      return {
+        ...old,
+        data: {
+          ...old.data,
+          items: old.data.items.map((o: any) =>
+            o.organizationId === org.organizationId ? { ...o, status: newStatus } : o
+          ),
+        },
+      };
+    });
+    if (detail?.organizationId === org.organizationId)
+      setDetail({ ...detail, status: newStatus });
+
     try {
-      await organizationsApi.updateStatus(org.organizationId, {
-        status: newStatus,
-      });
-      if (detail?.organizationId === org.organizationId)
-        setDetail({ ...detail, status: newStatus });
-      refetch();
+      await organizationsApi.updateStatus(org.organizationId, { status: newStatus });
       showAlert(
         newStatus === "ACTIVE" ? "success" : "error",
-
         `"${org.name}" has been ${newStatus === "ACTIVE" ? "activated" : "deactivated"}`,
       );
     } catch (e: any) {
-      showAlert("error", e.message || "Failed to update status");
+      // Rollback nếu API lỗi
+      queryClient.setQueriesData<any>({ queryKey: ["organizations", "list"] }, (old: any) => {
+        if (!old?.data?.items) return old;
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            items: old.data.items.map((o: any) =>
+              o.organizationId === org.organizationId ? { ...o, status: org.status } : o
+            ),
+          },
+        };
+      });
+      if (detail?.organizationId === org.organizationId)
+        setDetail({ ...detail, status: org.status });
+      showAlert("error", e?.response?.data?.message || e?.message || "Failed to update status");
     }
   };
 
@@ -267,10 +301,10 @@ export function OrganizationsPage() {
             </p>
           </div>
           <div className="flex items-center gap-6">
-            {["ACTIVE", "INACTIVE"].map((s) => (
+            {(["ACTIVE", "INACTIVE"] as const).map((s) => (
               <div key={s} className="text-center">
                 <div className="font-bold text-white" style={{ fontSize: 20 }}>
-                  {orgs.filter((o) => o.status === s).length}
+                  {s === "ACTIVE" ? activeCount : inactiveCount}
                 </div>
                 <div className="text-green-200 text-xs">
                   {s === "ACTIVE" ? (lang === "vi" ? "HOẠT ĐỘNG" : "ACTIVE") : (lang === "vi" ? "NGƯNG ĐỘNG" : "INACTIVE")}
