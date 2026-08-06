@@ -33,4 +33,10 @@ export const authApi = {
       currentPassword: data.currentPassword,
       newPassword: data.newPassword,
     }),
+
+  forgotPassword: (email: string) =>
+    post<void>("/auth/forgot-password", { email }),
+
+  resetPassword: (token: string, newPassword: string) =>
+    post<void>("/auth/reset-password", { token, newPassword }),
 };

@@ -4,9 +4,8 @@ import { Leaf, Eye, EyeOff, Shield, Lock, User, ArrowLeft } from "lucide-react";
 import { useAuth } from "./auth.store";
 import { toast } from "sonner";
 
-const BG_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1200&q=80";
-
-
+const BG_IMG =
+  "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1200&q=80";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -38,23 +37,37 @@ export function LoginPage() {
     }
   };
 
-
-
   return (
     <div className="min-h-screen flex bg-[#F5F7FA]">
       {/* Left Decorative Column */}
       <div className="hidden lg:flex flex-col flex-1 relative overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${BG_IMG})` }} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(27,94,32,0.92) 0%, rgba(46,125,50,0.85) 100%)" }} />
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${BG_IMG})` }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(27,94,32,0.92) 0%, rgba(46,125,50,0.85) 100%)",
+          }}
+        />
 
         <div className="relative z-10 flex flex-col h-full p-12 justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
+          <div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => navigate("/")}
+          >
             <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-white/15 backdrop-blur shadow-sm">
               <Leaf className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-white font-bold text-lg">AgriTrace Vietnam</div>
-              <div className="text-green-200 text-xs">Cổng Nông Nghiệp Số Quốc Gia</div>
+              <div className="text-white font-bold text-lg">
+                AgriTrace Vietnam
+              </div>
+              <div className="text-green-200 text-xs">
+                Cổng Nông Nghiệp Số Quốc Gia
+              </div>
             </div>
           </div>
 
@@ -88,7 +101,8 @@ export function LoginPage() {
           onClick={() => navigate("/")}
           className="flex items-center gap-2 text-gray-500 hover:text-green-800 text-xs font-semibold mb-6 transition-colors self-start"
         >
-          <ArrowLeft className="w-4 h-4" /> {lang === "vi" ? "Về trang chủ" : "Back to home"}
+          <ArrowLeft className="w-4 h-4" />{" "}
+          {lang === "vi" ? "Về trang chủ" : "Back to home"}
         </button>
 
         <div className="flex items-center justify-between mb-6">
@@ -97,7 +111,9 @@ export function LoginPage() {
               {lang === "vi" ? "Đăng Nhập Hàng" : "Welcome Back"}
             </h2>
             <p className="text-gray-500 text-xs mt-1">
-              {lang === "vi" ? "Nhập thông tin tài khoản AgriTrace của bạn" : "Sign in to access your AgriTrace dashboard"}
+              {lang === "vi"
+                ? "Nhập thông tin tài khoản AgriTrace của bạn"
+                : "Sign in to access your AgriTrace dashboard"}
             </p>
           </div>
 
@@ -114,7 +130,9 @@ export function LoginPage() {
         {/* Form Input */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-gray-700 mb-1 block">Email / Username</label>
+            <label className="text-xs font-semibold text-gray-700 mb-1 block">
+              Email
+            </label>
             <div className="relative">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -129,7 +147,9 @@ export function LoginPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-gray-700 mb-1 block">{lang === "vi" ? "Mật khẩu" : "Password"}</label>
+            <label className="text-xs font-semibold text-gray-700 mb-1 block">
+              {lang === "vi" ? "Mật khẩu" : "Password"}
+            </label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -145,7 +165,11 @@ export function LoginPage() {
                 onClick={() => setShowPass(!showPass)}
                 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPass ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
@@ -160,12 +184,16 @@ export function LoginPage() {
             type="submit"
             disabled={loading}
             className="w-full py-3.5 rounded-xl text-white font-bold text-sm transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg"
-            style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)" }}
+            style={{
+              background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)",
+            }}
           >
             {loading ? (
               <>
                 <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                <span>{lang === "vi" ? "Đang xác thực..." : "Authenticating..."}</span>
+                <span>
+                  {lang === "vi" ? "Đang xác thực..." : "Authenticating..."}
+                </span>
               </>
             ) : (
               <span>{lang === "vi" ? "Đăng Nhập Hàng" : "Sign In"}</span>
@@ -173,8 +201,20 @@ export function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 p-4 rounded-xl border border-green-200 bg-green-50/60 text-center space-y-2">
-          <p className="text-xs text-gray-600">Don't have an account or want to register a new Organization?</p>
+        <div className="text-center mt-4">
+          <button
+            type="button"
+            onClick={() => navigate("/forgot-password")}
+            className="text-xs text-gray-400 hover:text-gray-900 transition-colors"
+          >
+            {lang === "vi" ? "Quên mật khẩu?" : "Forgot password?"}
+          </button>
+        </div>
+
+        <div className="mt-4 p-4 rounded-xl border border-green-200 bg-green-50/60 text-center space-y-2">
+          <p className="text-xs text-gray-600">
+            Don't have an account or want to register a new Organization?
+          </p>
           <button
             type="button"
             onClick={() => navigate("/register")}
