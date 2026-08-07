@@ -165,7 +165,15 @@ export function adaptLoginRequestToNew(legacy: LegacyLoginRequest): LoginRequest
   };
 }
 
-export function adaptLoginDataToResponse(data: LoginData) {
+export function adaptLoginDataToResponse(data: LoginData | null | undefined) {
+  if (!data) {
+    return {
+      user: null,
+      accessToken: "",
+      refreshToken: "",
+      mustChangePassword: false,
+    };
+  }
   return {
     user: adaptUserBasicToUser(data.user ?? {}),
     accessToken: data.accessToken ?? "",
