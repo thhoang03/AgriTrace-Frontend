@@ -79,9 +79,9 @@ export function OrganizationApprovalsPage() {
     try {
       await organizationsApi.approve(org.organizationId);
       refetch();
-      showAlert("success", `"${org.name}" has been approved.`);
+      showAlert("success", lang === "vi" ? `"${org.name}" đã được phê duyệt.` : `"${org.name}" has been approved.`);
     } catch (e: any) {
-      showAlert("error", e.message || "Failed to approve organization.");
+      showAlert("error", lang === "vi" ? (e.message || "Không thể phê duyệt tổ chức.") : (e.message || "Failed to approve organization."));
     } finally {
       setActionOrgId(null);
     }
@@ -99,10 +99,10 @@ export function OrganizationApprovalsPage() {
     try {
       await organizationsApi.reject(rejectingOrg.organizationId, rejectReason);
       refetch();
-      showAlert("success", `"${rejectingOrg.name}" has been rejected.`);
+      showAlert("success", lang === "vi" ? `"${rejectingOrg.name}" đã bị từ chối.` : `"${rejectingOrg.name}" has been rejected.`);
       setShowRejectModal(false);
     } catch (e: any) {
-      showAlert("error", e.message || "Failed to reject organization.");
+      showAlert("error", lang === "vi" ? (e.message || "Không thể từ chối tổ chức.") : (e.message || "Failed to reject organization."));
     } finally {
       setActionOrgId(null);
       setRejectingOrg(null);
