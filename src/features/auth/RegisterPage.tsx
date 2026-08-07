@@ -41,6 +41,7 @@ export function RegisterPage() {
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [lang, setLang] = useState("en");
 
   useEffect(() => {
     async function fetchOrgTypes() {
@@ -112,11 +113,21 @@ export function RegisterPage() {
 
       setSuccess(true);
     } catch (err: any) {
-      const apiMsg =
+      let apiMsg =
         err?.response?.data?.message ||
         err?.response?.data?.title ||
         err?.message ||
         "Registration failed. Please check your information.";
+      try {
+        const parsed = JSON.parse(apiMsg);
+        if (parsed[lang]) {
+            apiMsg = parsed[lang];
+        } else if (parsed['en']) {
+            apiMsg = parsed['en'];
+        }
+      } catch (e) {
+        // Not a JSON string
+      }
       setError(apiMsg);
     } finally {
       setSubmitting(false);
@@ -205,10 +216,13 @@ export function RegisterPage() {
             <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-10 h-10 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">Đăng ký thành công!</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              {lang === "vi" ? "Đăng ký thành công!" : "Registration Successful!"}
+            </h2>
             <p className="text-gray-600 mb-8 leading-relaxed">
-              Tài khoản và tổ chức của bạn đã được đăng ký thành công. Hệ thống đang chờ quản trị viên phê duyệt trước khi bạn có thể đăng nhập. 
-              Vui lòng quay lại sau hoặc liên hệ quản trị viên.
+              {lang === "vi" 
+                ? "Tài khoản và tổ chức của bạn đã được đăng ký thành công. Hệ thống đang chờ quản trị viên phê duyệt trước khi bạn có thể đăng nhập. Vui lòng quay lại sau hoặc liên hệ quản trị viên." 
+                : "Your account and organization have been successfully registered. The system is waiting for administrator approval before you can log in. Please check back later or contact the administrator."}
             </p>
             <button
               onClick={() => navigate("/login")}
@@ -217,7 +231,7 @@ export function RegisterPage() {
                 background: "linear-gradient(135deg, #2E7D32 0%, #388E3C 100%)",
               }}
             >
-              Quay lại trang Đăng nhập
+              {lang === "vi" ? "Quay lại trang Đăng nhập" : "Back to Login"}
             </button>
           </div>
         ) : (
@@ -231,13 +245,24 @@ export function RegisterPage() {
             </button>
 
             {/* Header */}
-            <div className="mb-6">
-              <h2 className="text-gray-900" style={{ fontSize: 28, fontWeight: 700 }}>
-                Register Organization Account
-              </h2>
-              <p className="text-gray-500 text-sm mt-1">
-                Register your organization for access to the AgriTrace supply chain network
-              </p>
+            <div className="mb-6 flex items-start justify-between">
+              <div>
+                <h2 className="text-gray-900" style={{ fontSize: 28, fontWeight: 700 }}>
+                  {lang === "vi" ? "Đăng ký Tổ chức" : "Register Organization Account"}
+                </h2>
+                <p className="text-gray-500 text-sm mt-1">
+                  {lang === "vi" ? "Đăng ký tham gia hệ thống truy xuất nguồn gốc AgriTrace" : "Register your organization for access to the AgriTrace supply chain network"}
+                </p>
+              </div>
+              
+              <select
+                value={lang}
+                onChange={(e) => setLang(e.target.value)}
+                className="text-xs font-semibold border border-gray-200 rounded-xl px-2.5 py-1.5 outline-none bg-white cursor-pointer mt-1"
+              >
+                <option value="en">🇬🇧 EN</option>
+                <option value="vi">🇻🇳 VI</option>
+              </select>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">

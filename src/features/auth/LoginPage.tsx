@@ -26,11 +26,23 @@ export function LoginPage() {
       toast.success(lang === "vi" ? "Đăng nhập thành công!" : "Login successful!");
       navigate("/app/dashboard");
     } catch (err: any) {
-      const apiMsg =
+      let apiMsg =
         err?.response?.data?.message ||
         err?.response?.data?.title ||
         err?.message ||
         "Login failed. Please check your credentials.";
+        
+      try {
+        const parsed = JSON.parse(apiMsg);
+        if (parsed[lang]) {
+            apiMsg = parsed[lang];
+        } else if (parsed['en']) {
+            apiMsg = parsed['en'];
+        }
+      } catch (e) {
+        // Not a JSON string, keep as is
+      }
+        
       setError(apiMsg);
     } finally {
       setLoading(false);
