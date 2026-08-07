@@ -14,13 +14,12 @@ import { fetchDeviceLocation } from "../../utils/locationUtils";
 import { supplyChainApi } from "../supply-chain/supply-chain.api";
 
 const DEFAULT_UNITS = [
-  { id: "10000000-0000-0000-0000-000000000001", code: "kg", name: "Kilogram (kg)" },
-  { id: "10000000-0000-0000-0000-000000000002", code: "ton", name: "Tấn (Ton)" },
-  { id: "10000000-0000-0000-0000-000000000003", code: "g", name: "Gram (g)" },
-  { id: "10000000-0000-0000-0000-000000000004", code: "box", name: "Thùng (Box)" },
-  { id: "10000000-0000-0000-0000-000000000005", code: "bag", name: "Bao / Túi (Bag)" },
-  { id: "10000000-0000-0000-0000-000000000006", code: "crate", name: "Sọt (Crate)" },
-  { id: "10000000-0000-0000-0000-000000000007", code: "liter", name: "Lít (Liter)" },
+  { id: "40000000-0000-0000-0000-000000000001", code: "KG", name: "Kilogram (kg)" },
+  { id: "40000000-0000-0000-0000-000000000002", code: "GRAM", name: "Gram (g)" },
+  { id: "40000000-0000-0000-0000-000000000003", code: "LITER", name: "Lít (Liter)" },
+  { id: "40000000-0000-0000-0000-000000000005", code: "BOX", name: "Thùng (Box)" },
+  { id: "40000000-0000-0000-0000-000000000006", code: "BAG", name: "Bao / Túi (Bag)" },
+  { id: "40000000-0000-0000-0000-000000000008", code: "CRATE", name: "Sọt (Crate)" },
 ];
 
 type Section = "product" | "quantity" | "origin";
@@ -258,22 +257,13 @@ export function BatchCreatePage() {
       const result = await createBatch.mutateAsync(payload);
       const newBatchId = result.data.id;
 
-      // Log the initial HARVEST/CREATED event into the supply chain timeline
-      if (newBatchId && harvestEventTypeId) {
-        try {
-          await supplyChainApi.createEvent(newBatchId, {
-            eventType: harvestEventTypeId,
-            location: form.location || form.productionArea || "",
-            description: form.description || `Lô hàng ${payload.productId} được khởi tạo.`,
-          });
-        } catch {
-          // Non-critical: ignore if event creation fails
-        }
-      }
-
       navigate(`/app/batches/${newBatchId}`);
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || "Không thể tạo lô hàng lúc này. Vui lòng thử lại.";
+      const serverErrors = err?.response?.data?.errors;
+      let msg = err?.response?.data?.message || err?.message || "Không thể tạo lô hàng lúc này. Vui lòng thử lại.";
+      if (Array.isArray(serverErrors) && serverErrors.length > 0) {
+        msg = serverErrors.map((e: any) => e.message || e.field).join(" | ");
+      }
       setError(msg);
     }
   };
@@ -448,7 +438,7 @@ export function BatchCreatePage() {
                     <div className="text-xs text-gray-500">Quy mô sản xuất, đơn vị tính, ngày khởi tạo và hạn sử dụng</div>
                   </div>
                 </div>
-                <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="space-y-1.5">
                     <FieldLabel required>Số lượng Lô hàng</FieldLabel>
                     <input
@@ -470,17 +460,6 @@ export function BatchCreatePage() {
                         setForm((curr) => ({ ...curr, unit: unitCode, unitId: unitId }));
                       }}
                       className={inputClass}
-                    />
-                  </label>
-
-                  <label className="space-y-1.5">
-                    <FieldLabel>Tổng trọng lượng / Khối lượng (Weight)</FieldLabel>
-                    <input
-                      type="text"
-                      value={form.weight || ""}
-                      onChange={(e) => handleChange("weight", e.target.value)}
-                      className={inputClass}
-                      placeholder="vd: 5000 kg hoặc 10 kg/thùng"
                     />
                   </label>
 

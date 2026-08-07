@@ -4,12 +4,32 @@ import type { CreateEventRequestPayload, GetEventRequestsParams } from "./event-
 
 const QUERY_KEY = "event-requests";
 
+import type { EventType } from "../auth/permissions";
+
 export function useEventRequests(params?: GetEventRequestsParams) {
   return useQuery({
     queryKey: [QUERY_KEY, params],
     queryFn: () => eventRequestsApi.getEventRequests(params),
     staleTime: 1 * 60 * 1000,
   });
+}
+
+export function useApprovedExtraEvents(): EventType[] {
+  const { data: eventRequestsData } = useEventRequests();
+  if (!eventRequestsData?.items) return [];
+
+  return eventRequestsData.items
+    .filter((req) => req.status === 1 || req.status === "Approved" || req.status === "APPROVED")
+    .map((req) => {
+      const code = (req.eventTypeCode || req.eventTypeName || "").toUpperCase();
+      if (code === "DISTRIBUTE") return "DISTRIBUTION";
+      if (code === "PROCESS") return "PROCESSING";
+      if (code === "PACKAGE") return "PACKAGING";
+      if (code === "CREATE") return "CREATED";
+      if (code === "SHIP" || code === "LOGISTICS") return "TRANSPORT";
+      return code as EventType;
+    })
+    .filter(Boolean) as EventType[];
 }
 
 export function useCreateEventRequest() {

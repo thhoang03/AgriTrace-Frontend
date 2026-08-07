@@ -5,6 +5,8 @@ import { batchesApi } from "../batches/batches.api";
 import { QrScannerButton } from "../supply-chain/QrScannerButton";
 import { InspectionTypeValues, type InspectionType } from "./inspection.types";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useAuth } from "../auth/auth.store";
+import { useOrganizationsList } from "../organizations/organizations.queries";
 
 interface InspectionCreateModalProps {
   onClose: () => void;
@@ -13,9 +15,11 @@ interface InspectionCreateModalProps {
     inspectionType: InspectionType;
     inspectionDate: string;
     notes: string;
+    organizationId?: string;
   }) => void;
   isSubmitting?: boolean;
 }
+
 
 export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false }: InspectionCreateModalProps) {
   const { lang } = useLanguage();
@@ -33,7 +37,16 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
     inspectionType: 1 as InspectionType,
     inspectionDate: new Date().toISOString().split("T")[0],
     notes: "",
+    organizationId: "",
   });
+
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN" || user?.role === "Admin";
+  
+  const { data: orgData, isLoading: isLoadingOrgs } = useOrganizationsList(
+    { organizationTypeId: "10000000-0000-0000-0000-000000000005" } // INSPECTION org type
+  );
+  const orgOptions = orgData?.data?.items ?? [];
 
   const [dynamicBatches, setDynamicBatches] = useState<Array<{ id: string; batchCode?: string; product?: string; farm?: string }>>([]);
 
@@ -95,7 +108,22 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
             return;
           }
         } catch {
-          // Ignore
+          // Fallback: Resolve globally via public API
+          try {
+            const { get } = await import("../../lib/api");
+            const publicRes = await get<any>(`/public/trace/code/${q}`);
+            if (publicRes.data && publicRes.data.batchId) {
+              const byIdRes = await batchesApi.getById(publicRes.data.batchId);
+              if (byIdRes.data && byIdRes.data.id) {
+                setSearchedBatch(byIdRes.data);
+                setForm((prev) => ({ ...prev, batchId: byIdRes.data.id }));
+                setDynamicBatches((prev) => [...prev, byIdRes.data]);
+                return;
+              }
+            }
+          } catch {
+            // Ignore
+          }
         }
         setSearchError(lang === "vi" ? `Không tìm thấy Lô hàng có mã hoặc ID "${q}" trên nền tảng AgriTrace.` : `Batch with code or ID "${q}" not found on AgriTrace.`);
       }
@@ -107,8 +135,10 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
   };
 
   const handleQrScan = (result: string) => {
-    const match = result.match(/\/public\/trace\/(.+)/);
-    const scannedId = match ? match[1] : result;
+    let scannedId = result.trim();
+    if (scannedId.includes("/trace/")) {
+      scannedId = scannedId.split("/trace/").pop() || scannedId;
+    }
     setSearchQuery(scannedId);
 
     const found = allBatches.find(
@@ -264,6 +294,31 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
               ))}
             </select>
           </div>
+
+          {isAdmin && (
+            <div>
+              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">
+                {lang === "vi" ? "Tổ chức kiểm định (Inspection Organization)" : "Inspection Organization"} <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={form.organizationId}
+                onChange={(e) => setForm({ ...form, organizationId: e.target.value })}
+                disabled={isLoadingOrgs}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white transition-all focus:border-green-500 font-medium text-gray-800 disabled:opacity-60"
+                style={{ appearance: "auto" }}
+                required={isAdmin}
+              >
+                <option value="">{lang === "vi" ? "-- Chọn tổ chức kiểm định --" : "-- Select inspection organization --"}</option>
+                {isLoadingOrgs ? (
+                  <option disabled>{lang === "vi" ? "Đang tải..." : "Loading..."}</option>
+                ) : (
+                  orgOptions.map((org: any) => (
+                    <option key={org.id} value={org.id}>{org.name}</option>
+                  ))
+                )}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="text-sm font-semibold text-gray-700 mb-1.5 block">

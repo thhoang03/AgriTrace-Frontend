@@ -18,15 +18,19 @@ import {
   Tags,
   Bell,
   Clock,
+  UserCheck,
 } from "lucide-react";
 import { useAuth } from "../../features/auth/auth.store";
 import { canAccessRoute } from "../../features/auth/permissions";
 import { useLanguage } from "../../contexts/LanguageContext";
 
+import { useApprovedExtraEvents } from "../../features/event-requests/event-requests.queries";
+
 export function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { lang } = useLanguage();
+  const approvedExtraEvents = useApprovedExtraEvents();
 
   const handleLogout = () => {
     logout();
@@ -49,6 +53,7 @@ export function Sidebar() {
     { to: "/app/products", icon: ShoppingBag, labelVi: "Sản phẩm", labelEn: "Products" },
     { to: "/app/categories", icon: Tags, labelVi: "Danh mục", labelEn: "Categories" },
     { to: "/app/organizations", icon: Building2, labelVi: "Tổ chức & Đơn vị", labelEn: "Organizations" },
+    { to: "/app/organization-approvals", icon: UserCheck, labelVi: "Duyệt tổ chức", labelEn: "Org Approvals" },
     { to: "/app/users", icon: Users, labelVi: "Người dùng", labelEn: "Users" },
     { to: "/app/profile", icon: UserCircle, labelVi: "Hồ sơ cá nhân", labelEn: "My Profile" },
   ];
@@ -58,8 +63,8 @@ export function Sidebar() {
     ? `${role} - ${user.organizationType}`
     : role;
 
-  const filteredNavItems = navItems.filter((item) => canAccessRoute(role, item.to, user?.organizationType));
-  const filteredAdminItems = adminItems.filter((item) => canAccessRoute(role, item.to, user?.organizationType));
+  const filteredNavItems = navItems.filter((item) => canAccessRoute(role, item.to, user?.organizationType, approvedExtraEvents));
+  const filteredAdminItems = adminItems.filter((item) => canAccessRoute(role, item.to, user?.organizationType, approvedExtraEvents));
   const encodedName = encodeURIComponent(user?.name);
   const apiUrl = `https://ui-avatars.com/api/?name=${encodedName}&background=random&color=fff&rounded=true&size=128`;
 

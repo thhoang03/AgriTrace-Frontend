@@ -9,13 +9,16 @@ import { useCategoriesList } from "../categories/categories.queries";
 import { useOrganizationsList } from "../organizations/organizations.queries";
 import { ProductFormModal } from "./ProductFormModal";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { toast } from "sonner";
 import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
+import { useAuth } from "../auth/auth.store";
 
 const BANNER_IMG = "https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1400&q=80";
 
 export function ProductManagementPage() {
   const navigate = useNavigate();
   const { lang } = useLanguage();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "Inactive">("All");
   const [organizationFilter, setOrganizationFilter] = useState<string>("");
@@ -78,27 +81,39 @@ export function ProductManagementPage() {
 
   const handleToggleStatus = async (product: any) => {
     const prodId = product.id || product.productId;
-    const nextStatus = product.isActive ? "Inactive" : "Active";
     try {
       if (product.isActive) {
-        await deleteProduct.mutateAsync(prodId);
+        await updateProductStatus.mutateAsync({
+          id: prodId,
+          data: { status: "Inactive" },
+        });
+        toast.success(lang === "vi" ? "Đã vô hiệu hóa sản phẩm!" : "Product deactivated!");
       } else {
         await updateProductStatus.mutateAsync({
           id: prodId,
           data: { status: "Active" },
         });
+        toast.success(lang === "vi" ? "Đã kích hoạt lại sản phẩm!" : "Product activated!");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error toggling product status:", error);
+      const backendError = error?.response?.data?.message || error?.response?.data?.detail;
+      toast.error(backendError || (lang === "vi" ? "Cập nhật trạng thái thất bại" : "Failed to update status"));
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeactivate = async (id: string) => {
     try {
-      await deleteProduct.mutateAsync(id);
+      await updateProductStatus.mutateAsync({
+        id,
+        data: { status: "Inactive" },
+      });
       setShowDeleteModal(null);
-    } catch (error) {
-      console.error("Error deleting product:", error);
+      toast.success(lang === "vi" ? "Đã xóa sản phẩm thành công!" : "Product deleted successfully!");
+    } catch (error: any) {
+      console.error("Error deactivating product:", error);
+      const backendError = error?.response?.data?.message || error?.response?.data?.detail;
+      toast.error(backendError || (lang === "vi" ? "Xóa sản phẩm thất bại" : "Failed to delete product"));
     }
   };
 
@@ -270,11 +285,10 @@ export function ProductManagementPage() {
                           <td className="px-6 py-4 text-sm text-gray-600">{product.unit}</td>
                           <td className="px-6 py-4">
                             <span
-                              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                product.isActive
-                                  ? "text-green-700"
-                                  : "text-gray-600"
-                              }`}
+                              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${product.isActive
+                                ? "text-green-700"
+                                : "text-gray-600"
+                                }`}
                               style={{ background: product.isActive ? "#E8F5E9" : "#F5F5F5" }}
                             >
                               {product.isActive ? (lang === "vi" ? "Hoạt động" : "Active") : (lang === "vi" ? "Ngưng hoạt động" : "Inactive")}
@@ -289,29 +303,35 @@ export function ProductManagementPage() {
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
-                              <button
-                                onClick={() => setShowEditModal(prodId)}
-                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
-                                title={lang === "vi" ? "Chỉnh sửa" : "Edit"}
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </button>
-                              {product.isActive ? (
-                                <button
-                                  onClick={() => setShowDeleteModal(prodId)}
-                                  className="p-2 rounded-lg hover:bg-red-50 transition-colors text-red-500 hover:text-red-700"
-                                  title={lang === "vi" ? "Ngưng hoạt động" : "Deactivate"}
-                                >
-                                  <ToggleRight className="w-4 h-4" />
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => handleToggleStatus(product)}
-                                  className="p-2 rounded-lg hover:bg-green-50 transition-colors text-green-600 hover:text-green-800"
-                                  title={lang === "vi" ? "Kích hoạt lại" : "Activate"}
-                                >
-                                  <ToggleLeft className="w-4 h-4" />
-                                </button>
+                              
+                              {/* Only allow edit/deactivate/delete if ADMIN or belongs to user's org */}
+                              {(user?.role === "ADMIN" || user?.organizationId === product.organizationId) && (
+                                <>
+                                  <button
+                                    onClick={() => setShowEditModal(prodId)}
+                                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                                    title={lang === "vi" ? "Chỉnh sửa" : "Edit"}
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                  {product.isActive ? (
+                                    <button
+                                      onClick={() => setShowDeleteModal(prodId)}
+                                      className="p-2 rounded-lg hover:bg-red-50 transition-colors text-red-500 hover:text-red-700"
+                                      title={lang === "vi" ? "Xóa" : "Delete"}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleToggleStatus(product)}
+                                      className="p-2 rounded-lg hover:bg-green-50 transition-colors text-green-600 hover:text-green-800"
+                                      title={lang === "vi" ? "Khôi phục" : "Restore"}
+                                    >
+                                      <RotateCcw className="w-4 h-4" />
+                                    </button>
+                                  )}
+                                </>
                               )}
                             </div>
                           </td>
@@ -405,12 +425,12 @@ export function ProductManagementPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {lang === "vi" ? "Ngưng hoạt động sản phẩm" : "Deactivate Product"}
+              {lang === "vi" ? "Xóa sản phẩm" : "Delete Product"}
             </h3>
             <p className="text-sm text-gray-600 mb-6">
               {lang === "vi"
-                ? "Bạn có chắc chắn muốn chuyển sản phẩm này sang trạng thái Ngưng hoạt động (Inactive) không?"
-                : "Are you sure you want to change this product status to Inactive?"}
+                ? "Bạn có chắc chắn muốn xóa sản phẩm này không?"
+                : "Are you sure you want to delete this product?"}
             </p>
             <div className="flex justify-end gap-3">
               <button
@@ -420,11 +440,11 @@ export function ProductManagementPage() {
                 {lang === "vi" ? "Hủy bỏ" : "Cancel"}
               </button>
               <button
-                onClick={() => handleDelete(showDeleteModal)}
-                disabled={deleteProduct.isPending}
+                onClick={() => handleDeactivate(showDeleteModal)}
+                disabled={updateProductStatus.isPending}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
               >
-                {deleteProduct.isPending ? (lang === "vi" ? "Đang xử lý..." : "Processing...") : (lang === "vi" ? "Ngưng hoạt động" : "Deactivate")}
+                {updateProductStatus.isPending ? (lang === "vi" ? "Đang xử lý..." : "Processing...") : (lang === "vi" ? "Xóa" : "Delete")}
               </button>
             </div>
           </div>

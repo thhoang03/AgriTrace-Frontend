@@ -68,8 +68,16 @@ export const StatusLabel: Record<InspectionStatus, string> = {
 
 export interface CreateInspectionRequest {
   batchId: string;
-  inspectionType: InspectionType;
+  inspectionType: number;
   inspectionDate: string;
+  notes?: string;
+  organizationId?: string;
+}
+
+export interface RequestInspectionRequest {
+  batchId: string;
+  targetOrganizationId: string;
+  inspectionType: InspectionType;
   notes: string;
 }
 

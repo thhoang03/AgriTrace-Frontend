@@ -19,6 +19,7 @@ import { PublicTracePage } from "../pages/PublicTracePage";
 import { ProductManagementPage } from "../features/products/ProductManagementPage";
 import { ProductDetailPage } from "../features/products/ProductDetailPage";
 import { OrganizationsPage } from "../features/organizations/OrganizationsPage";
+import { OrganizationApprovalsPage } from "../features/organizations/OrganizationApprovalsPage";
 import { CategoriesPage } from "../features/categories/CategoriesPage";
 import { RegisterPage } from "../features/auth/RegisterPage";
 import { AnalyticsPage } from "../features/analytics/AnalyticsPage";
@@ -58,6 +59,7 @@ export const router = createBrowserRouter([
       { path: "products", Component: ProductManagementPage },
       { path: "products/:id", Component: ProductDetailPage },
       { path: "organizations", Component: OrganizationsPage },
+      { path: "organization-approvals", Component: OrganizationApprovalsPage },
       { path: "categories", Component: CategoriesPage },
       { path: "notifications", Component: NotificationsPage },
     ],

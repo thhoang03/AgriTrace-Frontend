@@ -36,6 +36,8 @@ export function useCreateEvent(batchId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [QUERY_KEY, "events", batchId] });
       qc.invalidateQueries({ queryKey: [QUERY_KEY, batchId] });
+      qc.invalidateQueries({ queryKey: ["batches", batchId] });
+      qc.invalidateQueries({ queryKey: ["batches"] });
     },
   });
 }

@@ -4,21 +4,24 @@ import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { useAuth } from "../../features/auth/auth.store";
 
+import { useApprovedExtraEvents } from "../../features/event-requests/event-requests.queries";
+
 export function AppLayout() {
   const { isLoggedIn, user, canAccessRoute } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const approvedExtraEvents = useApprovedExtraEvents();
 
   useEffect(() => {
     if (!isLoggedIn) {
       navigate("/login");
       return;
     }
-    if (user?.role && !canAccessRoute(user.role, location.pathname, user?.organizationType)) {
+    if (user?.role && !canAccessRoute(user.role, location.pathname, user?.organizationType, approvedExtraEvents)) {
       navigate("/app/profile");
     }
-  }, [isLoggedIn, navigate, user?.role, location.pathname, canAccessRoute]);
+  }, [isLoggedIn, navigate, user?.role, location.pathname, canAccessRoute, approvedExtraEvents]);
 
   if (!isLoggedIn) return null;
 

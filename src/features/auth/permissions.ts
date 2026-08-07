@@ -4,7 +4,7 @@ export const ROLE_ACCESS: Record<UserRole, string[]> = {
   ADMIN: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
     "/app/supply-chain", "/app/event-requests", "/app/inspection", "/app/inspections", "/app/recall",
-    "/app/reports", "/app/organizations", "/app/categories",
+    "/app/reports", "/app/organizations", "/app/organization-approvals", "/app/categories",
     "/app/users", "/app/products", "/app/profile",
     "/app/analytics", "/app/notifications", "/app/change-password",
   ],
@@ -37,13 +37,17 @@ export const RECALL_REQUESTER_ORG_TYPES: OrganizationType[] = ["SYSTEM"];
 export function canAccessRoute(
   role: UserRole | undefined,
   path: string,
-  organizationType?: OrganizationType
+  organizationType?: OrganizationType,
+  extraAllowedEvents?: EventType[]
 ): boolean {
   if (!role) return false;
 
-  // Batch Management (/app/batches) is accessible ONLY by ADMIN or FARM (Farmer) organization type
+  // Batch Management (/app/batches) is accessible by ADMIN, FARM, or if extraAllowedEvents includes CREATED or HARVEST
   if (path === "/app/batches" || path.startsWith("/app/batches/")) {
-    return role === "ADMIN" || organizationType === "FARM";
+    const hasFarmerEvents = (extraAllowedEvents || []).some(
+      (e) => e === "CREATED" || e === "HARVEST"
+    );
+    return role === "ADMIN" || organizationType === "FARM" || hasFarmerEvents;
   }
 
   // Supply Chain (/app/supply-chain) is hidden/disabled for INSPECTION (Inspector) organization type

@@ -9,6 +9,7 @@ import type { CreateRecallRequest, RecallItem } from "./recalls.api";
 import { batchesApi, type Batch } from "../batches/batches.api";
 import { QrScannerModal } from "./QrScannerModal";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { toast } from "sonner";
 
 const getSeverityName = (severity: number): RecallSeverity => {
   switch (severity) {
@@ -80,14 +81,17 @@ export function RecallPage() {
 
   const handleScanSuccess = (scannedText: string) => {
     let matchedId = scannedText.trim();
+    if (matchedId.includes("/trace/")) {
+      matchedId = matchedId.split("/trace/").pop() || matchedId;
+    }
     // Check if scannedText contains a GUID
-    const guidMatch = scannedText.match(/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/);
+    const guidMatch = matchedId.match(/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/);
     if (guidMatch) {
       matchedId = guidMatch[1];
     } else {
       // Find in availableBatches by batchCode
       const found = availableBatches.find(
-        (b) => b.batchCode?.toLowerCase() === scannedText.trim().toLowerCase()
+        (b) => b.batchCode?.toLowerCase() === matchedId.toLowerCase()
       );
       if (found) {
         matchedId = found.id;
@@ -104,7 +108,19 @@ export function RecallPage() {
     if (!form.batchId || !form.reason) return;
     
     // Resolve to GUID if a batch code was entered
-    const actualBatchId = selectedBatch ? selectedBatch.id : form.batchId;
+    let actualBatchId = selectedBatch ? selectedBatch.id : form.batchId;
+
+    if (!actualBatchId.includes("-") || actualBatchId.split("-").length !== 5) {
+      try {
+        const { get } = await import("../../lib/api");
+        const publicRes = await get<any>(`/public/trace/code/${actualBatchId}`);
+        if (publicRes.data && publicRes.data.batchId) {
+          actualBatchId = publicRes.data.batchId;
+        }
+      } catch {
+        // ignore
+      }
+    }
 
     setCreateError("");
     try {
@@ -115,6 +131,7 @@ export function RecallPage() {
       } as CreateRecallRequest);
       setShowCreate(false);
       setForm({ batchId: "", reason: "", severity: 2, notes: "" });
+      toast.success(lang === "vi" ? "Đã phát lệnh thu hồi lô hàng thành công!" : "Recall order issued successfully!");
     } catch (error: any) {
       console.error("Failed to create recall:", error);
       const msg =
@@ -124,6 +141,7 @@ export function RecallPage() {
         error?.message ||
         (lang === "vi" ? "Tạo yêu cầu thu hồi thất bại. Vui lòng kiểm tra lại." : "Failed to create recall. Please check your inputs.");
       setCreateError(msg);
+      toast.error(msg);
     }
   };
 
@@ -131,8 +149,10 @@ export function RecallPage() {
     try {
       await resolveRecall.mutateAsync(recallId);
       setShowResolveModal(null);
-    } catch (error) {
+      toast.success(lang === "vi" ? "Đã xử lý hoàn tất đợt thu hồi lô hàng!" : "Recall order resolved successfully!");
+    } catch (error: any) {
       console.error("Failed to resolve recall:", error);
+      toast.error(error?.response?.data?.message || error?.message || (lang === "vi" ? "Cập nhật thất bại" : "Update failed"));
     }
   };
 
@@ -164,7 +184,7 @@ export function RecallPage() {
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
                 style={{ background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.3)" }}
               >
-                <Plus className="w-4 h-4" /> {lang === "vi" ? "+ Tạo Lệnh Thu Hồi" : "Create Recall"}
+                <Plus className="w-4 h-4" /> {lang === "vi" ? "Tạo Lệnh Thu Hồi" : "Create Recall"}
               </button>
             )}
           </div>
@@ -198,9 +218,11 @@ export function RecallPage() {
               <AlertTriangle className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
-              <div className="font-bold text-red-800 mb-1">🚨 Active Recall Alert — Immediate Action Required</div>
+              <div className="font-bold text-red-800 mb-1">{lang === "vi" ? "🚨 Cảnh Báo Thu Hồi — Yêu Cầu Xử Lý Ngay" : "🚨 Active Recall Alert — Immediate Action Required"}</div>
               <p className="text-red-700 text-sm leading-relaxed">
-                {activeCount} active recall{activeCount > 1 ? "s" : ""} requiring immediate attention. Please remove affected products from shelves immediately.
+                {lang === "vi" 
+                  ? `${activeCount} yêu cầu thu hồi đang chờ xử lý. Vui lòng gỡ bỏ các sản phẩm bị ảnh hưởng khỏi kệ hàng ngay lập tức.`
+                  : `${activeCount} active recall${activeCount > 1 ? "s" : ""} requiring immediate attention. Please remove affected products from shelves immediately.`}
               </p>
             </div>
           </div>
@@ -224,16 +246,16 @@ export function RecallPage() {
         ) : error ? (
           <div className="bg-white rounded-2xl p-8 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-            <div className="font-semibold text-gray-700 mb-2">Failed to load recalls</div>
+            <div className="font-semibold text-gray-700 mb-2">{lang === "vi" ? "Lỗi tải dữ liệu thu hồi" : "Failed to load recalls"}</div>
             <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "#2E7D32" }}>
-              Retry
+              {lang === "vi" ? "Thử Lại" : "Retry"}
             </button>
           </div>
         ) : recalls.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <AlertTriangle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <div className="font-semibold text-gray-700 mb-1">No recalls found</div>
-            <div className="text-sm text-gray-400 mb-4">Create a recall or scan a batch QR code to get started</div>
+            <div className="font-semibold text-gray-700 mb-1">{lang === "vi" ? "Không tìm thấy lệnh thu hồi" : "No recalls found"}</div>
+            <div className="text-sm text-gray-400 mb-4">{lang === "vi" ? "Tạo lệnh thu hồi hoặc quét mã QR lô hàng để bắt đầu" : "Create a recall or scan a batch QR code to get started"}</div>
             <div className="flex justify-center gap-3">
               <button
                 onClick={() => setShowQrModal(true)}
@@ -252,14 +274,21 @@ export function RecallPage() {
         ) : (
           <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Recall Records</h3>
-              <span className="text-sm text-gray-400">{recalls.length} total records</span>
+              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Hồ Sơ Thu Hồi" : "Recall Records"}</h3>
+              <span className="text-sm text-gray-400">{recalls.length} {lang === "vi" ? "bản ghi" : "total records"}</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr style={{ background: "#F8FAF8" }}>
-                    {["Batch Code / ID", "Reason", "Severity", "Status", "Created Date", "Actions"].map((h) => (
+                    {[
+                      lang === "vi" ? "Mã Lô Hàng / ID" : "Batch Code / ID",
+                      lang === "vi" ? "Lý Do" : "Reason",
+                      lang === "vi" ? "Mức Độ" : "Severity",
+                      lang === "vi" ? "Trạng Thái" : "Status",
+                      lang === "vi" ? "Ngày Tạo" : "Created Date",
+                      lang === "vi" ? "Hành Động" : "Actions"
+                    ].map((h) => (
                       <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -299,7 +328,7 @@ export function RecallPage() {
                                 onClick={() => setShowResolveModal(recall.recallId)}
                                 className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 transition-colors"
                               >
-                                Clear / Close
+                                {lang === "vi" ? "Đóng / Hoàn Tất" : "Clear / Close"}
                               </button>
                             )}
                           </div>

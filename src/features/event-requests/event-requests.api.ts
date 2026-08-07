@@ -25,6 +25,8 @@ export interface EventRequestItem {
 
 export interface CreateEventRequestPayload {
   eventTypeId: string;
+  batchId?: string;
+  targetOrganizationId?: string;
   location?: string;
   description?: string;
 }

@@ -146,21 +146,8 @@ export function InspectionPage() {
       setSelectedId(null);
       toast.success(lang === "vi" ? "Đã tạo phiếu kiểm định thành công" : "Inspection created successfully");
 
-      // Log QC event into supply chain
-      const newInspectionId = (result as any)?.data?.inspectionId ?? "";
-      if (data.batchId && qcEventTypeIdRef.current) {
-        try {
-          await supplyChainApi.createEvent(data.batchId, {
-            eventType: qcEventTypeIdRef.current,
-            inspectionId: newInspectionId,
-            description: lang === "vi" 
-              ? `Kiểm định QA/QC - loại ${data.inspectionType} ngày ${data.inspectionDate}` 
-              : `QA/QC Inspection - type ${data.inspectionType} on ${data.inspectionDate}`,
-          });
-        } catch {
-          // Non-critical: silently ignore
-        }
-      }
+      // Note: The backend automatically logs the QC event into the supply chain.
+      // We don't need to manually call supplyChainApi.createEvent here.
     } catch (err) {
       const msg = (err as any)?.response?.data?.message || (err instanceof Error ? err.message : "Unknown error");
       toast.error(lang === "vi" ? `Lỗi khi tạo phiếu kiểm định: ${msg}` : `Create inspection failed: ${msg}`);

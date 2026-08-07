@@ -56,6 +56,19 @@ function formatRelativeTime(dateStr: string, lang: string = "en"): string {
   }
 }
 
+function parseLocalizedText(text: string, lang: string): string {
+  if (!text) return "";
+  try {
+    const parsed = JSON.parse(text);
+    if (typeof parsed === "object" && parsed !== null) {
+      return parsed[lang] || parsed["en"] || text;
+    }
+    return text;
+  } catch {
+    return text; // fallback to raw string if not JSON
+  }
+}
+
 export function NotificationsPage() {
   const { lang } = useLanguage();
   const [filter, setFilter] = useState<NotifType>("ALL");
@@ -277,9 +290,9 @@ export function NotificationsPage() {
                         </span>
                       </div>
                       <p className="text-sm font-semibold text-gray-800 mt-1">
-                        {n.title || "System Notification"}
+                        {parseLocalizedText(n.title, lang) || "System Notification"}
                       </p>
-                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{n.message}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{parseLocalizedText(n.message, lang)}</p>
                     </div>
 
                     {/* Mark as read button (on hover) */}
