@@ -100,7 +100,20 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
   };
 
   const handleScannedData = (text: string) => {
-    setScannedResult(text);
+    let result = text;
+    try {
+      const url = new URL(text);
+      if (url.pathname.includes('/trace/')) {
+        const parts = url.pathname.split('/trace/');
+        if (parts.length > 1 && parts[1]) {
+          result = parts[1].replace(/\/$/, ""); // Remove trailing slash if any
+        }
+      }
+    } catch (e) {
+      // Not a valid URL, use raw text
+    }
+    
+    setScannedResult(result);
     stopCamera();
   };
 

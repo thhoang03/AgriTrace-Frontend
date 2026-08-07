@@ -396,9 +396,6 @@ export function BatchManagementPage() {
                       <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                         {lang === "vi" ? "Mã Lô Hàng" : "Batch Code"}
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        {lang === "vi" ? "Trang Trại / Nông Dân" : "Farm / Farmer"}
-                      </th>
                       <th
                         className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("harvestDate")}
@@ -466,10 +463,6 @@ export function BatchManagementPage() {
                                 <QrCode className="w-3.5 h-3.5" />
                               </button>
                             </div>
-                          </td>
-                          <td className="px-4 py-3.5">
-                            <div className="text-sm font-medium text-gray-700">{batch.farm}</div>
-                            <div className="text-xs text-gray-400">{batch.farmer}</div>
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="text-sm text-gray-700">{batch.harvestDate}</div>
