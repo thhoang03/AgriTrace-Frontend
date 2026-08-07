@@ -3,6 +3,8 @@ import { X } from "lucide-react";
 import { useCategoriesList } from "../categories/categories.queries";
 import { useCreateProduct, useUpdateProduct } from "./products.queries";
 import { useAuth } from "../auth/auth.store";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { toast } from "sonner";
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ interface ProductFormModalProps {
 }
 
 export function ProductFormModal({ isOpen, onClose, productId, initialData }: ProductFormModalProps) {
+  const { lang } = useLanguage();
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
@@ -79,6 +82,7 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
             organizationId: orgId,
           },
         });
+        toast.success(lang === "vi" ? "Cập nhật sản phẩm thành công!" : "Product updated successfully!");
       } else {
         await createProduct.mutateAsync({
           name: formData.name,
@@ -87,6 +91,7 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
           unit: formData.unit,
           organizationId: orgId,
         });
+        toast.success(lang === "vi" ? "Tạo sản phẩm mới thành công!" : "Product created successfully!");
       }
       onClose();
     } catch (error: any) {
@@ -95,18 +100,22 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
       const errorList = Array.isArray(errData?.errorMessages) && errData.errorMessages.length > 0
         ? errData.errorMessages.join(", ")
         : null;
-      const errMsg = errorList || errData?.detail || errData?.data || errData?.message || error?.message || "Failed to save product";
-      setErrors({ submit: errMsg });
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative">
-        <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
-          <h2 className="text-xl font-bold text-gray-900">
-            {isEdit ? "Edit Product" : "Create New Product"}
-          </h2>
+        const fallbackMsg = lang === "vi" ? "Lưu sản phẩm thất bại" : "Failed to save product";
+        const errMsg = errorList || errData?.detail || errData?.data || errData?.message || error?.message || fallbackMsg;
+        setErrors({ submit: errMsg });
+        toast.error(errMsg);
+      }
+    };
+  
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              {isEdit 
+                ? (lang === "vi" ? "Chỉnh sửa sản phẩm" : "Edit Product") 
+                : (lang === "vi" ? "Thêm sản phẩm mới" : "Create New Product")}
+            </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors"

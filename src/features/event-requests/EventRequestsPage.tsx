@@ -9,8 +9,10 @@ import { useAuth } from "../auth/auth.store";
 import type { EventRequestItem } from "./event-requests.api";
 import { fetchDeviceLocation } from "../../utils/locationUtils";
 import { MapPickerModal } from "../../components/common/MapPickerModal";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export function EventRequestsPage() {
+  const { lang } = useLanguage();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<"mine" | "pending" | "all">(
     user?.role === "ADMIN" ? "pending" : "mine"
@@ -61,9 +63,9 @@ export function EventRequestsPage() {
     try {
       const res = await fetchDeviceLocation();
       setForm((prev) => ({ ...prev, location: res.locationString }));
-      toast.success("Device location retrieved successfully!");
+      toast.success(lang === "vi" ? "Đã lấy vị trí thiết bị thành công!" : "Device location retrieved successfully!");
     } catch (err: any) {
-      toast.error(err.message || "Failed to get device location");
+      toast.error(err.message || (lang === "vi" ? "Lỗi khi lấy vị trí thiết bị" : "Failed to get device location"));
     } finally {
       setLocatingDevice(false);
     }
@@ -72,7 +74,7 @@ export function EventRequestsPage() {
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.eventTypeId) {
-      toast.error("Please select an Event Type to expand");
+      toast.error(lang === "vi" ? "Vui lòng chọn Loại Sự Kiện để mở rộng" : "Please select an Event Type to expand");
       return;
     }
     try {
@@ -81,22 +83,22 @@ export function EventRequestsPage() {
         location: form.location,
         description: form.description,
       });
-      toast.success("Yêu cầu mở rộng event type đã được gửi! Vui lòng chờ Admin xét duyệt.");
+      toast.success(lang === "vi" ? "Yêu cầu mở rộng loại sự kiện đã được gửi! Vui lòng chờ Admin xét duyệt." : "Event type expansion request submitted! Please wait for Admin approval.");
       setShowCreateModal(false);
       setForm({ eventTypeId: "", location: "", description: "" });
       refetch();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err?.message || "An error occurred while creating request");
+      toast.error(err?.response?.data?.message || err?.message || (lang === "vi" ? "Đã có lỗi xảy ra khi tạo yêu cầu" : "An error occurred while creating request"));
     }
   };
 
   const handleApprove = async (item: EventRequestItem) => {
     try {
       await approveMutation.mutateAsync(item.id);
-      toast.success("Request approved successfully! Event signed and appended to Hash Chain.");
+      toast.success(lang === "vi" ? "Đã duyệt yêu cầu thành công! Sự kiện đã được ký và lưu vào Hash Chain." : "Request approved successfully! Event signed and appended to Hash Chain.");
       refetch();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err?.message || "Failed to approve request");
+      toast.error(err?.response?.data?.message || err?.message || (lang === "vi" ? "Duyệt yêu cầu thất bại" : "Failed to approve request"));
     }
   };
 
@@ -105,12 +107,12 @@ export function EventRequestsPage() {
     if (!rejectingItem) return;
     try {
       await rejectMutation.mutateAsync({ id: rejectingItem.id, reason: rejectReason });
-      toast.success("Event request rejected.");
+      toast.success(lang === "vi" ? "Đã từ chối yêu cầu sự kiện." : "Event request rejected.");
       setRejectingItem(null);
       setRejectReason("");
       refetch();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || err?.message || "Failed to reject request");
+      toast.error(err?.response?.data?.message || err?.message || (lang === "vi" ? "Từ chối yêu cầu thất bại" : "Failed to reject request"));
     }
   };
 
@@ -118,20 +120,20 @@ export function EventRequestsPage() {
     if (status === 0 || status === "Pending") {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-          <Clock className="w-3.5 h-3.5 animate-spin-slow" /> Pending
+          <Clock className="w-3.5 h-3.5 animate-spin-slow" /> {lang === "vi" ? "Chờ duyệt" : "Pending"}
         </span>
       );
     }
     if (status === 1 || status === "Approved") {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-          <CheckCircle2 className="w-3.5 h-3.5" /> Approved
+          <CheckCircle2 className="w-3.5 h-3.5" /> {lang === "vi" ? "Đã duyệt" : "Approved"}
         </span>
       );
     }
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-        <XCircle className="w-3.5 h-3.5" /> Rejected
+        <XCircle className="w-3.5 h-3.5" /> {lang === "vi" ? "Đã từ chối" : "Rejected"}
       </span>
     );
   };
@@ -143,11 +145,13 @@ export function EventRequestsPage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-green-200 text-sm font-medium mb-1">
-              <Clock className="w-4 h-4" /> AgriTrace Event Requests
+              <Clock className="w-4 h-4" /> {lang === "vi" ? "Yêu Cầu Sự Kiện AgriTrace" : "AgriTrace Event Requests"}
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">Event Logging Requests</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{lang === "vi" ? "Yêu Cầu Ghi Nhận Sự Kiện" : "Event Logging Requests"}</h1>
             <p className="text-green-100 text-sm mt-1 max-w-xl">
-              Submit supply chain event logging requests and review approvals before appending to the immutable Hash Chain ledger.
+              {lang === "vi" 
+                ? "Gửi các yêu cầu ghi nhận sự kiện chuỗi cung ứng và xem xét phê duyệt trước khi thêm vào sổ cái Hash Chain bất biến."
+                : "Submit supply chain event logging requests and review approvals before appending to the immutable Hash Chain ledger."}
             </p>
           </div>
           {user?.role !== "ADMIN" && (
@@ -155,7 +159,7 @@ export function EventRequestsPage() {
               onClick={() => setShowCreateModal(true)}
               className="flex items-center justify-center gap-2 bg-white text-green-800 hover:bg-green-50 px-5 py-2.5 rounded-xl font-semibold shadow-lg transition-all text-sm shrink-0"
             >
-              <Plus className="w-4 h-4" /> New Request
+              <Plus className="w-4 h-4" /> {lang === "vi" ? "Yêu Cầu Mới" : "New Request"}
             </button>
           )}
         </div>
@@ -171,7 +175,7 @@ export function EventRequestsPage() {
                 activeTab === "mine" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
               }`}
             >
-              My Requests
+              {lang === "vi" ? "Yêu Cầu Của Tôi" : "My Requests"}
             </button>
           )}
           {user?.role === "ADMIN" && (
@@ -181,7 +185,7 @@ export function EventRequestsPage() {
                 activeTab === "pending" ? "bg-white text-emerald-800 shadow-sm" : "text-gray-600 hover:text-gray-900"
               }`}
             >
-              Pending Approvals
+              {lang === "vi" ? "Chờ Xét Duyệt" : "Pending Approvals"}
               {requestsList.filter((r) => r.status === 0 || r.status === "Pending").length > 0 && (
                 <span className="w-2 h-2 rounded-full bg-amber-500"></span>
               )}
@@ -193,7 +197,7 @@ export function EventRequestsPage() {
               activeTab === "all" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            All Requests
+            {lang === "vi" ? "Tất Cả Yêu Cầu" : "All Requests"}
           </button>
         </div>
 
@@ -201,7 +205,7 @@ export function EventRequestsPage() {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by batch code, location..."
+            placeholder={lang === "vi" ? "Tìm theo mã lô, vị trí..." : "Search by batch code, location..."}
             value={searchBatch}
             onChange={(e) => setSearchBatch(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-gray-50/50"
@@ -211,13 +215,13 @@ export function EventRequestsPage() {
 
       {/* Requests List Grid */}
       {isLoading ? (
-        <div className="text-center py-12 text-gray-500 text-sm">Loading event requests...</div>
+        <div className="text-center py-12 text-gray-500 text-sm">{lang === "vi" ? "Đang tải yêu cầu..." : "Loading event requests..."}</div>
       ) : filteredRequests.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm">
           <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-gray-800 text-base">No Event Requests Found</h3>
+          <h3 className="font-semibold text-gray-800 text-base">{lang === "vi" ? "Không Tìm Thấy Yêu Cầu Sự Kiện" : "No Event Requests Found"}</h3>
           <p className="text-gray-500 text-xs mt-1 max-w-md mx-auto">
-            No event requests match your current filter. Click "+ New Request" to submit your first request.
+            {lang === "vi" ? "Không có yêu cầu sự kiện nào khớp với bộ lọc của bạn. Nhấp vào \"+ Yêu Cầu Mới\" để gửi yêu cầu đầu tiên của bạn." : "No event requests match your current filter. Click \"+ New Request\" to submit your first request."}
           </p>
         </div>
       ) : (
@@ -237,7 +241,7 @@ export function EventRequestsPage() {
                     <span className="px-2 py-0.5 rounded bg-green-50 text-green-700 text-xs font-mono">
                       {item.eventTypeCode || "EVENT"}
                     </span>
-                    <span className="truncate">{item.eventTypeName || item.eventTypeCode || "Supply Chain Event"}</span>
+                    <span className="truncate">{item.eventTypeName || item.eventTypeCode || (lang === "vi" ? "Sự Kiện Chuỗi Cung Ứng" : "Supply Chain Event")}</span>
                   </div>
 
                   {item.location && (
@@ -266,7 +270,7 @@ export function EventRequestsPage() {
                   )}
                   {item.rejectionReason && (
                     <div className="mt-2 text-rose-600 bg-rose-50 p-2 rounded-lg font-medium">
-                      Rejection Reason: {item.rejectionReason}
+                      {lang === "vi" ? "Lý do từ chối" : "Rejection Reason"}: {item.rejectionReason}
                     </div>
                   )}
                 </div>
@@ -280,14 +284,14 @@ export function EventRequestsPage() {
                     disabled={approveMutation.isPending}
                     className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-xl transition-all shadow-sm"
                   >
-                    <Check className="w-3.5 h-3.5" /> Approve
+                    <Check className="w-3.5 h-3.5" /> {lang === "vi" ? "Duyệt" : "Approve"}
                   </button>
                   <button
                     onClick={() => setRejectingItem(item)}
                     disabled={rejectMutation.isPending}
                     className="flex-1 flex items-center justify-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold py-2 px-3 rounded-xl transition-all"
                   >
-                    <X className="w-3.5 h-3.5" /> Reject
+                    <X className="w-3.5 h-3.5" /> {lang === "vi" ? "Từ Chối" : "Reject"}
                   </button>
                 </div>
               )}
@@ -303,9 +307,9 @@ export function EventRequestsPage() {
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <div>
                 <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                  <Plus className="w-5 h-5 text-green-600" /> Request Event Type Expansion
+                  <Plus className="w-5 h-5 text-green-600" /> {lang === "vi" ? "Yêu Cầu Mở Rộng Loại Sự Kiện" : "Request Event Type Expansion"}
                 </h3>
-                <p className="text-xs text-gray-500 mt-0.5">Submit a request to grant your organization authorization for a new event type</p>
+                <p className="text-xs text-gray-500 mt-0.5">{lang === "vi" ? "Gửi yêu cầu để cấp quyền cho tổ chức của bạn đối với một loại sự kiện mới" : "Submit a request to grant your organization authorization for a new event type"}</p>
               </div>
               <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
@@ -314,14 +318,14 @@ export function EventRequestsPage() {
 
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Requested Event Type to Expand *</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{lang === "vi" ? "Loại Sự Kiện Muốn Mở Rộng *" : "Requested Event Type to Expand *"}</label>
                 <select
                   value={form.eventTypeId}
                   onChange={(e) => setForm({ ...form, eventTypeId: e.target.value })}
                   required
                   className="w-full px-3.5 py-2.5 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-gray-50 font-medium"
                 >
-                  <option value="">-- Select event type to expand --</option>
+                  <option value="">{lang === "vi" ? "-- Chọn loại sự kiện để mở rộng --" : "-- Select event type to expand --"}</option>
                   {eventTypes
                     .filter((et) => !["SPLIT", "MERGE", "RECALL"].includes(et.code?.toUpperCase() ?? ""))
                     .map((et) => (
@@ -334,31 +338,31 @@ export function EventRequestsPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-gray-700">Facility / Branch Location (Optional)</label>
+                  <label className="text-xs font-semibold text-gray-700">{lang === "vi" ? "Vị Trí Cơ Sở / Chi Nhánh (Tùy chọn)" : "Facility / Branch Location (Optional)"}</label>
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
                       onClick={handleGetDeviceLocation}
                       disabled={locatingDevice}
                       className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-lg border border-emerald-200 transition-colors flex items-center gap-1"
-                      title="Get Current Computer / Device GPS Location"
+                      title={lang === "vi" ? "Lấy Vị Trí GPS Thiết Bị" : "Get Current Computer / Device GPS Location"}
                     >
                       <LocateFixed className={`w-3 h-3 ${locatingDevice ? "animate-spin" : ""}`} />
-                      {locatingDevice ? "Locating..." : "Device (GPS)"}
+                      {locatingDevice ? (lang === "vi" ? "Đang định vị..." : "Locating...") : (lang === "vi" ? "Thiết bị (GPS)" : "Device (GPS)")}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowMapPicker(true)}
                       className="text-[11px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded-lg border border-blue-200 transition-colors flex items-center gap-1"
-                      title="Select Location from Interactive Map"
+                      title={lang === "vi" ? "Chọn Vị Trí Trên Bản Đồ" : "Select Location from Interactive Map"}
                     >
-                      <MapPin className="w-3 h-3 text-blue-600" /> Map Picker
+                      <MapPin className="w-3 h-3 text-blue-600" /> {lang === "vi" ? "Bản Đồ" : "Map Picker"}
                     </button>
                   </div>
                 </div>
                 <input
                   type="text"
-                  placeholder="e.g. Logistics Center - Branch A, Da Lat or select on map..."
+                  placeholder={lang === "vi" ? "VD: Trung Tâm Vận Chuyển - Chi nhánh A, Đà Lạt hoặc chọn trên bản đồ..." : "e.g. Logistics Center - Branch A, Da Lat or select on map..."}
                   value={form.location}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
@@ -366,11 +370,11 @@ export function EventRequestsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Business Justification / Expansion Notes *</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">{lang === "vi" ? "Lý Do Mở Rộng / Ghi Chú *" : "Business Justification / Expansion Notes *"}</label>
                 <textarea
                   rows={3}
                   required
-                  placeholder="Describe your organization expansion reason (e.g. Added new fleet license for transport services)..."
+                  placeholder={lang === "vi" ? "Mô tả lý do mở rộng tổ chức của bạn (VD: Đã thêm giấy phép đội xe cho dịch vụ vận chuyển)..." : "Describe your organization expansion reason (e.g. Added new fleet license for transport services)..."}
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
@@ -383,14 +387,14 @@ export function EventRequestsPage() {
                   onClick={() => setShowCreateModal(false)}
                   className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
                 >
-                  Cancel
+                  {lang === "vi" ? "Hủy" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
                   className="px-5 py-2 text-xs font-semibold bg-green-700 hover:bg-green-800 text-white rounded-xl shadow-md transition-all flex items-center gap-1.5"
                 >
-                  <Plus className="w-3.5 h-3.5" /> Submit Expansion Request
+                  <Plus className="w-3.5 h-3.5" /> {lang === "vi" ? "Gửi Yêu Cầu Mở Rộng" : "Submit Expansion Request"}
                 </button>
               </div>
             </form>
@@ -404,7 +408,7 @@ export function EventRequestsPage() {
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h3 className="font-bold text-gray-900 text-base flex items-center gap-2 text-rose-600">
-                <ShieldAlert className="w-5 h-5" /> Reject Event Request
+                <ShieldAlert className="w-5 h-5" /> {lang === "vi" ? "Từ Chối Yêu Cầu Sự Kiện" : "Reject Event Request"}
               </h3>
               <button onClick={() => setRejectingItem(null)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
@@ -413,12 +417,12 @@ export function EventRequestsPage() {
 
             <form onSubmit={handleRejectSubmit} className="space-y-4">
               <p className="text-xs text-gray-600">
-                Please enter the reason for rejecting expansion request from <span className="font-semibold text-gray-800">{rejectingItem.organizationName || rejectingItem.requestedByUserName || "this organization"}</span>:
+                {lang === "vi" ? "Vui lòng nhập lý do từ chối yêu cầu từ" : "Please enter the reason for rejecting expansion request from"} <span className="font-semibold text-gray-800">{rejectingItem.organizationName || rejectingItem.requestedByUserName || (lang === "vi" ? "tổ chức này" : "this organization")}</span>:
               </p>
               <textarea
                 rows={3}
                 required
-                placeholder="e.g. Missing transport documents, invalid location format..."
+                placeholder={lang === "vi" ? "VD: Thiếu tài liệu vận chuyển, định dạng vị trí không hợp lệ..." : "e.g. Missing transport documents, invalid location format..."}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 className="w-full px-3 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
@@ -430,14 +434,14 @@ export function EventRequestsPage() {
                   onClick={() => setRejectingItem(null)}
                   className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
                 >
-                  Cancel
+                  {lang === "vi" ? "Hủy" : "Cancel"}
                 </button>
                 <button
                   type="submit"
                   disabled={rejectMutation.isPending}
                   className="px-5 py-2 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-md transition-all"
                 >
-                  Confirm Rejection
+                  {lang === "vi" ? "Xác Nhận Từ Chối" : "Confirm Rejection"}
                 </button>
               </div>
             </form>

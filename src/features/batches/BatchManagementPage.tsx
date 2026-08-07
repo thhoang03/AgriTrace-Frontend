@@ -295,7 +295,7 @@ export function BatchManagementPage() {
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90"
                 style={{ background: "linear-gradient(135deg, #2E7D32, #388E3C)" }}
               >
-                <Plus className="w-4 h-4" /> {lang === "vi" ? "+ Tạo Lô Hàng" : "+ New Batch"}
+                <Plus className="w-4 h-4" /> {lang === "vi" ? "Tạo Lô Hàng" : "New Batch"}
               </button>
             </div>
           </div>

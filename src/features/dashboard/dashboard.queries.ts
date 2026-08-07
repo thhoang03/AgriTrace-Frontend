@@ -11,6 +11,8 @@ export interface DashboardActivity {
   id: string;
   type: typeof ACTIVITY_ICONS[number];
   message: string;
+  rawTitle?: string;
+  rawMessage?: string;
   timestamp: string;
   userId: string;
   userName: string;
@@ -36,6 +38,8 @@ export function useRecentActivities() {
         id: String(n.notificationId),
         type: inferActivityType(n.title ?? "", n.message ?? ""),
         message: n.title && n.message ? `${n.title}: ${n.message}` : (n.title ?? n.message ?? ""),
+        rawTitle: n.title,
+        rawMessage: n.message,
         timestamp: n.createdAt ?? new Date().toISOString(),
         userId: n.userId ?? "",
         userName: "",

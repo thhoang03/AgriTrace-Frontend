@@ -32,6 +32,19 @@ function formatRelativeTime(dateStr: string, lang: string = "en"): string {
 }
 
 // quickActions are defined inside the component to support i18n
+const parseMessage = (msg: string | undefined, lang: string): string => {
+  if (!msg) return "";
+  try {
+    const obj = JSON.parse(msg);
+    if (obj && typeof obj === "object") {
+      return obj[lang] || obj["en"] || msg;
+    }
+  } catch (e) {
+    // not a JSON object
+  }
+  return msg;
+};
+
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -337,7 +350,11 @@ export function DashboardPage() {
                        <RefreshCw className="w-4 h-4 text-blue-500" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-700 truncate">{activity.message}</p>
+                      <p className="text-sm text-gray-700 truncate">
+                        {activity.rawTitle && activity.rawMessage
+                          ? `${parseMessage(activity.rawTitle, lang)}: ${parseMessage(activity.rawMessage, lang)}`
+                          : parseMessage(activity.message, lang)}
+                      </p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {formatRelativeTime(activity.timestamp, lang)}
                       </p>

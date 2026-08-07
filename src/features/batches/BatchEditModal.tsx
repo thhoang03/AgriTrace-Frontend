@@ -146,17 +146,6 @@ export function BatchEditModal({ batch, onClose, onSaved }: BatchEditModalProps)
                 style={{ focusRingColor: "#2E7D32" } as React.CSSProperties}
               />
             </label>
-            <label className="space-y-1.5">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Weight
-              </span>
-              <input
-                value={form.weight ?? ""}
-                onChange={(e) => set("weight", e.target.value)}
-                placeholder="e.g. 500 kg"
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 outline-none text-sm"
-              />
-            </label>
           </div>
 
           {/* Location + Production Area */}

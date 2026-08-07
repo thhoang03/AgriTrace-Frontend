@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   Plus, Hash, CheckCircle, MapPin, Thermometer, Droplets, ChevronDown, ChevronUp, X, AlertCircle, Search, Clock, LocateFixed, FileText, Globe,
 } from "lucide-react";
 import { useEvents, useCreateEvent, useEventTypes, useRecentBatches } from "./supply-chain.queries";
-import type { CreateEventRequest, SupplyChainEvent } from "./supply-chain.api";
+import { useEventRequests, useApprovedExtraEvents } from "../event-requests/event-requests.queries";
+import { supplyChainApi, type CreateEventRequest, type SupplyChainEvent } from "./supply-chain.api";
 import { useAuth } from "../auth/auth.store";
 import { canCreateEvent, getAllowedEventTypes } from "../auth/permissions";
 import type { EventType } from "../auth/permissions";
@@ -17,19 +19,19 @@ import { batchesApi } from "../batches/batches.api";
 
 
 
-const ALL_EVENT_TYPES: { value: EventType; label: string; emoji: string; color: string }[] = [
-  { value: "CREATED", label: "Created", emoji: "🌱", color: "#2E7D32" },
-  { value: "HARVEST", label: "Harvest", emoji: "🌾", color: "#2E7D32" },
-  { value: "RECEIVE", label: "Receive", emoji: "📥", color: "#1565C0" },
-  { value: "PROCESSING", label: "Processing", emoji: "⚙️", color: "#1565C0" },
-  { value: "PACKAGING", label: "Packaging", emoji: "📦", color: "#6A1B9A" },
-  { value: "TRANSPORT", label: "Transport", emoji: "🚚", color: "#E65100" },
-  { value: "DISTRIBUTION", label: "Distribution", emoji: "🏭", color: "#004D40" },
-  { value: "RETAIL", label: "Retail", emoji: "🏪", color: "#F57F17" },
-  { value: "INSPECTION", label: "Inspection", emoji: "✅", color: "#558B2F" },
-  { value: "RECALL", label: "Recall", emoji: "⚠️", color: "#C62828" },
-  { value: "SPLIT", label: "Split", emoji: "✂️", color: "#6A1B9A" },
-  { value: "MERGE", label: "Merge", emoji: "🔗", color: "#004D40" },
+const ALL_EVENT_TYPES: { value: EventType; label: {en: string, vi: string}; emoji: string; color: string }[] = [
+  { value: "CREATED", label: {en: "Created", vi: "Đã tạo"}, emoji: "🌱", color: "#2E7D32" },
+  { value: "HARVEST", label: {en: "Harvest", vi: "Thu hoạch"}, emoji: "🌾", color: "#2E7D32" },
+  { value: "RECEIVE", label: {en: "Receive", vi: "Tiếp nhận"}, emoji: "📥", color: "#1565C0" },
+  { value: "PROCESSING", label: {en: "Processing", vi: "Chế biến"}, emoji: "⚙️", color: "#1565C0" },
+  { value: "PACKAGING", label: {en: "Packaging", vi: "Đóng gói"}, emoji: "📦", color: "#6A1B9A" },
+  { value: "TRANSPORT", label: {en: "Transport", vi: "Vận chuyển"}, emoji: "🚚", color: "#E65100" },
+  { value: "DISTRIBUTION", label: {en: "Distribution", vi: "Phân phối"}, emoji: "🏭", color: "#004D40" },
+  { value: "RETAIL", label: {en: "Retail", vi: "Bán lẻ"}, emoji: "🏪", color: "#F57F17" },
+  { value: "INSPECTION", label: {en: "Inspection", vi: "Kiểm định"}, emoji: "✅", color: "#558B2F" },
+  { value: "RECALL", label: {en: "Recall", vi: "Thu hồi"}, emoji: "⚠️", color: "#C62828" },
+  { value: "SPLIT", label: {en: "Split", vi: "Tách lô"}, emoji: "✂️", color: "#6A1B9A" },
+  { value: "MERGE", label: {en: "Merge", vi: "Gộp lô"}, emoji: "🔗", color: "#004D40" },
 ];
 
 function getInitialForm(allowed: EventType[]) {
@@ -62,16 +64,26 @@ export function SupplyChainPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { lang } = useLanguage();
+  const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const orgType = user?.organizationType;
-  const allowedEventTypes = getAllowedEventTypes(orgType, user?.role);
+  const approvedExtraEvents = useApprovedExtraEvents();
+  const allowedEventTypes = getAllowedEventTypes(orgType, user?.role, approvedExtraEvents);
   const [form, setForm] = useState(getInitialForm(allowedEventTypes));
+
+  useEffect(() => {
+    if (allowedEventTypes.length > 0 && !allowedEventTypes.includes(form.eventType)) {
+      setForm((prev) => ({ ...prev, eventType: allowedEventTypes[0] }));
+    }
+  }, [allowedEventTypes, form.eventType]);
+
   const [error, setError] = useState("");
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [activeBatchId, setActiveBatchId] = useState("");
   const [searchBatchId, setSearchBatchId] = useState("");
   const [locating, setLocating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: events = [], isLoading: eventsLoading, refetch: refetchEvents } = useEvents(activeBatchId);
   const createEventMutation = useCreateEvent(activeBatchId || form.batchId);
@@ -96,7 +108,7 @@ export function SupplyChainPage() {
   );
 
   const eventTypes = ALL_EVENT_TYPES.filter((et) => allowedEventTypes.includes(et.value));
-  const canSubmit = canCreateEvent(orgType, form.eventType);
+  const canSubmit = canCreateEvent(orgType, form.eventType, user?.role, approvedExtraEvents);
 
   const handleSearchBatch = async () => {
     if (!searchBatchId.trim()) return;
@@ -141,6 +153,7 @@ export function SupplyChainPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    if (isSubmitting) return;
     e.preventDefault();
     if (!canSubmit) {
       setError("Your organization is not allowed to create this event type");
@@ -155,6 +168,7 @@ export function SupplyChainPage() {
       return;
     }
     setError("");
+    setIsSubmitting(true);
     try {
       const eventTypeId = eventTypeGuidMap.get(form.eventType.toUpperCase());
       if (!eventTypeId) {
@@ -174,10 +188,23 @@ export function SupplyChainPage() {
           const res = await batchesApi.getAll({ search: targetBatchId, limit: 1 });
           if (res.data && res.data.length > 0) {
             targetBatchId = res.data[0].id;
-          } else if (!targetBatchId.includes("-")) {
-            const byIdRes = await batchesApi.getById(targetBatchId);
-            if (byIdRes.data?.id) {
-              targetBatchId = byIdRes.data.id;
+          } else {
+            try {
+              const byIdRes = await batchesApi.getById(targetBatchId);
+              if (byIdRes.data?.id) {
+                targetBatchId = byIdRes.data.id;
+              }
+            } catch {
+              // Fallback to public trace API to resolve globally
+              try {
+                const { get } = await import("../../lib/api");
+                const publicRes = await get<any>(`/public/trace/code/${targetBatchId}`);
+                if (publicRes.data && publicRes.data.batchId) {
+                  targetBatchId = publicRes.data.batchId;
+                }
+              } catch {
+                // Ignore
+              }
             }
           }
         } catch {
@@ -196,6 +223,8 @@ export function SupplyChainPage() {
       setActiveBatchId(targetBatchId);
       setForm(getInitialForm(allowedEventTypes));
       refetchEvents();
+      queryClient.invalidateQueries({ queryKey: ["batches"] });
+      queryClient.invalidateQueries({ queryKey: ["supply-chain"] });
       toast.success("Event recorded to blockchain", {
         description: `Hash: ${result.currentHash?.slice(0, 20)}...`,
       });
@@ -206,6 +235,8 @@ export function SupplyChainPage() {
         e?.message ||
         "An error occurred";
       setError(msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -232,10 +263,21 @@ export function SupplyChainPage() {
           if (byIdRes.data && byIdRes.data.id) {
             setActiveBatchId(byIdRes.data.id);
           } else {
-            setActiveBatchId(scanned);
+            throw new Error("Not found by ID");
           }
         } catch {
-          setActiveBatchId(scanned);
+          // Fallback to public trace API to resolve globally
+          try {
+            const { get } = await import("../../lib/api");
+            const publicRes = await get<any>(`/public/trace/code/${scanned}`);
+            if (publicRes.data && publicRes.data.batchId) {
+              setActiveBatchId(publicRes.data.batchId);
+            } else {
+              setActiveBatchId(scanned);
+            }
+          } catch {
+            setActiveBatchId(scanned);
+          }
         }
       }
     } catch {
@@ -261,7 +303,7 @@ export function SupplyChainPage() {
     }
   };
 
-  const getEventConfig = (type: string) => ALL_EVENT_TYPES.find((e) => e.value === type) || { emoji: "📋", label: type, color: "#666" };
+  const getEventConfig = (type: string) => ALL_EVENT_TYPES.find((e) => e.value === type) || { emoji: "📋", label: {en: type, vi: type}, color: "#666" };
 
   return (
     <div className="pb-8">
@@ -291,7 +333,7 @@ export function SupplyChainPage() {
         <div className="bg-white rounded-2xl p-4 mb-5 flex flex-wrap items-center gap-3" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-xs text-green-700">Blockchain connected</span>
+            <span className="text-xs text-green-700">{lang === "vi" ? "Đã kết nối Blockchain" : "Blockchain connected"}</span>
           </div>
           <button
             onClick={() => {
@@ -306,7 +348,7 @@ export function SupplyChainPage() {
             className="ml-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold hover:opacity-90 transition-opacity"
             style={{ background: "#2E7D32" }}
           >
-            <Plus className="w-4 h-4" /> Add Event
+            <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Sự Kiện" : "Add Event"}
           </button>
         </div>
 
@@ -341,12 +383,12 @@ export function SupplyChainPage() {
             <div className="lg:col-span-2 space-y-5">
               {/* Guide */}
               <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                <h4 className="font-semibold text-gray-900 mb-5" style={{ fontSize: 15 }}>How to view supply chain events</h4>
+                <h4 className="font-semibold text-gray-900 mb-5" style={{ fontSize: 15 }}>{lang === "vi" ? "Cách xem sự kiện chuỗi cung ứng" : "How to view supply chain events"}</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
-                    { step: "1", icon: Search, label: "Enter Batch ID", desc: "Type a batch ID in the search field above, or scan a QR code" },
-                    { step: "2", icon: Clock, label: "Select a Batch", desc: "Pick from your recent batches below or use the search results" },
-                    { step: "3", icon: Hash, label: "Explore Timeline", desc: "View blockchain-secured events, verify hashes, and track history" },
+                    { step: "1", icon: Search, label: lang === "vi" ? "Nhập Mã Lô" : "Enter Batch ID", desc: lang === "vi" ? "Nhập mã lô vào ô tìm kiếm hoặc quét QR" : "Type a batch ID in the search field above, or scan a QR code" },
+                    { step: "2", icon: Clock, label: lang === "vi" ? "Chọn Lô Hàng" : "Select a Batch", desc: lang === "vi" ? "Chọn từ lô gần đây hoặc kết quả tìm kiếm" : "Pick from your recent batches below or use the search results" },
+                    { step: "3", icon: Hash, label: lang === "vi" ? "Khám Phá Hành Trình" : "Explore Timeline", desc: lang === "vi" ? "Xem các sự kiện được bảo mật bằng blockchain" : "View blockchain-secured events, verify hashes, and track history" },
                   ].map(({ step, icon: Icon, label, desc }) => (
                     <div key={step} className="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-2 p-4 rounded-xl" style={{ background: "#F8FAF8" }}>
                       <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shrink-0" style={{ background: "#2E7D32" }}>{step}</div>
@@ -366,7 +408,7 @@ export function SupplyChainPage() {
                 <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                   <div className="flex items-center gap-1.5 mb-4">
                     <Clock className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-semibold text-gray-900">Recent Batches</span>
+                    <span className="text-sm font-semibold text-gray-900">{lang === "vi" ? "Lô Hàng Gần Đây" : "Recent Batches"}</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {recentBatches.slice(0, 6).map((batch: any) => (
@@ -393,12 +435,12 @@ export function SupplyChainPage() {
             {/* Right: Event Types */}
             <div>
               <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>Event Types</h4>
+                <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>{lang === "vi" ? "Loại Sự Kiện" : "Event Types"}</h4>
                 <div className="space-y-2">
                   {eventTypes.map(({ value, label, emoji, color }) => (
                     <div key={value} className="flex items-center gap-2">
                       <span className="text-sm">{emoji}</span>
-                      <span className="text-xs text-gray-600">{label}</span>
+                      <span className="text-xs text-gray-600">{lang === "vi" ? label.vi : label.en}</span>
                     </div>
                   ))}
                 </div>
@@ -413,7 +455,7 @@ export function SupplyChainPage() {
                 <div className="flex-1 bg-white rounded-2xl p-4" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                   <div className="flex items-center gap-1.5 mb-3">
                     <Clock className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-semibold text-gray-900">Recent Batches</span>
+                    <span className="text-sm font-semibold text-gray-900">{lang === "vi" ? "Lô Hàng Gần Đây" : "Recent Batches"}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {recentBatches.slice(0, 5).map((batch: any) => (
@@ -442,16 +484,16 @@ export function SupplyChainPage() {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                   <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <span className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Event Timeline</span>
-                    <span className="text-sm text-gray-400">{events.length} events</span>
+                    <span className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Hành Trình Sự Kiện" : "Event Timeline"}</span>
+                    <span className="text-sm text-gray-400">{events.length} {lang === "vi" ? "sự kiện" : "events"}</span>
                   </div>
 
                   {eventsLoading ? (
-                    <div className="flex items-center justify-center py-16 text-gray-400 text-sm">Loading...</div>
+                    <div className="flex items-center justify-center py-16 text-gray-400 text-sm">{lang === "vi" ? "Đang tải..." : "Loading..."}</div>
                   ) : events.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-gray-400">
                       <Hash className="w-10 h-10 mb-3 opacity-30" />
-                      <p className="text-sm">No events recorded for this batch</p>
+                      <p className="text-sm">{lang === "vi" ? "Chưa có sự kiện nào được ghi nhận cho lô hàng này" : "No events recorded for this batch"}</p>
                     </div>
                   ) : (
                     <div className="p-6">
@@ -483,7 +525,7 @@ export function SupplyChainPage() {
                                     onClick={() => setExpandedEvent(isExpanded ? null : event.eventId)}
                                   >
                                     <div className="flex items-center gap-3">
-                                      <span className="text-sm font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
+                                      <span className="text-sm font-semibold" style={{ color: cfg.color }}>{lang === "vi" ? cfg.label.vi : cfg.label.en}</span>
                                       {verified && <CheckCircle className="w-3.5 h-3.5 text-green-500" />}
                                       <span className="text-xs text-gray-400">{date} · {time}</span>
                                     </div>
@@ -516,7 +558,7 @@ export function SupplyChainPage() {
                                           style={{ background: "#E8F5E9" }}
                                         >
                                           <FileText className="w-3.5 h-3.5" />
-                                          View Inspection
+                                          {lang === "vi" ? "Xem Kiểm Định" : "View Inspection"}
                                         </button>
                                       )}
                                       {(temperature || humidity) && (
@@ -557,7 +599,7 @@ export function SupplyChainPage() {
               {/* Event types legend */}
               <div className="space-y-5">
                 <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                  <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>Event Types</h4>
+                  <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>{lang === "vi" ? "Loại Sự Kiện" : "Event Types"}</h4>
                   <div className="space-y-2">
                     {eventTypes.map(({ value, label, emoji, color }) => {
                       const count = events.filter((e: SupplyChainEvent) => e.eventTypeCode === value).length;
@@ -565,7 +607,7 @@ export function SupplyChainPage() {
                         <div key={value} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-sm">{emoji}</span>
-                            <span className="text-xs text-gray-600">{label}</span>
+                            <span className="text-xs text-gray-600">{lang === "vi" ? label.vi : label.en}</span>
                           </div>
                           {count > 0 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: `${color}15`, color }}>{count}</span>}
                         </div>
@@ -631,7 +673,7 @@ export function SupplyChainPage() {
                         }`}
                       >
                         <span className="text-base shrink-0">{emoji}</span>
-                        <span className="truncate">{label}</span>
+                        <span className="truncate">{lang === "vi" ? label.vi : label.en}</span>
                       </button>
                     );
                   })}
@@ -740,10 +782,10 @@ export function SupplyChainPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={createEventMutation.isPending || !canSubmit || eventTypesLoading}
-                  className="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-700 to-green-700 hover:from-emerald-800 hover:to-green-800 shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  disabled={isSubmitting || createEventMutation.isPending || !canSubmit || eventTypesLoading}
+                  className="px-6 py-2.5 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-emerald-700 to-green-700 hover:from-emerald-800 hover:to-green-800 shadow-md shadow-emerald-700/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                 >
-                  {createEventMutation.isPending ? (
+                  {isSubmitting || createEventMutation.isPending ? (
                     lang === "vi" ? "Đang lưu vào sổ cái..." : "Saving to Ledger..."
                   ) : (
                     <>

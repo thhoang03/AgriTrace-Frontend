@@ -23,14 +23,17 @@ export function BatchEventModal({ batchId, batchCode, onClose }: BatchEventModal
     lookupApi.getEventTypes().then(res => setEventTypes(res.data)).catch(console.error);
   }, []);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isValid = !!eventType && !!description;
 
   const handleSubmit = async () => {
+    if (isSubmitting || createEvent.isPending) return;
     setError("");
     if (!isValid) {
       setError("Please fill in all required fields.");
       return;
     }
+    setIsSubmitting(true);
     try {
       const metadata: Record<string, unknown> = {};
       if (temp) metadata.temperature = Number(temp);
@@ -45,6 +48,8 @@ export function BatchEventModal({ batchId, batchCode, onClose }: BatchEventModal
       onClose();
     } catch {
       setError("Failed to create event. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -160,11 +165,11 @@ export function BatchEventModal({ batchId, batchCode, onClose }: BatchEventModal
           </button>
           <button
             onClick={handleSubmit}
-            disabled={createEvent.isPending || !isValid}
-            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60"
+            disabled={isSubmitting || createEvent.isPending || !isValid}
+            className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             style={{ background: "#2E7D32" }}
           >
-            {createEvent.isPending ? "Saving..." : "Add Event"}
+            {isSubmitting || createEvent.isPending ? "Saving..." : "Add Event"}
           </button>
         </div>
       </div>

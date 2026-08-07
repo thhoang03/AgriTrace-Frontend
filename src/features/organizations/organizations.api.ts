@@ -135,4 +135,12 @@ export const organizationsApi = {
     );
     return { data: response.data };
   },
+
+  approve: async (id: number | string) => {
+    return post<void>(`/organizations/${id}/approve`, {});
+  },
+
+  reject: async (id: number | string, reason?: string) => {
+    return post<void>(`/organizations/${id}/reject`, { reason });
+  },
 };

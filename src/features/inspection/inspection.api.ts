@@ -3,6 +3,7 @@ import type {
   InspectionItem,
   InspectionStatus,
   CreateInspectionRequest,
+  RequestInspectionRequest,
   ConcludeInspectionRequest,
   InspectionFilters,
   LabTest,
@@ -111,6 +112,19 @@ export const inspectionApi = {
       {
         inspectionType: data.inspectionType,
         inspectionDate: data.inspectionDate,
+        notes: data.notes,
+      }
+    );
+    const result = response.data as any;
+    return { data: { inspectionId: result.inspectionId ?? "" } };
+  },
+
+  request: async (data: RequestInspectionRequest) => {
+    const response = await post<{ inspectionId: string }>(
+      `/batches/${data.batchId}/inspections/request`,
+      {
+        targetOrganizationId: data.targetOrganizationId,
+        inspectionType: data.inspectionType,
         notes: data.notes,
       }
     );

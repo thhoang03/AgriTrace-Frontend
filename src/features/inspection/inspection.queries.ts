@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { inspectionApi } from "./inspection.api";
 import type {
   CreateInspectionRequest,
+  RequestInspectionRequest,
   ConcludeInspectionRequest,
   InspectionFilters,
   CreateLabTestRequest,
@@ -36,6 +37,14 @@ export function useCreateInspection() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateInspectionRequest) => inspectionApi.create(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  });
+}
+
+export function useRequestInspection() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: RequestInspectionRequest) => inspectionApi.request(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 }

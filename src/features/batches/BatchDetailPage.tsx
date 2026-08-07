@@ -255,8 +255,7 @@ export function BatchDetailPage() {
                   { label: lang === "vi" ? "Danh mục" : "Category", value: batch.category },
                   { label: lang === "vi" ? "Mã lô hàng" : "Batch Code", value: batch.batchCode ?? batch.id, mono: true },
                   { label: lang === "vi" ? "Ngày thu hoạch" : "Harvest Date", value: batch.harvestDate },
-                  { label: lang === "vi" ? "Số lượng" : "Quantity", value: `${batch.quantity.toLocaleString()} ${batch.unit ?? "units"}` },
-                  { label: lang === "vi" ? "Tổng khối lượng" : "Total Weight", value: batch.weight },
+                  { label: lang === "vi" ? "Số lượng" : "Quantity", value: batch.quantity.toLocaleString() },
                   { label: lang === "vi" ? "Trạng thái" : "Status", value: statusNorm || batch.status },
                 ].map(({ label, value, mono }) => (
                   <div key={label} className="flex justify-between items-start gap-3">
@@ -371,59 +370,59 @@ export function BatchDetailPage() {
 
         {/* ── Timeline ── */}
         {activeTab === "Timeline" && (
-          <div className="max-w-3xl">
-            <div className="flex justify-end mb-4">
+          <div className="max-w-2xl">
+            <div className="flex justify-end mb-3">
               <button
                 onClick={() => setShowEventModal(true)}
-                className="px-4 py-2 rounded-xl text-sm font-semibold bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-2"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-green-600 text-white hover:bg-green-700 transition-colors flex items-center gap-1.5 shadow-xs"
               >
-                <Plus className="w-4 h-4" /> {lang === "vi" ? "Thêm Sự Kiện" : "Add Event"}
+                <Plus className="w-3.5 h-3.5" /> {lang === "vi" ? "Thêm Sự Kiện" : "Add Event"}
               </button>
             </div>
             {timelineLoading ? (
-              <div className="flex flex-col items-center py-16 gap-3">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center animate-pulse" style={{ background: "#E8F5E9" }}>
-                  <Calendar className="w-5 h-5" style={{ color: "#2E7D32" }} />
+              <div className="flex flex-col items-center py-12 gap-2">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center animate-pulse" style={{ background: "#E8F5E9" }}>
+                  <Calendar className="w-4 h-4" style={{ color: "#2E7D32" }} />
                 </div>
-                <div className="text-sm text-gray-400">{lang === "vi" ? "Đang tải lịch sử..." : "Loading timeline..."}</div>
+                <div className="text-xs text-gray-400">{lang === "vi" ? "Đang tải lịch sử..." : "Loading timeline..."}</div>
               </div>
             ) : timelineEvents.length === 0 ? (
-              <div className="flex flex-col items-center py-16 gap-3">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: "#F0F9F0" }}>
-                  <Calendar className="w-7 h-7" style={{ color: "#A5D6A7" }} />
+              <div className="flex flex-col items-center py-12 gap-2">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: "#F0F9F0" }}>
+                  <Calendar className="w-6 h-6" style={{ color: "#A5D6A7" }} />
                 </div>
-                <div className="font-semibold text-gray-600">{lang === "vi" ? "Chưa có sự kiện nào" : "No timeline events yet"}</div>
-                <div className="text-sm text-gray-400">{lang === "vi" ? "Các sự kiện sẽ xuất hiện khi lô hàng di chuyển qua chuỗi cung ứng" : "Events will appear as this batch moves through the supply chain"}</div>
+                <div className="font-semibold text-gray-600 text-sm">{lang === "vi" ? "Chưa có sự kiện nào" : "No timeline events yet"}</div>
+                <div className="text-xs text-gray-400">{lang === "vi" ? "Các sự kiện sẽ xuất hiện khi lô hàng di chuyển qua chuỗi cung ứng" : "Events will appear as this batch moves through the supply chain"}</div>
               </div>
             ) : (
               <div className="relative">
                 {timelineEvents.map((event, index) => (
-                  <div key={event.id} className="flex gap-5 mb-2 last:mb-0">
+                  <div key={event.id} className="flex gap-3 mb-1 last:mb-0">
                     <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl flex-shrink-0 z-10" style={{ background: "#E8F5E9", border: "3px solid #2E7D32" }}>
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0 z-10" style={{ background: "#E8F5E9", border: "2px solid #2E7D32" }}>
                         {event.icon}
                       </div>
                       {index < timelineEvents.length - 1 && (
-                        <div className="w-0.5 flex-1 my-1" style={{ background: "linear-gradient(to bottom, #2E7D32, #A5D6A7)", minHeight: 40 }} />
+                        <div className="w-0.5 flex-1 my-0.5" style={{ background: "linear-gradient(to bottom, #2E7D32, #A5D6A7)", minHeight: 24 }} />
                       )}
                     </div>
-                    <div className="flex-1 pb-5">
-                      <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                        <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 pb-3">
+                      <div className="bg-white rounded-xl p-3.5" style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)", border: "1px solid #EFA" }}>
+                        <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h4 className="font-bold text-gray-900" style={{ fontSize: 15 }}>{event.stage}</h4>
-                            <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                            <h4 className="font-bold text-gray-900" style={{ fontSize: 14 }}>{event.stage}</h4>
+                            <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400">
                               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{event.date}</span>
                               <span>{event.time}</span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: "#E8F5E9" }}>
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: "#E8F5E9" }}>
                             <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                            <span className="text-xs font-semibold" style={{ color: "#2E7D32" }}>{lang === "vi" ? "Xác thực" : "Verified"}</span>
+                            <span className="text-[11px] font-semibold" style={{ color: "#2E7D32" }}>{lang === "vi" ? "Xác thực" : "Verified"}</span>
                           </div>
                         </div>
-                        <p className="text-sm text-gray-600 leading-relaxed mb-4">{event.description}</p>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                        <p className="text-xs text-gray-600 leading-relaxed mb-2.5">{event.description}</p>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2.5">
                           {[
                             { label: lang === "vi" ? "Tổ chức" : "Organization", value: event.organization },
                             { label: lang === "vi" ? "Địa điểm" : "Location", value: event.location },
@@ -431,18 +430,18 @@ export function BatchDetailPage() {
                             ...(event.temp ? [{ label: lang === "vi" ? "Nhiệt độ" : "Temperature", value: event.temp }] : []),
                             ...(event.humidity ? [{ label: lang === "vi" ? "Độ ẩm" : "Humidity", value: event.humidity }] : []),
                           ].map(({ label, value }) => (
-                            <div key={label} className="p-2.5 rounded-xl" style={{ background: "#F8FAF8" }}>
-                              <div className="text-xs text-gray-400 mb-0.5">{label}</div>
-                              <div className="text-sm font-medium text-gray-800">{value}</div>
+                            <div key={label} className="p-2 rounded-lg" style={{ background: "#F8FAF8" }}>
+                              <div className="text-[11px] text-gray-400 mb-0.5">{label}</div>
+                              <div className="text-xs font-medium text-gray-800 truncate">{value}</div>
                             </div>
                           ))}
                         </div>
-                        <div className="rounded-xl p-3" style={{ background: "#F0F4F0" }}>
-                          <div className="flex items-center gap-1 mb-1">
+                        <div className="rounded-lg p-2" style={{ background: "#F0F4F0" }}>
+                          <div className="flex items-center gap-1 mb-0.5">
                             <Hash className="w-3 h-3 text-gray-400" />
-                             <span className="text-xs font-semibold text-gray-500">{lang === "vi" ? "Mã xích Blockchain" : "Blockchain Hash"}</span>
+                            <span className="text-[11px] font-semibold text-gray-500">{lang === "vi" ? "Mã xích Blockchain" : "Blockchain Hash"}</span>
                           </div>
-                          <code className="text-xs text-gray-600 break-all leading-relaxed">{event.hash}</code>
+                          <code className="text-[11px] text-gray-600 break-all leading-snug font-mono">{event.hash}</code>
                         </div>
                       </div>
                     </div>
@@ -489,7 +488,7 @@ export function BatchDetailPage() {
                         Phiếu Kiểm Định QA/QC
                       </h4>
                       <p className="text-xs text-gray-500 mb-3 font-medium">
-                        Loại: {InspectionTypeLabel[ins.inspectionType] || "Kiểm định nông sản"}
+                        Loại: {InspectionTypeLabel[ins.inspectionType as import("../inspection/inspection.types").InspectionType]?.[lang] || "Kiểm định nông sản"}
                       </p>
                       <div className="space-y-1.5 border-t border-gray-100 pt-3">
                         <div className="flex justify-between text-xs">
