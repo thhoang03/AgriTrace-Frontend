@@ -165,6 +165,7 @@ export function HomePage() {
     const searchText = (overrideQuery ?? query).trim();
     if (!searchText) return;
 
+    // Check if input is a full URL like http://.../trace/RICE-20260112-001
     if (searchText.includes("/trace/")) {
       const parts = searchText.split("/trace/");
       const extractedId = parts[parts.length - 1];

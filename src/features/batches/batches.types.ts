@@ -20,6 +20,7 @@ export type BatchStatus =
 export interface Batch {
   id: string;
   batchCode?: string;
+  gtin?: string;
   product: string;
   productId?: string;
   productName?: string;

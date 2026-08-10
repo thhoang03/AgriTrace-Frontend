@@ -17,7 +17,7 @@ export const QRGeneratorWidget: React.FC<QRGeneratorWidgetProps> = ({ lang = "en
 
   const cleanBatchCode = batchCode.trim() || "RICE-20260112-001";
   const qrUrl = `${window.location.origin}/trace/${encodeURIComponent(cleanBatchCode)}`;
-  
+
   // High-res QR Code API generator
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrUrl)}&color=1B5E20&bg=ffffff&margin=10`;
 

@@ -141,6 +141,7 @@ function adaptBatchFromListItem(item: any): Batch {
   return {
     id: item.batchId ?? item.id ?? "",
     batchCode: item.batchCode ?? "",
+    gtin: item.productGtin ?? item.gtin ?? item.product?.gtin ?? "",
     product: item.productName ?? "",
     productId: item.productId ? String(item.productId) : undefined,
     productName: item.productName ?? "",
@@ -175,6 +176,7 @@ function adaptBatchFromDetail(item: any): Batch {
   return {
     id: item.batchId ?? item.id ?? "",
     batchCode: item.batchCode ?? "",
+    gtin: item.productGtin ?? item.gtin ?? item.product?.gtin ?? "",
     product: item.productName ?? "",
     productId: item.productId ? String(item.productId) : undefined,
     productName: item.productName ?? "",
@@ -274,7 +276,8 @@ function adaptCreateToNew(legacy: CreateBatchRequest): NewCreateBatchRequest {
     unitId: legacy.unitId ?? legacy.unit ?? "",
     productionDate: legacy.productionDate || legacy.harvestDate || new Date().toISOString().split("T")[0],
     expiryDate: legacy.expiryDate || null,
-  };
+    location: legacy.location || legacy.productionArea || undefined,
+  } as any;
 }
 
 function adaptUpdateToNew(legacy: UpdateBatchRequest): NewUpdateBatchRequest {

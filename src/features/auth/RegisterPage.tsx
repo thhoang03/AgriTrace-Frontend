@@ -1,10 +1,23 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Leaf, Eye, EyeOff, Shield, Lock, User, Mail, Building2, MapPin, ArrowLeft, CheckCircle2 } from "lucide-react";
+import {
+  Leaf,
+  Eye,
+  EyeOff,
+  Shield,
+  Lock,
+  User,
+  Mail,
+  Building2,
+  MapPin,
+  ArrowLeft,
+  CheckCircle2,
+} from "lucide-react";
 import { useAuth } from "./auth.store";
 import { get } from "../../lib/api";
 import { authApi } from "./auth.api";
-const BG_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1200&q=80";
+const BG_IMG =
+  "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1200&q=80";
 
 interface OrganizationTypeOption {
   id: string;
@@ -35,7 +48,8 @@ export function RegisterPage() {
     organizationAddress: "",
   });
 
-  const [orgTypes, setOrgTypes] = useState<OrganizationTypeOption[]>(DEFAULT_ORG_TYPES);
+  const [orgTypes, setOrgTypes] =
+    useState<OrganizationTypeOption[]>(DEFAULT_ORG_TYPES);
   const [loadingOrgTypes, setLoadingOrgTypes] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
@@ -98,13 +112,19 @@ export function RegisterPage() {
 
     setSubmitting(true);
     try {
-      const selectedType = orgTypes.find((t) => t.id === form.organizationTypeId);
-      const isGuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(form.organizationTypeId);
+      const selectedType = orgTypes.find(
+        (t) => t.id === form.organizationTypeId,
+      );
+      const isGuid =
+        /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+          form.organizationTypeId,
+        );
 
       await authApi.register({
         fullName: form.fullName,
         email: form.email,
         password: form.password,
+        role: form.role,
         organizationName: form.organizationName,
         organizationTypeId: isGuid ? form.organizationTypeId : undefined,
         organizationTypeCode: selectedType?.code || form.organizationTypeId,
@@ -121,9 +141,9 @@ export function RegisterPage() {
       try {
         const parsed = JSON.parse(apiMsg);
         if (parsed[lang]) {
-            apiMsg = parsed[lang];
-        } else if (parsed['en']) {
-            apiMsg = parsed['en'];
+          apiMsg = parsed[lang];
+        } else if (parsed["en"]) {
+          apiMsg = parsed["en"];
         }
       } catch (e) {
         // Not a JSON string
@@ -151,7 +171,10 @@ export function RegisterPage() {
         />
         <div
           className="absolute inset-0"
-          style={{ background: "linear-gradient(135deg, rgba(27,94,32,0.93) 0%, rgba(46,125,50,0.86) 100%)" }}
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(27,94,32,0.93) 0%, rgba(46,125,50,0.86) 100%)",
+          }}
         />
         <div className="relative z-10 flex flex-col h-full p-12">
           {/* Logo */}
@@ -166,7 +189,9 @@ export function RegisterPage() {
               <div className="text-white font-bold" style={{ fontSize: 18 }}>
                 AgriTrace Vietnam
               </div>
-              <div className="text-green-200 text-xs">National Traceability Network</div>
+              <div className="text-green-200 text-xs">
+                National Traceability Network
+              </div>
             </div>
           </div>
 
@@ -187,7 +212,8 @@ export function RegisterPage() {
               <span style={{ color: "#A5D6A7" }}>Agricultural Ecosystem</span>
             </h1>
             <p className="text-green-200 leading-relaxed text-sm mb-8">
-              Register an account to connect your business, farm, or facility to the national agricultural supply chain traceability platform.
+              Register an account to connect your business, farm, or facility to
+              the national agricultural supply chain traceability platform.
             </p>
 
             <div className="space-y-4">
@@ -217,11 +243,13 @@ export function RegisterPage() {
               <CheckCircle2 className="w-10 h-10 text-green-600" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">
-              {lang === "vi" ? "Đăng ký thành công!" : "Registration Successful!"}
+              {lang === "vi"
+                ? "Đăng ký thành công!"
+                : "Registration Successful!"}
             </h2>
             <p className="text-gray-600 mb-8 leading-relaxed">
-              {lang === "vi" 
-                ? "Tài khoản và tổ chức của bạn đã được đăng ký thành công. Hệ thống đang chờ quản trị viên phê duyệt trước khi bạn có thể đăng nhập. Vui lòng quay lại sau hoặc liên hệ quản trị viên." 
+              {lang === "vi"
+                ? "Tài khoản và tổ chức của bạn đã được đăng ký thành công. Hệ thống đang chờ quản trị viên phê duyệt trước khi bạn có thể đăng nhập. Vui lòng quay lại sau hoặc liên hệ quản trị viên."
                 : "Your account and organization have been successfully registered. The system is waiting for administrator approval before you can log in. Please check back later or contact the administrator."}
             </p>
             <button
@@ -247,14 +275,21 @@ export function RegisterPage() {
             {/* Header */}
             <div className="mb-6 flex items-start justify-between">
               <div>
-                <h2 className="text-gray-900" style={{ fontSize: 28, fontWeight: 700 }}>
-                  {lang === "vi" ? "Đăng ký Tổ chức" : "Register Organization Account"}
+                <h2
+                  className="text-gray-900"
+                  style={{ fontSize: 28, fontWeight: 700 }}
+                >
+                  {lang === "vi"
+                    ? "Đăng ký Tổ chức"
+                    : "Register Organization Account"}
                 </h2>
                 <p className="text-gray-500 text-sm mt-1">
-                  {lang === "vi" ? "Đăng ký tham gia hệ thống truy xuất nguồn gốc AgriTrace" : "Register your organization for access to the AgriTrace supply chain network"}
+                  {lang === "vi"
+                    ? "Đăng ký tham gia hệ thống truy xuất nguồn gốc AgriTrace"
+                    : "Register your organization for access to the AgriTrace supply chain network"}
                 </p>
               </div>
-              
+
               <select
                 value={lang}
                 onChange={(e) => setLang(e.target.value)}
@@ -277,7 +312,9 @@ export function RegisterPage() {
                     <input
                       type="text"
                       value={form.fullName}
-                      onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, fullName: e.target.value })
+                      }
                       placeholder="John Doe"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 bg-white"
                       required
@@ -294,7 +331,9 @@ export function RegisterPage() {
                     <input
                       type="email"
                       value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, email: e.target.value })
+                      }
                       placeholder="example@agritrace.vn"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 bg-white"
                       required
@@ -314,7 +353,9 @@ export function RegisterPage() {
                     <input
                       type={showPass ? "text" : "password"}
                       value={form.password}
-                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, password: e.target.value })
+                      }
                       placeholder="At least 6 characters"
                       className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 bg-white"
                       required
@@ -324,7 +365,11 @@ export function RegisterPage() {
                       onClick={() => setShowPass(!showPass)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPass ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -338,7 +383,9 @@ export function RegisterPage() {
                     <input
                       type={showConfirmPass ? "text" : "password"}
                       value={form.confirmPassword}
-                      onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, confirmPassword: e.target.value })
+                      }
                       placeholder="Re-enter password"
                       className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 bg-white"
                       required
@@ -348,7 +395,11 @@ export function RegisterPage() {
                       onClick={() => setShowConfirmPass(!showConfirmPass)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showConfirmPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showConfirmPass ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -357,7 +408,8 @@ export function RegisterPage() {
               {/* Organization section */}
               <div className="p-5 rounded-xl border border-green-100 bg-green-50/40 space-y-4">
                 <div className="text-xs font-semibold text-green-900 flex items-center gap-1.5 uppercase tracking-wide">
-                  <Building2 className="w-4 h-4 text-green-700" /> Organization Information
+                  <Building2 className="w-4 h-4 text-green-700" /> Organization
+                  Information
                 </div>
 
                 <div>
@@ -367,7 +419,9 @@ export function RegisterPage() {
                   <input
                     type="text"
                     value={form.organizationName}
-                    onChange={(e) => setForm({ ...form, organizationName: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, organizationName: e.target.value })
+                    }
                     placeholder="e.g. Moc Chau Green Produce Farm"
                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 bg-white"
                     required
@@ -381,13 +435,17 @@ export function RegisterPage() {
                     </label>
                     <select
                       value={form.organizationTypeId}
-                      onChange={(e) => setForm({ ...form, organizationTypeId: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, organizationTypeId: e.target.value })
+                      }
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 bg-white cursor-pointer"
                       required
                       disabled={loadingOrgTypes}
                     >
                       {orgTypes.map((ot) => {
-                        const cleanName = (ot.name || ot.code || "").replace(/\s*\([^)]+\)$/, "").trim();
+                        const cleanName = (ot.name || ot.code || "")
+                          .replace(/\s*\([^)]+\)$/, "")
+                          .trim();
                         return (
                           <option key={ot.id} value={ot.id}>
                             {cleanName}
@@ -406,7 +464,12 @@ export function RegisterPage() {
                       <input
                         type="text"
                         value={form.organizationAddress}
-                        onChange={(e) => setForm({ ...form, organizationAddress: e.target.value })}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            organizationAddress: e.target.value,
+                          })
+                        }
                         placeholder="Headquarters / Farm address"
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 bg-white"
                       />
@@ -415,7 +478,8 @@ export function RegisterPage() {
                 </div>
 
                 <p className="text-xs text-green-700">
-                  Your account will automatically be granted the <strong>Manager</strong> role for this organization.
+                  Your account will automatically be granted the{" "}
+                  <strong>Manager</strong> role for this organization.
                 </p>
               </div>
 
@@ -430,7 +494,8 @@ export function RegisterPage() {
                 disabled={submitting}
                 className="w-full py-3.5 rounded-xl text-white font-semibold text-sm transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2 mt-1"
                 style={{
-                  background: "linear-gradient(135deg, #2E7D32 0%, #388E3C 100%)",
+                  background:
+                    "linear-gradient(135deg, #2E7D32 0%, #388E3C 100%)",
                   boxShadow: "0 4px 18px rgba(46,125,50,0.35)",
                 }}
               >

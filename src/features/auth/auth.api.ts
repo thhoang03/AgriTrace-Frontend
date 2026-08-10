@@ -1,5 +1,10 @@
 import { post, get, put } from "../../lib/api";
-import type { LoginRequest, ChangePasswordRequest, LoginData, UserBasic } from "../../types/mapping";
+import type {
+  LoginRequest,
+  ChangePasswordRequest,
+  LoginData,
+  UserBasic,
+} from "../../types/mapping";
 import { adaptLoginDataToResponse } from "../../types/mapping";
 
 // Legacy LoginResponse for backward compatibility
@@ -17,16 +22,36 @@ export const authApi = {
     return adaptLoginDataToResponse(response.data);
   },
 
-  register: async (data: any) => {
-    const response = await post<LoginData>("/auth/register", data);
-    return adaptLoginDataToResponse(response.data);
+  register: async (data: {
+    fullName: string;
+    email: string;
+    password: string;
+    role: string;
+    organizationName: string;
+    organizationTypeId?: string;
+    organizationTypeCode?: string;
+    organizationAddress?: string;
+  }) => {
+    return post<any>("/auth/register", {
+      fullName: data.fullName,
+      email: data.email,
+      password: data.password,
+      role: data.role,
+      organizationName: data.organizationName,
+      organizationTypeId: data.organizationTypeId,
+      organizationTypeCode: data.organizationTypeCode,
+      organizationAddress: data.organizationAddress,
+    });
   },
 
   logout: () => post<void>("/auth/logout"),
 
   getProfile: () => get<UserBasic>("/auth/me"),
 
-  refreshToken: (refreshToken?: string) => post<{ accessToken: string; refreshToken: string }>("/auth/refresh-token", { refreshToken }),
+  refreshToken: (refreshToken?: string) =>
+    post<{ accessToken: string; refreshToken: string }>("/auth/refresh-token", {
+      refreshToken,
+    }),
 
   changePassword: (data: ChangePasswordRequest) =>
     put<void>("/auth/change-password", {

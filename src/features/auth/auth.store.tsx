@@ -96,17 +96,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = useCallback(async (data: any) => {
     setLoading(true);
     try {
-      const res = await authApi.register(data);
-      const normalized = normalizeUser(res.user);
-      setUser(normalized);
-      setToken(res.accessToken);
-      if (res.refreshToken) setRefreshToken(res.refreshToken);
-      sessionStorage.setItem("agritrace_user", JSON.stringify(normalized));
-      if (res.mustChangePassword) {
-        setMustChangePassword(true);
-        sessionStorage.setItem("agritrace_must_change_password", "true");
-      }
-      return res.mustChangePassword ?? false;
+      await authApi.register(data);
+      return false;
     } finally {
       setLoading(false);
     }

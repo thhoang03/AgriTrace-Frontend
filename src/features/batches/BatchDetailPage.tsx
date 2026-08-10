@@ -254,7 +254,9 @@ export function BatchDetailPage() {
                 {[
                   { label: lang === "vi" ? "Tên sản phẩm" : "Product Name", value: batch.productName ?? batch.product },
                   { label: lang === "vi" ? "Danh mục" : "Category", value: batch.category },
+                  { label: lang === "vi" ? "Mã GTIN (GS1)" : "GTIN Code (GS1)", value: batch.gtin || "—", mono: true },
                   { label: lang === "vi" ? "Mã lô hàng" : "Batch Code", value: batch.batchCode ?? batch.id, mono: true },
+                  ...(batch.gs1BatchCode ? [{ label: lang === "vi" ? "Mã vạch GS1-128" : "GS1-128 Code", value: batch.gs1BatchCode, mono: true }] : []),
                   { label: lang === "vi" ? "Ngày thu hoạch" : "Harvest Date", value: batch.harvestDate },
                   { label: lang === "vi" ? "Số lượng" : "Quantity", value: batch.quantity.toLocaleString() },
                   { label: lang === "vi" ? "Trạng thái" : "Status", value: statusNorm || batch.status },

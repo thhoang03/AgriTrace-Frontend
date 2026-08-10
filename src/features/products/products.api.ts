@@ -23,6 +23,7 @@ function adaptProductFromListItem(item: any): FeProductListItem {
     id: idStr,
     productId: idStr,
     name: item.name ?? "",
+    gtin: item.gtin ?? item.Gtin ?? undefined,
     categoryId: item.categoryId ? String(item.categoryId) : undefined,
     categoryName: item.categoryName ?? "",
     unit: item.unit ?? "",
@@ -41,6 +42,7 @@ function adaptProductFromDetail(item: any): Product {
     id: idStr,
     productId: idStr,
     name: item.name ?? "",
+    gtin: item.gtin ?? item.Gtin ?? undefined,
     categoryId: item.category?.id ? String(item.category.id) : (item.categoryId ? String(item.categoryId) : undefined),
     categoryName: item.category?.name ?? item.categoryName ?? "",
     category: item.category ? { id: String(item.category.id), name: item.category.name } : undefined,
@@ -82,11 +84,13 @@ export const productsApi = {
   },
 
   createProduct: async (data: CreateProductRequest) => {
-    const payload: ProductRequest = {
+    const isGuid = (val?: string) => val && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(val);
+    const payload: ProductRequest & { gtin?: string } = {
       name: data.name,
+      gtin: data.gtin || undefined,
       categoryId: data.categoryId || undefined,
-      unit: data.unit,
-      unitId: data.unitId || undefined,
+      unit: isGuid(data.unit) ? undefined : data.unit,
+      unitId: isGuid(data.unitId) ? data.unitId : (isGuid(data.unit) ? data.unit : undefined),
       organizationId: data.organizationId || undefined,
     };
     const response = await post<{ id?: string; productId?: string }>("/products", payload);
@@ -95,11 +99,13 @@ export const productsApi = {
   },
 
   updateProduct: async (id: string, data: UpdateProductRequest) => {
-    const payload: ProductRequest = {
+    const isGuid = (val?: string) => val && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(val);
+    const payload: ProductRequest & { gtin?: string } = {
       name: data.name || "",
+      gtin: data.gtin || undefined,
       categoryId: data.categoryId || undefined,
-      unit: data.unit,
-      unitId: data.unitId || undefined,
+      unit: isGuid(data.unit) ? undefined : data.unit,
+      unitId: isGuid(data.unitId) ? data.unitId : (isGuid(data.unit) ? data.unit : undefined),
       organizationId: data.organizationId || undefined,
     };
     return put<void>(`/products/${id}`, payload);

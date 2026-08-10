@@ -15,6 +15,7 @@ interface ProductFormModalProps {
     categoryId?: string;
     unit?: string;
     organizationId?: string;
+    gtin?: string;
   };
 }
 
@@ -25,6 +26,7 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
     name: "",
     categoryId: "",
     unit: "40000000-0000-0000-0000-000000000001",
+    gtin: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -37,16 +39,30 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
 
   useEffect(() => {
     if (initialData) {
+      let mappedUnitGuid = initialData.unitId || "";
+      if (!mappedUnitGuid && initialData.unit) {
+        const u = initialData.unit.toLowerCase();
+        if (u.includes("kg") || u.includes("kilogram")) mappedUnitGuid = "40000000-0000-0000-0000-000000000001";
+        else if (u.includes("ton")) mappedUnitGuid = "40000000-0000-0000-0000-000000000008";
+        else if (u.includes("box")) mappedUnitGuid = "40000000-0000-0000-0000-000000000005";
+        else if (u.includes("sack")) mappedUnitGuid = "40000000-0000-0000-0000-000000000009";
+        else if (u.includes("bag") || u.includes("pack") || u.includes("piece")) mappedUnitGuid = "40000000-0000-0000-0000-000000000007";
+        else if (u.includes("liter")) mappedUnitGuid = "40000000-0000-0000-0000-000000000003";
+      }
+      if (!mappedUnitGuid) mappedUnitGuid = "40000000-0000-0000-0000-000000000001";
+
       setFormData({
         name: initialData.name || "",
         categoryId: initialData.categoryId || (categories.length > 0 ? String(categories[0].id) : ""),
-        unit: initialData.unit || "40000000-0000-0000-0000-000000000001",
+        unit: mappedUnitGuid,
+        gtin: initialData.gtin || "",
       });
     } else {
       setFormData({
         name: "",
         categoryId: categories.length > 0 ? String(categories[0].id) : "",
         unit: "40000000-0000-0000-0000-000000000001",
+        gtin: "",
       });
     }
   }, [initialData, isOpen, categoriesData]);
@@ -80,6 +96,7 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
             unitId: formData.unit,
             unit: formData.unit,
             organizationId: orgId,
+            gtin: formData.gtin || undefined,
           },
         });
         toast.success(lang === "vi" ? "Cập nhật sản phẩm thành công!" : "Product updated successfully!");
@@ -90,6 +107,7 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
           unitId: formData.unit,
           unit: formData.unit,
           organizationId: orgId,
+          gtin: formData.gtin || undefined,
         });
         toast.success(lang === "vi" ? "Tạo sản phẩm mới thành công!" : "Product created successfully!");
       }
@@ -143,6 +161,37 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100"
             />
             {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-sm font-semibold text-gray-700">
+                GTIN (GS1 Standard)
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  const randomDigits = "893" + Math.floor(10000000 + Math.random() * 90000000).toString();
+                  let sum = 0;
+                  for (let i = 0; i < 11; i++) {
+                    const val = parseInt(randomDigits[i], 10);
+                    sum += (i % 2 === 0) ? val : val * 3;
+                  }
+                  const checkDigit = (10 - (sum % 10)) % 10;
+                  setFormData({ ...formData, gtin: randomDigits + checkDigit });
+                }}
+                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1"
+              >
+                ⚡ Auto-generate GS1
+              </button>
+            </div>
+            <input
+              type="text"
+              value={formData.gtin}
+              onChange={(e) => setFormData({ ...formData, gtin: e.target.value.replace(/\D/g, '').slice(0, 14) })}
+              placeholder="e.g. 8934567890123 (Leave blank for auto-generation)"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100 font-mono"
+            />
           </div>
 
           <div>
