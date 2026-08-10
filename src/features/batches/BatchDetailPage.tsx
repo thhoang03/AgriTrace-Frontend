@@ -107,13 +107,14 @@ export function BatchDetailPage() {
   };
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/app/batches/${batch?.id}`;
+    // Share the PUBLIC trace URL so consumers can scan/open it without login
+    const publicTraceUrl = `${window.location.origin}/trace/${encodeURIComponent(batch?.batchCode || batch?.id || "")}`;
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Batch Traceability - ${batch?.productName || batch?.product}`,
-          text: `Check traceability for Batch ${batch?.batchCode || batch?.id}`,
-          url: shareUrl,
+          title: `Truy xuất nguồn gốc - ${batch?.productName || batch?.product}`,
+          text: `Quét mã QR để xem hành trình chuỗi cung ứng lô hàng ${batch?.batchCode || batch?.id}`,
+          url: publicTraceUrl,
         });
         return;
       } catch {
@@ -121,10 +122,10 @@ export function BatchDetailPage() {
       }
     }
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      alert("Traceability link copied to clipboard!");
+      await navigator.clipboard.writeText(publicTraceUrl);
+      alert("Đã sao chép liên kết tra cứu công khai vào clipboard!");
     } catch {
-      alert(`Traceability link: ${shareUrl}`);
+      alert(`Liên kết tra cứu công khai: ${publicTraceUrl}`);
     }
   };
 
@@ -328,17 +329,27 @@ export function BatchDetailPage() {
                   <code className="text-xs font-mono px-3 py-1 rounded-lg" style={{ background: "#E8F5E9", color: "#2E7D32" }}>
                     {qrCode?.batchCode ?? batch.batchCode ?? batch.id}
                   </code>
-                  {qrCode?.qrCodeUrl && (
-                    <div className="text-xs text-gray-400 text-center break-all leading-relaxed">{qrCode.qrCodeUrl}</div>
-                  )}
+                  {/* Public trace URL */}
+                  <div className="text-[10px] text-gray-400 text-center break-all leading-relaxed font-mono bg-gray-50 px-2 py-1.5 rounded-lg border border-gray-100">
+                    /trace/{batch.batchCode || batch.id}
+                  </div>
                   <div className="flex gap-2 w-full">
                     <button onClick={handleDownloadQr} className="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5">
-                      <Download className="w-3.5 h-3.5" /> {lang === "vi" ? "Tải xuống" : "Download"}
+                      <Download className="w-3.5 h-3.5" /> {lang === "vi" ? "Tải QR" : "Download"}
                     </button>
-                    <button className="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5" style={{ background: "#2E7D32" }}>
-                      {lang === "vi" ? "In" : "Print"}
+                    <button onClick={handleShare} className="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5" style={{ background: "#2E7D32" }}>
+                      {lang === "vi" ? "Chia sẻ" : "Share"}
                     </button>
                   </div>
+                  {/* View public trace page link */}
+                  <a
+                    href={`/trace/${encodeURIComponent(batch.batchCode || batch.id)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center justify-center gap-1 transition-colors"
+                  >
+                    {lang === "vi" ? "🔗 Mở trang tra cứu công khai →" : "🔗 Open public trace page →"}
+                  </a>
                 </div>
               </div>
 
@@ -604,7 +615,7 @@ export function BatchDetailPage() {
                         </div>
                         {req.description && (
                           <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2.5 rounded-xl border border-gray-100 italic">
-                            "{req.description}"
+                            &ldquo;{req.description}&rdquo;
                           </div>
                         )}
                       </div>
