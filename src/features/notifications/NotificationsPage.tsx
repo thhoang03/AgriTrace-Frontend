@@ -170,7 +170,7 @@ export function NotificationsPage() {
           ].map(({ label, value, color, bg }) => (
             <div
               key={label}
-              className="bg-white rounded-2xl p-5 flex items-center gap-4"
+              className="bg-card rounded-2xl p-5 flex items-center gap-4"
               style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}
             >
               <div
@@ -180,8 +180,8 @@ export function NotificationsPage() {
                 <Bell style={{ color, width: 18, height: 18 }} />
               </div>
               <div>
-                <div className="text-2xl font-extrabold text-gray-900">{value}</div>
-                <div className="text-xs text-gray-500 font-medium">{label}</div>
+                <div className="text-2xl font-extrabold text-foreground">{value}</div>
+                <div className="text-xs text-muted-foreground font-medium">{label}</div>
               </div>
             </div>
           ))}
@@ -189,11 +189,11 @@ export function NotificationsPage() {
 
         {/* Main content card */}
         <div
-          className="bg-white rounded-2xl overflow-hidden"
+          className="bg-card rounded-2xl overflow-hidden"
           style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.07)" }}
         >
           {/* Filter tabs */}
-          <div className="flex items-center gap-1 px-5 pt-5 pb-0 border-b border-gray-100 overflow-x-auto">
+          <div className="flex items-center gap-1 px-5 pt-5 pb-0 border-b border-border overflow-x-auto">
             {(lang === "vi" ? FILTER_TABS_VI : FILTER_TABS_EN).map(({ key, label }) => (
               <button
                 key={key}
@@ -201,7 +201,7 @@ export function NotificationsPage() {
                 className={`px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 transition-all ${
                   filter === key
                     ? "border-green-600 text-green-700"
-                    : "border-transparent text-gray-500 hover:text-gray-700"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {label}
@@ -225,15 +225,15 @@ export function NotificationsPage() {
                   <div className="w-10 h-10 rounded-xl bg-gray-200 flex-shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-4 bg-gray-200 rounded w-48" />
-                    <div className="h-3 bg-gray-100 rounded w-full" />
+                    <div className="h-3 bg-muted rounded w-full" />
                   </div>
                 </div>
               ))}
             </div>
           ) : isError ? (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
               <X className="w-10 h-10 mb-3 text-red-300" />
-              <p className="font-semibold text-red-500">Failed to load notifications</p>
+              <p className="font-semibold text-destructive">Failed to load notifications</p>
               <button
                 onClick={() => refetch()}
                 className="mt-3 text-sm font-medium hover:underline"
@@ -243,13 +243,13 @@ export function NotificationsPage() {
               </button>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
               <Inbox className="w-14 h-14 mb-4 text-gray-300" />
-              <p className="font-semibold text-gray-500 text-lg">No notifications</p>
+              <p className="font-semibold text-muted-foreground text-lg">No notifications</p>
               <p className="text-sm mt-1">You're all caught up! 🎉</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-border">
               {filtered.map((n: any) => {
                 const type = (n.type ?? "SYSTEM").toUpperCase();
                 const cfg = NOTIF_TYPE_CONFIG[type] ?? DEFAULT_CONFIG;
@@ -258,7 +258,7 @@ export function NotificationsPage() {
                 return (
                   <div
                     key={n.notificationId}
-                    className={`flex items-start gap-4 px-5 py-4 transition-colors hover:bg-gray-50 group ${
+                    className={`flex items-start gap-4 px-5 py-4 transition-colors hover:bg-muted group ${
                       !n.isRead ? "bg-green-50/30" : ""
                     }`}
                   >
@@ -285,14 +285,14 @@ export function NotificationsPage() {
                             title="Unread"
                           />
                         )}
-                        <span className="text-xs text-gray-400 ml-auto">
+                        <span className="text-xs text-muted-foreground ml-auto">
                           {formatRelativeTime(n.createdAt, lang)}
                         </span>
                       </div>
-                      <p className="text-sm font-semibold text-gray-800 mt-1">
+                      <p className="text-sm font-semibold text-foreground mt-1">
                         {parseLocalizedText(n.title, lang) || "System Notification"}
                       </p>
-                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{parseLocalizedText(n.message, lang)}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{parseLocalizedText(n.message, lang)}</p>
                     </div>
 
                     {/* Mark as read button (on hover) */}

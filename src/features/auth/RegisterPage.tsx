@@ -16,6 +16,7 @@ import {
 import { useAuth } from "./auth.store";
 import { get } from "../../lib/api";
 import { authApi } from "./auth.api";
+import { useLanguage } from "../../contexts/LanguageContext";
 const BG_IMG =
   "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1200&q=80";
 
@@ -55,7 +56,7 @@ export function RegisterPage() {
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [lang, setLang] = useState("en");
+  const { lang, setLang } = useLanguage();
 
   useEffect(() => {
     async function fetchOrgTypes() {
@@ -92,21 +93,21 @@ export function RegisterPage() {
     setError("");
 
     if (form.password !== form.confirmPassword) {
-      setError("Confirm password does not match.");
+      setError(lang === "vi" ? "Mật khẩu xác nhận không trùng khớp." : "Confirm password does not match.");
       return;
     }
 
     if (form.password.length < 6) {
-      setError("Password must be at least 6 characters long.");
+      setError(lang === "vi" ? "Mật khẩu phải có ít nhất 6 ký tự." : "Password must be at least 6 characters long.");
       return;
     }
 
     if (!form.organizationName.trim()) {
-      setError("Please enter the organization name.");
+      setError(lang === "vi" ? "Vui lòng nhập tên tổ chức." : "Please enter the organization name.");
       return;
     }
     if (!form.organizationTypeId) {
-      setError("Please select an organization type.");
+      setError(lang === "vi" ? "Vui lòng chọn loại hình tổ chức." : "Please select an organization type.");
       return;
     }
 
@@ -137,7 +138,7 @@ export function RegisterPage() {
         err?.response?.data?.message ||
         err?.response?.data?.title ||
         err?.message ||
-        "Registration failed. Please check your information.";
+        (lang === "vi" ? "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin." : "Registration failed. Please check your information.");
       try {
         const parsed = JSON.parse(apiMsg);
         if (parsed[lang]) {
@@ -154,12 +155,19 @@ export function RegisterPage() {
     }
   };
 
-  const FEATURES = [
+  const FEATURES_EN = [
     "Transparent business & farm identification",
     "Product batch & event log management",
     "Digital quality inspection certificates",
     "Direct consumer connection via QR Code",
   ];
+  const FEATURES_VI = [
+    "Định danh minh bạch doanh nghiệp & trang trại",
+    "Quản lý lô hàng & nhật ký sự kiện sản phẩm",
+    "Chứng nhận kiểm định chất lượng điện tử",
+    "Kết nối trực tiếp người tiêu dùng qua mã QR",
+  ];
+  const FEATURES = lang === "vi" ? FEATURES_VI : FEATURES_EN;
 
   return (
     <div className="min-h-screen flex" style={{ background: "#F5F7FA" }}>
@@ -190,7 +198,7 @@ export function RegisterPage() {
                 AgriTrace Vietnam
               </div>
               <div className="text-green-200 text-xs">
-                National Traceability Network
+                {lang === "vi" ? "Mạng Lưới Truy Xuất Nguồn Gốc Quốc Gia" : "National Traceability Network"}
               </div>
             </div>
           </div>
@@ -207,13 +215,14 @@ export function RegisterPage() {
               className="text-white mb-4"
               style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.2 }}
             >
-              Join the National
+              {lang === "vi" ? "Gia Nhập Hệ Sinh Thái" : "Join the National"}
               <br />
-              <span style={{ color: "#A5D6A7" }}>Agricultural Ecosystem</span>
+              <span style={{ color: "#A5D6A7" }}>{lang === "vi" ? "Nông Nghiệp Quốc Gia" : "Agricultural Ecosystem"}</span>
             </h1>
             <p className="text-green-200 leading-relaxed text-sm mb-8">
-              Register an account to connect your business, farm, or facility to
-              the national agricultural supply chain traceability platform.
+              {lang === "vi"
+                ? "Đăng ký tài khoản để kết nối doanh nghiệp, trang trại hoặc cơ sở của bạn với nền tảng truy xuất nguồn gốc chuỗi cung ứng nông sản quốc gia."
+                : "Register an account to connect your business, farm, or facility to the national agricultural supply chain traceability platform."}
             </p>
 
             <div className="space-y-4">
@@ -269,7 +278,7 @@ export function RegisterPage() {
               onClick={() => navigate("/login")}
               className="flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm mb-6 transition-colors self-start"
             >
-              <ArrowLeft className="w-4 h-4" /> Back to Sign In
+              <ArrowLeft className="w-4 h-4" /> {lang === "vi" ? "Về trang Đăng nhập" : "Back to Sign In"}
             </button>
 
             {/* Header */}
@@ -292,7 +301,7 @@ export function RegisterPage() {
 
               <select
                 value={lang}
-                onChange={(e) => setLang(e.target.value)}
+                onChange={(e) => setLang(e.target.value as "vi" | "en")}
                 className="text-xs font-semibold border border-gray-200 rounded-xl px-2.5 py-1.5 outline-none bg-white cursor-pointer mt-1"
               >
                 <option value="en">🇬🇧 EN</option>
@@ -305,7 +314,7 @@ export function RegisterPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-medium text-gray-700 mb-1 block">
-                    Full Name *
+                    {lang === "vi" ? "Họ và Tên *" : "Full Name *"}
                   </label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -324,7 +333,7 @@ export function RegisterPage() {
 
                 <div>
                   <label className="text-xs font-medium text-gray-700 mb-1 block">
-                    Contact Email *
+                    {lang === "vi" ? "Email Liên Hệ *" : "Contact Email *"}
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -346,7 +355,7 @@ export function RegisterPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-medium text-gray-700 mb-1 block">
-                    Password *
+                    {lang === "vi" ? "Mật khẩu *" : "Password *"}
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -376,7 +385,7 @@ export function RegisterPage() {
 
                 <div>
                   <label className="text-xs font-medium text-gray-700 mb-1 block">
-                    Confirm Password *
+                    {lang === "vi" ? "Xác Nhận Mật Khẩu *" : "Confirm Password *"}
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -408,13 +417,12 @@ export function RegisterPage() {
               {/* Organization section */}
               <div className="p-5 rounded-xl border border-green-100 bg-green-50/40 space-y-4">
                 <div className="text-xs font-semibold text-green-900 flex items-center gap-1.5 uppercase tracking-wide">
-                  <Building2 className="w-4 h-4 text-green-700" /> Organization
-                  Information
+                  <Building2 className="w-4 h-4 text-green-700" /> {lang === "vi" ? "Thông Tin Tổ Chức" : "Organization Information"}
                 </div>
 
                 <div>
                   <label className="text-xs font-medium text-gray-700 mb-1 block">
-                    Organization / Business Name *
+                    {lang === "vi" ? "Tên Tổ Chức / Doanh Nghiệp *" : "Organization / Business Name *"}
                   </label>
                   <input
                     type="text"
@@ -431,7 +439,7 @@ export function RegisterPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-medium text-gray-700 mb-1 block">
-                      Organization Type *
+                      {lang === "vi" ? "Loại Hình Tổ Chức *" : "Organization Type *"}
                     </label>
                     <select
                       value={form.organizationTypeId}
@@ -457,7 +465,7 @@ export function RegisterPage() {
 
                   <div>
                     <label className="text-xs font-medium text-gray-700 mb-1 block">
-                      Registered Address
+                      {lang === "vi" ? "Địa Chỉ Đăng Ký" : "Registered Address"}
                     </label>
                     <div className="relative">
                       <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -478,8 +486,12 @@ export function RegisterPage() {
                 </div>
 
                 <p className="text-xs text-green-700">
-                  Your account will automatically be granted the{" "}
-                  <strong>Manager</strong> role for this organization.
+                  {lang === "vi" ? (
+                    <>Tài khoản của bạn sẽ tự động được cấp vai trò <strong>Manager</strong> cho tổ chức này.</>
+                  ) : (
+                    <>Your account will automatically be granted the{" "}
+                    <strong>Manager</strong> role for this organization.</>
+                  )}
                 </p>
               </div>
 
@@ -502,22 +514,22 @@ export function RegisterPage() {
                 {submitting ? (
                   <>
                     <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                    Processing Registration...
+                    {lang === "vi" ? "Đang xử lý đăng ký..." : "Processing Registration..."}
                   </>
                 ) : (
-                  "Register Organization & Account"
+                  lang === "vi" ? "Đăng Ký Tổ Chức & Tài Khoản" : "Register Organization & Account"
                 )}
               </button>
             </form>
 
             <div className="mt-6 text-center text-xs text-gray-600">
-              Already have an account?{" "}
+              {lang === "vi" ? "Đã có tài khoản?" : "Already have an account?"}{" "}
               <button
                 type="button"
                 onClick={() => navigate("/login")}
                 className="font-semibold text-green-700 hover:underline"
               >
-                Sign In Now
+                {lang === "vi" ? "Đăng Nhập Ngay" : "Sign In Now"}
               </button>
             </div>
           </>

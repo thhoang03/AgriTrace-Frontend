@@ -4,10 +4,11 @@ import type { CreateRecallRequest, RecallFilters } from "./recalls.api";
 
 const QUERY_KEY = "recalls";
 
-export function useRecalls(filters?: RecallFilters) {
+export function useRecalls(filters?: RecallFilters, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [QUERY_KEY, filters],
     queryFn: () => recallsApi.getAll(filters),
+    enabled: options?.enabled ?? true,
   });
 }
 

@@ -330,7 +330,7 @@ export function SupplyChainPage() {
 
       <div className="px-6 -mt-4 relative z-10">
         {/* Actions bar */}
-        <div className="bg-white rounded-2xl p-4 mb-5 flex flex-wrap items-center gap-3" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div className="bg-card rounded-2xl p-4 mb-5 flex flex-wrap items-center gap-3" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-xs text-green-700">{lang === "vi" ? "Đã kết nối Blockchain" : "Blockchain connected"}</span>
@@ -353,8 +353,8 @@ export function SupplyChainPage() {
         </div>
 
         {/* Batch search */}
-        <div className="bg-white rounded-2xl p-5 mb-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-          <label className="text-xs font-medium text-gray-500 mb-1.5 block">
+        <div className="bg-card rounded-2xl p-5 mb-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
             {lang === "vi" ? "Mã Lô Hàng (Batch Code)" : "Batch Code"}
           </label>
           <div className="flex gap-2">
@@ -362,8 +362,8 @@ export function SupplyChainPage() {
               value={searchBatchId}
               onChange={(e) => setSearchBatchId(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearchBatch()}
-              className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400"
-              style={{ background: "#F8FAF8", maxWidth: 760 }}
+              className="flex-1 px-3 py-2.5 rounded-xl border border-border bg-input-background text-foreground text-sm outline-none focus:border-green-400"
+              style={{ maxWidth: 760 }}
               placeholder={lang === "vi" ? "Nhập Mã Lô Hàng (Batch Code) để xem hành trình..." : "Enter Batch Code to view timeline..."}
             />
             <QrScannerButton onScan={handleQrScan} />
@@ -382,21 +382,21 @@ export function SupplyChainPage() {
             {/* Left: Guide + Recent Batches */}
             <div className="lg:col-span-2 space-y-5">
               {/* Guide */}
-              <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                <h4 className="font-semibold text-gray-900 mb-5" style={{ fontSize: 15 }}>{lang === "vi" ? "Cách xem sự kiện chuỗi cung ứng" : "How to view supply chain events"}</h4>
+              <div className="bg-card rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+                <h4 className="font-semibold text-foreground mb-5" style={{ fontSize: 15 }}>{lang === "vi" ? "Cách xem sự kiện chuỗi cung ứng" : "How to view supply chain events"}</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[
                     { step: "1", icon: Search, label: lang === "vi" ? "Nhập Mã Lô" : "Enter Batch ID", desc: lang === "vi" ? "Nhập mã lô vào ô tìm kiếm hoặc quét QR" : "Type a batch ID in the search field above, or scan a QR code" },
                     { step: "2", icon: Clock, label: lang === "vi" ? "Chọn Lô Hàng" : "Select a Batch", desc: lang === "vi" ? "Chọn từ lô gần đây hoặc kết quả tìm kiếm" : "Pick from your recent batches below or use the search results" },
                     { step: "3", icon: Hash, label: lang === "vi" ? "Khám Phá Hành Trình" : "Explore Timeline", desc: lang === "vi" ? "Xem các sự kiện được bảo mật bằng blockchain" : "View blockchain-secured events, verify hashes, and track history" },
                   ].map(({ step, icon: Icon, label, desc }) => (
-                    <div key={step} className="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-2 p-4 rounded-xl" style={{ background: "#F8FAF8" }}>
+                    <div key={step} className="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-2 p-4 rounded-xl bg-muted">
                       <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shrink-0" style={{ background: "#2E7D32" }}>{step}</div>
                       <div className="sm:mt-1">
-                        <div className="flex items-center sm:justify-center gap-1.5 font-semibold text-gray-800 text-sm">
+                        <div className="flex items-center sm:justify-center gap-1.5 font-semibold text-foreground text-sm">
                           <Icon className="w-3.5 h-3.5 text-green-600" />{label}
                         </div>
-                        <p className="text-xs text-gray-500 mt-1 leading-relaxed">{desc}</p>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{desc}</p>
                       </div>
                     </div>
                   ))}
@@ -405,24 +405,24 @@ export function SupplyChainPage() {
 
               {/* Recent batches as cards */}
               {recentBatches.length > 0 && (
-                <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+                <div className="bg-card rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                   <div className="flex items-center gap-1.5 mb-4">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-semibold text-gray-900">{lang === "vi" ? "Lô Hàng Gần Đây" : "Recent Batches"}</span>
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-semibold text-foreground">{lang === "vi" ? "Lô Hàng Gần Đây" : "Recent Batches"}</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {recentBatches.slice(0, 6).map((batch: any) => (
                       <button
                         key={batch.id}
                         onClick={() => handleSelectBatch(batch.id, batch.batchCode || batch.id)}
-                        className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-green-300 hover:bg-green-50/50 transition-all text-left"
+                        className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-green-300 hover:bg-green-50/50 transition-all text-left"
                       >
                         <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 font-bold text-white" style={{ background: "#2E7D32" }}>
                           {(batch.batchCode || batch.id).slice(0, 2).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-gray-800 truncate">{batch.batchCode || batch.id.slice(0, 10)}</div>
-                          <div className="text-xs text-gray-500 truncate">{batch.productName || batch.product || ""}</div>
+                          <div className="text-sm font-semibold text-foreground truncate">{batch.batchCode || batch.id.slice(0, 10)}</div>
+                          <div className="text-xs text-muted-foreground truncate">{batch.productName || batch.product || ""}</div>
                         </div>
                       </button>
                     ))}
@@ -434,13 +434,13 @@ export function SupplyChainPage() {
 
             {/* Right: Event Types */}
             <div>
-              <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>{lang === "vi" ? "Loại Sự Kiện" : "Event Types"}</h4>
+              <div className="bg-card rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+                <h4 className="font-semibold text-foreground mb-3" style={{ fontSize: 14 }}>{lang === "vi" ? "Loại Sự Kiện" : "Event Types"}</h4>
                 <div className="space-y-2">
                   {eventTypes.map(({ value, label, emoji, color }) => (
                     <div key={value} className="flex items-center gap-2">
                       <span className="text-sm">{emoji}</span>
-                      <span className="text-xs text-gray-600">{lang === "vi" ? label.vi : label.en}</span>
+                      <span className="text-xs text-muted-foreground">{lang === "vi" ? label.vi : label.en}</span>
                     </div>
                   ))}
                 </div>
@@ -452,10 +452,10 @@ export function SupplyChainPage() {
             {/* Recent batches + QR */}
             <div className="flex flex-col sm:flex-row gap-4 mb-5">
               {recentBatches.length > 0 && (
-                <div className="flex-1 bg-white rounded-2xl p-4" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+                <div className="flex-1 bg-card rounded-2xl p-4" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                   <div className="flex items-center gap-1.5 mb-3">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-semibold text-gray-900">{lang === "vi" ? "Lô Hàng Gần Đây" : "Recent Batches"}</span>
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-semibold text-foreground">{lang === "vi" ? "Lô Hàng Gần Đây" : "Recent Batches"}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {recentBatches.slice(0, 5).map((batch: any) => (
@@ -465,7 +465,7 @@ export function SupplyChainPage() {
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-medium transition-all ${
                           activeBatchId === batch.id
                             ? "border-green-400 bg-green-50 text-green-700"
-                            : "border-gray-200 bg-gray-50 text-gray-600 hover:border-green-300 hover:text-green-600"
+                            : "border-border bg-muted text-muted-foreground hover:border-green-300 hover:text-green-600"
                         }`}
                       >
                         <div className="w-5 h-5 rounded flex items-center justify-center font-bold text-white text-[10px] shrink-0" style={{ background: activeBatchId === batch.id ? "#2E7D32" : "#9CA3AF" }}>
@@ -482,23 +482,23 @@ export function SupplyChainPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               {/* Timeline */}
               <div className="lg:col-span-2">
-                <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                  <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                    <span className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Hành Trình Sự Kiện" : "Event Timeline"}</span>
-                    <span className="text-sm text-gray-400">{events.length} {lang === "vi" ? "sự kiện" : "events"}</span>
+                <div className="bg-card rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+                  <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                    <span className="font-semibold text-foreground" style={{ fontSize: 15 }}>{lang === "vi" ? "Hành Trình Sự Kiện" : "Event Timeline"}</span>
+                    <span className="text-sm text-muted-foreground">{events.length} {lang === "vi" ? "sự kiện" : "events"}</span>
                   </div>
 
                   {eventsLoading ? (
-                    <div className="flex items-center justify-center py-16 text-gray-400 text-sm">{lang === "vi" ? "Đang tải..." : "Loading..."}</div>
+                    <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">{lang === "vi" ? "Đang tải..." : "Loading..."}</div>
                   ) : events.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                       <Hash className="w-10 h-10 mb-3 opacity-30" />
                       <p className="text-sm">{lang === "vi" ? "Chưa có sự kiện nào được ghi nhận cho lô hàng này" : "No events recorded for this batch"}</p>
                     </div>
                   ) : (
                     <div className="p-6">
                       <div className="relative">
-                        <div className="absolute left-5 top-0 bottom-0 w-0.5" style={{ background: "#E8F5E9" }} />
+                        <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-primary/10" />
 
                         <div className="space-y-4">
                           {events.map((event: SupplyChainEvent, idx: number) => {
@@ -549,34 +549,34 @@ export function SupplyChainPage() {
 
                             return (
                               <div key={event.eventId} className="relative flex gap-4">
-                                <div className="relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-lg ring-4 ring-white" style={{ background: "#E8F5E9" }}>
+                                <div className="relative z-10 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-lg ring-4 ring-white bg-primary/10">
                                   {cfg.emoji}
                                 </div>
 
-                                <div className="flex-1 bg-gray-50 rounded-xl overflow-hidden" style={{ border: isLast ? `2px solid ${cfg.color}20` : "1px solid #F0F0F0" }}>
+                                <div className="flex-1 bg-muted rounded-xl overflow-hidden" style={{ border: isLast ? `2px solid ${cfg.color}20` : "1px solid #F0F0F0" }}>
                                   <div
-                                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                                    className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-muted transition-colors"
                                     onClick={() => setExpandedEvent(isExpanded ? null : event.eventId)}
                                   >
                                     <div className="flex items-center gap-3">
                                       <span className="text-sm font-semibold" style={{ color: cfg.color }}>{eventLabel}</span>
                                       {verified && <CheckCircle className="w-3.5 h-3.5 text-green-500" />}
-                                      <span className="text-xs text-gray-400">{date} · {time}</span>
+                                      <span className="text-xs text-muted-foreground">{date} · {time}</span>
                                     </div>
-                                    {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                                    {isExpanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
                                   </div>
 
                                   {isExpanded && (
-                                    <div className="px-4 pb-4 space-y-3 border-t border-gray-100">
+                                    <div className="px-4 pb-4 space-y-3 border-t border-border">
                                       <div className="flex items-start gap-1.5">
-                                        <MapPin className="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
-                                        <p className="text-sm text-gray-700">{event.location}</p>
+                                        <MapPin className="w-3.5 h-3.5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                                        <p className="text-sm text-foreground">{event.location}</p>
                                       </div>
                                       {description && (
-                                        <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
+                                        <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
                                       )}
                                       {(event.organizationName || event.performedByName) && (
-                                        <div className="flex gap-4 text-xs text-gray-500">
+                                        <div className="flex gap-4 text-xs text-muted-foreground">
                                           {event.organizationName && (
                                             <span>🏢 {event.organizationName}</span>
                                           )}
@@ -588,8 +588,7 @@ export function SupplyChainPage() {
                                       {event.inspectionId && (
                                         <button
                                           onClick={() => navigate(`/app/inspections/${event.inspectionId}`)}
-                                          className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-green-200 text-green-700 hover:bg-green-50 transition-colors"
-                                          style={{ background: "#E8F5E9" }}
+                                          className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-green-200 text-green-700 hover:bg-green-50 transition-colors bg-primary/10"
                                         >
                                           <FileText className="w-3.5 h-3.5" />
                                           {lang === "vi" ? "Xem Kiểm Định" : "View Inspection"}
@@ -598,13 +597,13 @@ export function SupplyChainPage() {
                                       {(temperature || humidity) && (
                                         <div className="flex gap-4">
                                           {temperature && (
-                                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                               <Thermometer className="w-3.5 h-3.5 text-orange-400" />
                                               {temperature}
                                             </div>
                                           )}
                                           {humidity && (
-                                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                               <Droplets className="w-3.5 h-3.5 text-blue-400" />
                                               {humidity}
                                             </div>
@@ -612,9 +611,9 @@ export function SupplyChainPage() {
                                         </div>
                                       )}
                                       {event.currentHash && (
-                                        <div className="p-2.5 rounded-lg" style={{ background: "#F0F4F0" }}>
-                                          <p className="text-xs text-gray-400 mb-1 flex items-center gap-1"><Hash className="w-3 h-3" /> Hash</p>
-                                          <code className="text-xs text-gray-600 break-all">{event.currentHash}</code>
+                                        <div className="p-2.5 rounded-lg bg-muted">
+                                          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1"><Hash className="w-3 h-3" /> Hash</p>
+                                          <code className="text-xs text-muted-foreground break-all">{event.currentHash}</code>
                                         </div>
                                       )}
                                     </div>
@@ -632,8 +631,8 @@ export function SupplyChainPage() {
 
               {/* Event types legend */}
               <div className="space-y-5">
-                <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-                  <h4 className="font-semibold text-gray-900 mb-3" style={{ fontSize: 14 }}>{lang === "vi" ? "Loại Sự Kiện" : "Event Types"}</h4>
+                <div className="bg-card rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+                  <h4 className="font-semibold text-foreground mb-3" style={{ fontSize: 14 }}>{lang === "vi" ? "Loại Sự Kiện" : "Event Types"}</h4>
                   <div className="space-y-2">
                     {eventTypes.map(({ value, label, emoji, color }) => {
                       const count = events.filter((e: SupplyChainEvent) => e.eventTypeCode === value).length;
@@ -641,7 +640,7 @@ export function SupplyChainPage() {
                         <div key={value} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-sm">{emoji}</span>
-                            <span className="text-xs text-gray-600">{lang === "vi" ? label.vi : label.en}</span>
+                            <span className="text-xs text-muted-foreground">{lang === "vi" ? label.vi : label.en}</span>
                           </div>
                           {count > 0 && <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: `${color}15`, color }}>{count}</span>}
                         </div>
@@ -658,9 +657,9 @@ export function SupplyChainPage() {
       {/* Add Event Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl border border-gray-100" style={{ boxShadow: "0 25px 70px rgba(0,0,0,0.25)" }}>
+          <div className="bg-card rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl border border-border" style={{ boxShadow: "0 25px 70px rgba(0,0,0,0.25)" }}>
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-emerald-800 via-green-800 to-green-700 text-white relative">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-gradient-to-r from-emerald-800 via-green-800 to-green-700 text-white relative">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-white shrink-0 shadow-inner">
                   <Plus className="w-5 h-5" />
@@ -682,7 +681,7 @@ export function SupplyChainPage() {
               {/* Event Type Selector */}
               <div>
                 <div className="flex items-center justify-between mb-2.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     {lang === "vi" ? "Chọn Loại Sự Kiện" : "Select Event Type"}
                   </label>
                   {form.eventType && (
@@ -703,7 +702,7 @@ export function SupplyChainPage() {
                         className={`px-3 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-200 flex items-center justify-start gap-2 border text-left ${
                           isSelected
                             ? "bg-emerald-700 text-white border-emerald-800 shadow-md shadow-emerald-700/20 scale-[1.02]"
-                            : "bg-gray-50/80 hover:bg-emerald-50/50 text-gray-700 border-gray-200/80 hover:border-emerald-300"
+                            : "bg-muted/80 hover:bg-emerald-50/50 text-foreground border-border/80 hover:border-emerald-300"
                         }`}
                       >
                         <span className="text-base shrink-0">{emoji}</span>
@@ -720,11 +719,11 @@ export function SupplyChainPage() {
               </div>
 
               {/* Input Fields Section Card */}
-              <div className="bg-gradient-to-b from-gray-50/90 to-slate-50/50 p-4 rounded-2xl border border-gray-200/80 shadow-xs space-y-4">
+              <div className="bg-gradient-to-b from-gray-50/90 to-slate-50/50 p-4 rounded-2xl border border-border/80 shadow-xs space-y-4">
                 {/* Row 1: Batch ID */}
                 <div>
                   <div className="flex items-center justify-between mb-2 min-h-[28px]">
-                    <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <Hash className="w-3.5 h-3.5 text-emerald-600" />
                       {lang === "vi" ? "Mã Lô Hàng" : "Batch Code"}
                     </label>
@@ -740,7 +739,7 @@ export function SupplyChainPage() {
                     <input
                       value={form.batchId}
                       onChange={(e) => setForm({ ...form, batchId: e.target.value })}
-                      className="w-full h-10 px-3.5 rounded-xl border border-gray-200 text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all"
+                      className="w-full h-10 px-3.5 rounded-xl border border-border text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-input-background shadow-xs transition-all"
                       placeholder={lang === "vi" ? "Nhập mã lô hàng hoặc quét mã QR..." : "Enter Batch ID or scan QR code..."}
                     />
                   </div>
@@ -749,7 +748,7 @@ export function SupplyChainPage() {
                 {/* Row 2: Location */}
                 <div>
                   <div className="flex items-center justify-between mb-2 min-h-[28px]">
-                    <label className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-emerald-600" />
                       {lang === "vi" ? "Vị Trí" : "Location"}
                     </label>
@@ -777,14 +776,14 @@ export function SupplyChainPage() {
                   <input
                     value={form.location}
                     onChange={(e) => setForm({ ...form, location: e.target.value })}
-                    className="w-full h-10 px-3.5 rounded-xl border border-gray-200 text-xs outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all"
+                    className="w-full h-10 px-3.5 rounded-xl border border-border text-xs outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-input-background shadow-xs transition-all"
                     placeholder={lang === "vi" ? "VD: Kho A, Đà Lạt hoặc chọn trên bản đồ..." : "e.g. Warehouse A, Da Lat or select on map..."}
                   />
                 </div>
 
                 {/* Description Textarea */}
                 <div>
-                  <label className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2 block flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-foreground uppercase tracking-wider mb-2 block flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5 text-emerald-600" />
                     {lang === "vi" ? "Mô Tả / Ghi Chú" : "Description / Activity Notes"}
                   </label>
@@ -792,7 +791,7 @@ export function SupplyChainPage() {
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs outline-none resize-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white shadow-xs transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-border text-xs outline-none resize-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-input-background shadow-xs transition-all"
                     placeholder={lang === "vi" ? "Mô tả những gì đã xảy ra (VD: Thu hoạch 500kg táo hữu cơ tại Nông trại A)..." : "Describe what occurred at this supply chain stage (e.g. Harvested 500kg organic apples at Farm A)..."}
                   />
                 </div>
@@ -810,7 +809,7 @@ export function SupplyChainPage() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+                  className="px-5 py-2.5 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:bg-muted transition-colors"
                 >
                   {lang === "vi" ? "Hủy bỏ" : "Cancel"}
                 </button>

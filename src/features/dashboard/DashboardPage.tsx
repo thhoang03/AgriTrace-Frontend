@@ -260,7 +260,7 @@ export function DashboardPage() {
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-white rounded-2xl p-4 flex flex-col gap-3"
+                className="bg-card rounded-2xl p-4 flex flex-col gap-3"
                 style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
               >
                 <div className="w-10 h-10 rounded-xl bg-gray-200 animate-pulse" />
@@ -271,18 +271,18 @@ export function DashboardPage() {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
             <div
-              className="lg:col-span-2 bg-white rounded-2xl p-6 animate-pulse"
+              className="lg:col-span-2 bg-card rounded-2xl p-6 animate-pulse"
               style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
             >
               <div className="h-6 w-40 bg-gray-200 rounded mb-4" />
-              <div className="h-48 bg-gray-100 rounded" />
+              <div className="h-48 bg-muted rounded" />
             </div>
             <div
-              className="bg-white rounded-2xl p-6 animate-pulse"
+              className="bg-card rounded-2xl p-6 animate-pulse"
               style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
             >
               <div className="h-6 w-32 bg-gray-200 rounded mb-4" />
-              <div className="h-48 bg-gray-100 rounded" />
+              <div className="h-48 bg-muted rounded" />
             </div>
           </div>
         </div>
@@ -321,11 +321,11 @@ export function DashboardPage() {
         </div>
         <div className="px-6 -mt-6 relative z-10">
           <div
-            className="bg-white rounded-2xl p-8 text-center"
+            className="bg-card rounded-2xl p-8 text-center"
             style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
           >
             <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-            <div className="font-semibold text-gray-700 mb-2">
+            <div className="font-semibold text-foreground mb-2">
               {lang === "vi"
                 ? "Không thể tải dữ liệu dashboard"
                 : "Failed to load dashboard data"}
@@ -397,7 +397,7 @@ export function DashboardPage() {
             ({ label, value, change, up, icon: Icon, color, bg }) => (
               <div
                 key={label}
-                className="bg-white rounded-2xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-card rounded-2xl p-4 flex flex-col gap-3 hover:shadow-md transition-shadow cursor-pointer"
                 style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
               >
                 <div className="flex items-start justify-between">
@@ -420,12 +420,12 @@ export function DashboardPage() {
                 </div>
                 <div>
                   <div
-                    className="font-bold text-gray-900"
+                    className="font-bold text-foreground"
                     style={{ fontSize: 22 }}
                   >
                     {value}
                   </div>
-                  <div className="text-gray-500" style={{ fontSize: 12 }}>
+                  <div className="text-muted-foreground" style={{ fontSize: 12 }}>
                     {label}
                   </div>
                 </div>
@@ -436,18 +436,18 @@ export function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
           <div
-            className="lg:col-span-2 bg-white rounded-2xl p-6"
+            className="lg:col-span-2 bg-card rounded-2xl p-6"
             style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
           >
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h3
-                  className="font-semibold text-gray-900"
+                  className="font-semibold text-foreground"
                   style={{ fontSize: 15 }}
                 >
                   {lang === "vi" ? "Sản Xuất Hàng Tháng" : "Monthly Production"}
                 </h3>
-                <p className="text-gray-400 text-xs mt-0.5">
+                <p className="text-muted-foreground text-xs mt-0.5">
                   {lang === "vi"
                     ? "Số lượng (kg) so với lô hàng"
                     : "Quantity (kg) vs Batches"}
@@ -507,7 +507,7 @@ export function DashboardPage() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
                 <div className="text-sm">
                   {lang === "vi"
                     ? "Chưa có dữ liệu sản xuất"
@@ -518,17 +518,17 @@ export function DashboardPage() {
           </div>
 
           <div
-            className="bg-white rounded-2xl p-6"
+            className="bg-card rounded-2xl p-6"
             style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
           >
             <div className="mb-4">
               <h3
-                className="font-semibold text-gray-900"
+                className="font-semibold text-foreground"
                 style={{ fontSize: 15 }}
               >
                 {lang === "vi" ? "Trạng Thái Lô Hàng" : "Batch Status"}
               </h3>
-              <p className="text-gray-400 text-xs mt-0.5">
+              <p className="text-muted-foreground text-xs mt-0.5">
                 {lang === "vi"
                   ? "Phân bổ theo giai đoạn"
                   : "Distribution by stage"}
@@ -577,11 +577,11 @@ export function DashboardPage() {
                             background: PIE_COLORS[i % PIE_COLORS.length],
                           }}
                         />
-                        <span className="text-xs text-gray-600">
+                        <span className="text-xs text-muted-foreground">
                           {item.name}
                         </span>
                       </div>
-                      <span className="text-xs font-semibold text-gray-800">
+                      <span className="text-xs font-semibold text-foreground">
                         {(item.value ?? 0).toLocaleString()}
                       </span>
                     </div>
@@ -589,7 +589,7 @@ export function DashboardPage() {
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
                 <div className="text-sm">
                   {lang === "vi"
                     ? "Chưa có dữ liệu trạng thái"
@@ -602,17 +602,17 @@ export function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
           <div
-            className="bg-white rounded-2xl p-6"
+            className="bg-card rounded-2xl p-6"
             style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
           >
             <div className="mb-5">
               <h3
-                className="font-semibold text-gray-900"
+                className="font-semibold text-foreground"
                 style={{ fontSize: 15 }}
               >
                 {lang === "vi" ? "Kết Quả Kiểm Định" : "Inspection Results"}
               </h3>
-              <p className="text-gray-400 text-xs mt-0.5">
+              <p className="text-muted-foreground text-xs mt-0.5">
                 {lang === "vi" ? "Đạt/Không đạt/Chờ" : "Pass/Fail/Pending"}
               </p>
             </div>
@@ -678,7 +678,7 @@ export function DashboardPage() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
                 <div className="text-sm">
                   {lang === "vi"
                     ? "Chưa có dữ liệu kiểm định"
@@ -689,17 +689,17 @@ export function DashboardPage() {
           </div>
 
           <div
-            className="bg-white rounded-2xl p-6"
+            className="bg-card rounded-2xl p-6"
             style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
           >
             <div className="mb-5">
               <h3
-                className="font-semibold text-gray-900"
+                className="font-semibold text-foreground"
                 style={{ fontSize: 15 }}
               >
                 {lang === "vi" ? "Xu Hướng Thu Hồi" : "Recall Trend"}
               </h3>
-              <p className="text-gray-400 text-xs mt-0.5">
+              <p className="text-muted-foreground text-xs mt-0.5">
                 {lang === "vi"
                   ? "Số vụ thu hồi hàng tháng"
                   : "Monthly recall incidents"}
@@ -755,7 +755,7 @@ export function DashboardPage() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
                 <div className="text-sm">
                   {lang === "vi"
                     ? "Chưa có dữ liệu thu hồi"
@@ -768,12 +768,12 @@ export function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div
-            className="lg:col-span-2 bg-white rounded-2xl p-6"
+            className="lg:col-span-2 bg-card rounded-2xl p-6"
             style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
           >
             <div className="flex items-center justify-between mb-5">
               <h3
-                className="font-semibold text-gray-900"
+                className="font-semibold text-foreground"
                 style={{ fontSize: 15 }}
               >
                 {lang === "vi" ? "Hoạt Động Gần Đây" : "Recent Activities"}
@@ -790,7 +790,7 @@ export function DashboardPage() {
                 {activities.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex items-start gap-3 py-2.5 border-b border-gray-50 last:border-b-0"
+                    className="flex items-start gap-3 py-2.5 border-b border-border last:border-b-0"
                   >
                     <div
                       className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
@@ -814,12 +814,12 @@ export function DashboardPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-700 truncate">
+                      <p className="text-sm text-foreground truncate">
                         {activity.rawTitle && activity.rawMessage
                           ? `${parseMessage(activity.rawTitle, lang)}: ${parseMessage(activity.rawMessage, lang)}`
                           : parseMessage(activity.message, lang)}
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {formatRelativeTime(activity.timestamp, lang)}
                       </p>
                     </div>
@@ -827,7 +827,7 @@ export function DashboardPage() {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                 <Package className="w-8 h-8 mb-2 opacity-50" />
                 <div className="text-sm">
                   {lang === "vi"
@@ -840,11 +840,11 @@ export function DashboardPage() {
 
           <div className="space-y-5">
             <div
-              className="bg-white rounded-2xl p-6"
+              className="bg-card rounded-2xl p-6"
               style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
             >
               <h3
-                className="font-semibold text-gray-900 mb-4"
+                className="font-semibold text-foreground mb-4"
                 style={{ fontSize: 15 }}
               >
                 {lang === "vi" ? "Thao Tác Nhanh" : "Quick Actions"}
@@ -908,16 +908,16 @@ export function DashboardPage() {
             )}
 
             <div
-              className="bg-white rounded-2xl p-5"
+              className="bg-card rounded-2xl p-5"
               style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
             >
               <div className="flex items-center gap-2 mb-3">
                 <Bell className="w-4 h-4" style={{ color: "#FFB300" }} />
-                <span className="font-semibold text-gray-900 text-sm">
+                <span className="font-semibold text-foreground text-sm">
                   {lang === "vi" ? "Kiểm Định Đang Chờ" : "Pending Inspections"}
                 </span>
               </div>
-              <div className="flex flex-col items-center justify-center py-6 text-gray-400">
+              <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
                 <div className="text-sm">
                   {lang === "vi"
                     ? "Không có kiểm định đang chờ"

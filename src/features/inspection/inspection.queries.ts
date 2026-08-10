@@ -10,10 +10,11 @@ import type {
 
 const QUERY_KEY = "inspections";
 
-export function useInspections(filters?: InspectionFilters) {
+export function useInspections(filters?: InspectionFilters, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [QUERY_KEY, filters],
     queryFn: () => inspectionApi.getAll(filters),
+    enabled: options?.enabled ?? true,
   });
 }
 

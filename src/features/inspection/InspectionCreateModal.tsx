@@ -158,26 +158,26 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()} style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-        <div className="flex items-center justify-between mb-5 border-b border-gray-100 pb-3">
+      <div className="bg-card rounded-2xl p-6 max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()} style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+        <div className="flex items-center justify-between mb-5 border-b border-border pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10">
               <FlaskConical className="w-5 h-5" style={{ color: "#2E7D32" }} />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 text-base">{lang === "vi" ? "Lập Phiếu Kiểm Định Mới (QA/QC)" : "Create New Inspection (QA/QC)"}</h3>
-              <p className="text-xs text-gray-500 mt-0.5">{lang === "vi" ? "Xác thực lô hàng & ghi nhận đợt kiểm định chất lượng" : "Verify batch & record quality inspection"}</p>
+              <h3 className="font-bold text-foreground text-base">{lang === "vi" ? "Lập Phiếu Kiểm Định Mới (QA/QC)" : "Create New Inspection (QA/QC)"}</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">{lang === "vi" ? "Xác thực lô hàng & ghi nhận đợt kiểm định chất lượng" : "Verify batch & record quality inspection"}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-            <X className="w-4 h-4 text-gray-500" />
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+            <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm font-semibold text-gray-700">
+              <label className="text-sm font-semibold text-foreground">
                 {lang === "vi" ? "Xác thực Lô nông sản (Batch)" : "Verify Batch"} <span className="text-red-500">*</span>
               </label>
               <button
@@ -202,7 +202,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSearchBatch(); } }}
                     placeholder={lang === "vi" ? "Quét mã QR hoặc nhập Mã Lô (vd: RICE-20260112-001)..." : "Scan QR code or enter Batch Code (e.g. RICE-20260112-001)..."}
-                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-500 font-medium text-gray-800 bg-white"
+                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-border text-sm outline-none transition-all focus:border-green-500 font-medium text-foreground bg-input-background"
                   />
                   <button
                     type="button"
@@ -251,7 +251,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
                       if (matched) setSearchedBatch(matched);
                     }}
                     disabled={isLoadingBatches}
-                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white transition-all focus:border-green-500 font-medium text-gray-800 disabled:opacity-60"
+                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background transition-all focus:border-green-500 font-medium text-foreground disabled:opacity-60"
                     style={{ appearance: "auto" }}
                     required
                   >
@@ -280,13 +280,13 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-700 mb-1.5 block">
+            <label className="text-sm font-semibold text-foreground mb-1.5 block">
               {lang === "vi" ? "Loại hình kiểm định (Inspection Type)" : "Inspection Type"} <span className="text-red-500">*</span>
             </label>
             <select
               value={form.inspectionType}
               onChange={(e) => setForm({ ...form, inspectionType: Number(e.target.value) as InspectionType })}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white transition-all focus:border-green-500 font-medium text-gray-800"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background transition-all focus:border-green-500 font-medium text-foreground"
               style={{ appearance: "auto" }}
             >
               {InspectionTypeValues.map((t) => (
@@ -297,14 +297,14 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
 
           {isAdmin && (
             <div>
-              <label className="text-sm font-semibold text-gray-700 mb-1.5 block">
+              <label className="text-sm font-semibold text-foreground mb-1.5 block">
                 {lang === "vi" ? "Tổ chức kiểm định (Inspection Organization)" : "Inspection Organization"} <span className="text-red-500">*</span>
               </label>
               <select
                 value={form.organizationId}
                 onChange={(e) => setForm({ ...form, organizationId: e.target.value })}
                 disabled={isLoadingOrgs}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white transition-all focus:border-green-500 font-medium text-gray-800 disabled:opacity-60"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background transition-all focus:border-green-500 font-medium text-foreground disabled:opacity-60"
                 style={{ appearance: "auto" }}
                 required={isAdmin}
               >
@@ -321,26 +321,26 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
           )}
 
           <div>
-            <label className="text-sm font-semibold text-gray-700 mb-1.5 block">
+            <label className="text-sm font-semibold text-foreground mb-1.5 block">
               {lang === "vi" ? "Ngày lấy mẫu / Kiểm tra" : "Inspection Date"} <span className="text-red-500">*</span>
             </label>
             <input
               type="date"
               value={form.inspectionDate}
               onChange={(e) => setForm({ ...form, inspectionDate: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white transition-all focus:border-green-500 font-medium text-gray-800"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background transition-all focus:border-green-500 font-medium text-foreground"
               required
             />
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-700 mb-1.5 block">{lang === "vi" ? "Ghi chú kiểm định / Điều kiện mẫu" : "Inspection Notes / Sample Conditions"}</label>
+            <label className="text-sm font-semibold text-foreground mb-1.5 block">{lang === "vi" ? "Ghi chú kiểm định / Điều kiện mẫu" : "Inspection Notes / Sample Conditions"}</label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm({ ...form, notes: e.target.value })}
               rows={3}
               placeholder={lang === "vi" ? "Nhập các ghi chú ban đầu về mẫu thử, điều kiện môi trường..." : "Enter initial notes about sample, environmental conditions..."}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-none transition-all focus:border-green-500 bg-gray-50 text-gray-800"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-border text-sm outline-none resize-none transition-all focus:border-green-500 bg-input-background text-foreground"
             />
           </div>
 
@@ -355,7 +355,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="flex-1 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors disabled:opacity-50"
             >
               {lang === "vi" ? "Hủy bỏ" : "Cancel"}
             </button>

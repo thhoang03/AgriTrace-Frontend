@@ -197,21 +197,21 @@ export function RecallPage() {
             { label: lang === "vi" ? "Đang Thu Hồi (PENDING)" : "Pending Recalls", count: activeCount, icon: Clock, bg: "#FFF9C4", color: "#F57F17", desc: lang === "vi" ? "Đang xử lý thu hồi lô hàng" : "Pending recall processing" },
             { label: lang === "vi" ? "Đã Hoàn Tất (COMPLETED)" : "Completed Recalls", count: resolvedCount, icon: CheckCircle, bg: "#E8F5E9", color: "#2E7D32", desc: lang === "vi" ? "Đã hoàn tất lệnh thu hồi" : "Successfully closed" },
           ].map(({ label, count, icon: Icon, bg, color, desc }) => (
-            <div key={label} className="bg-white rounded-2xl p-6 flex items-center gap-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div key={label} className="bg-card rounded-2xl p-6 flex items-center gap-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
                 <Icon style={{ color, width: 24, height: 24 }} />
               </div>
               <div>
                 <div style={{ fontSize: 30, fontWeight: 800, color }} className="leading-none">{count}</div>
-                <div className="font-semibold text-gray-800 mt-1" style={{ fontSize: 14 }}>{label}</div>
-                <div className="text-gray-400 text-xs">{desc}</div>
+                <div className="font-semibold text-foreground mt-1" style={{ fontSize: 14 }}>{label}</div>
+                <div className="text-muted-foreground text-xs">{desc}</div>
               </div>
             </div>
           ))}
         </div>
 
         {activeCount > 0 && (
-          <div className="mb-5 p-5 rounded-2xl flex items-start gap-4" style={{ background: "#FFEBEE", border: "2px solid #FFCDD2" }}>
+          <div className="mb-5 p-5 rounded-2xl flex items-start gap-4 bg-destructive/10 text-destructive border border-destructive/30">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E53935" }}>
               <AlertTriangle className="w-5 h-5 text-white" />
             </div>
@@ -227,33 +227,33 @@ export function RecallPage() {
         )}
 
         {isLoading ? (
-          <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div className="px-6 py-4 border-b border-gray-100">
+          <div className="bg-card rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div className="px-6 py-4 border-b border-border">
               <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
             </div>
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-border">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="px-6 py-4 flex gap-4">
-                  <div className="flex-1 h-4 bg-gray-100 rounded animate-pulse" />
-                  <div className="w-24 h-4 bg-gray-100 rounded animate-pulse" />
-                  <div className="w-20 h-4 bg-gray-100 rounded animate-pulse" />
+                  <div className="flex-1 h-4 bg-muted rounded animate-pulse" />
+                  <div className="w-24 h-4 bg-muted rounded animate-pulse" />
+                  <div className="w-20 h-4 bg-muted rounded animate-pulse" />
                 </div>
               ))}
             </div>
           </div>
         ) : error ? (
-          <div className="bg-white rounded-2xl p-8 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="bg-card rounded-2xl p-8 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-            <div className="font-semibold text-gray-700 mb-2">{lang === "vi" ? "Lỗi tải dữ liệu thu hồi" : "Failed to load recalls"}</div>
+            <div className="font-semibold text-foreground mb-2">{lang === "vi" ? "Lỗi tải dữ liệu thu hồi" : "Failed to load recalls"}</div>
             <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "#2E7D32" }}>
               {lang === "vi" ? "Thử Lại" : "Retry"}
             </button>
           </div>
         ) : recalls.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="bg-card rounded-2xl p-12 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <AlertTriangle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <div className="font-semibold text-gray-700 mb-1">{lang === "vi" ? "Không tìm thấy lệnh thu hồi" : "No recalls found"}</div>
-            <div className="text-sm text-gray-400 mb-4">{lang === "vi" ? "Tạo lệnh thu hồi hoặc quét mã QR lô hàng để bắt đầu" : "Create a recall or scan a batch QR code to get started"}</div>
+            <div className="font-semibold text-foreground mb-1">{lang === "vi" ? "Không tìm thấy lệnh thu hồi" : "No recalls found"}</div>
+            <div className="text-sm text-muted-foreground mb-4">{lang === "vi" ? "Tạo lệnh thu hồi hoặc quét mã QR lô hàng để bắt đầu" : "Create a recall or scan a batch QR code to get started"}</div>
             <div className="flex justify-center gap-3">
               <button
                 onClick={() => setShowQrModal(true)}
@@ -270,26 +270,26 @@ export function RecallPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Hồ Sơ Thu Hồi" : "Recall Records"}</h3>
-              <span className="text-sm text-gray-400">{recalls.length} {lang === "vi" ? "bản ghi" : "total records"}</span>
+          <div className="bg-card rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+              <h3 className="font-semibold text-foreground" style={{ fontSize: 15 }}>{lang === "vi" ? "Hồ Sơ Thu Hồi" : "Recall Records"}</h3>
+              <span className="text-sm text-muted-foreground">{recalls.length} {lang === "vi" ? "bản ghi" : "total records"}</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr style={{ background: "#F8FAF8" }}>
+                  <tr className="bg-muted">
                     {[
                       lang === "vi" ? "Mã Lô Hàng / ID" : "Batch Code / ID",
                       lang === "vi" ? "Lý Do" : "Reason",
                       lang === "vi" ? "Mức Độ" : "Severity",
                       lang === "vi" ? "Ngày Tạo" : "Created Date"
                     ].map((h) => (
-                      <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                      <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-border">
                   {recalls.map((recall: RecallItem) => {
                     const sev = severityConfig[mapSeverityName(recall.severityName || "")];
                     return (
@@ -303,17 +303,17 @@ export function RecallPage() {
                             <Box className="w-4 h-4 text-red-600 flex-shrink-0" />
                             <span>{recall.batchCode || (lang === "vi" ? "Lô Hàng" : "Batch")}</span>
                           </div>
-                          <code className="text-xs font-mono text-gray-400 block mt-0.5">{recall.batchId}</code>
+                          <code className="text-xs font-mono text-muted-foreground block mt-0.5">{recall.batchId}</code>
                         </td>
                         <td className="px-5 py-4">
-                          <p className="text-sm text-gray-700 max-w-xs leading-relaxed">{recall.reason}</p>
+                          <p className="text-sm text-foreground max-w-xs leading-relaxed">{recall.reason}</p>
                         </td>
                         <td className="px-5 py-4">
                           <span className="px-2.5 py-1 rounded-full text-xs font-bold" style={{ background: sev.bg, color: sev.color }}>
                             {recall.severityName}
                           </span>
                         </td>
-                        <td className="px-5 py-4 text-sm text-gray-600">{recall.createdAt?.split("T")[0]}</td>
+                        <td className="px-5 py-4 text-sm text-muted-foreground">{recall.createdAt?.split("T")[0]}</td>
                       </tr>
                     );
                   })}
@@ -327,19 +327,19 @@ export function RecallPage() {
       {/* Create Recall Modal with QR Scanner & Batch Dropdown */}
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-            <div className="flex items-center justify-between mb-5 border-b border-gray-100 pb-3">
+          <div className="bg-card rounded-2xl p-6 max-w-lg w-full" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <div className="flex items-center justify-between mb-5 border-b border-border pb-3">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-red-100 text-red-600">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-base">{lang === "vi" ? "Tạo Lệnh Thu Hồi An Toàn" : "Create Product Safety Recall"}</h3>
-                  <p className="text-xs text-gray-500">{lang === "vi" ? "Quét QR hoặc nhập mã lô hàng để thu hồi khẩn cấp" : "Scan QR or enter a batch for emergency recall"}</p>
+                  <h3 className="font-bold text-foreground text-base">{lang === "vi" ? "Tạo Lệnh Thu Hồi An Toàn" : "Create Product Safety Recall"}</h3>
+                  <p className="text-xs text-muted-foreground">{lang === "vi" ? "Quét QR hoặc nhập mã lô hàng để thu hồi khẩn cấp" : "Scan QR or enter a batch for emergency recall"}</p>
                 </div>
               </div>
-              <button onClick={() => setShowCreate(false)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                <X className="w-4 h-4 text-gray-500" />
+              <button onClick={() => setShowCreate(false)} className="p-1.5 rounded-lg hover:bg-muted">
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
 
@@ -347,7 +347,7 @@ export function RecallPage() {
               {/* Batch ID Input + QR Scanner Button + Dropdown */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                  <label className="text-xs font-semibold text-foreground uppercase tracking-wide">
                     {lang === "vi" ? "Chọn / Quét Mã QR Lô Hàng *" : "Select / Scan Batch QR *"}
                   </label>
                   <button
@@ -366,7 +366,7 @@ export function RecallPage() {
                   value={form.batchId}
                   onChange={(e) => setForm({ ...form, batchId: e.target.value })}
                   placeholder={lang === "vi" ? "Hoặc nhập GUID / Mã Lô hàng (e.g. BTH-2026-001)" : "Or enter GUID / Batch Code (e.g. BTH-2026-001)"}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-gray-50/50 focus:bg-white focus:border-red-500 transition-all font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background focus:border-red-500 transition-all font-mono"
                 />
               </div>
 
@@ -387,22 +387,22 @@ export function RecallPage() {
               )}
 
               <div>
-                <label className="text-xs font-semibold text-gray-700 mb-1.5 block uppercase tracking-wide">{lang === "vi" ? "Lý Do Thu Hồi *" : "Recall Reason *"}</label>
+                <label className="text-xs font-semibold text-foreground mb-1.5 block uppercase tracking-wide">{lang === "vi" ? "Lý Do Thu Hồi *" : "Recall Reason *"}</label>
                 <input
                   value={form.reason}
                   onChange={(e) => setForm({ ...form, reason: e.target.value })}
                   placeholder={lang === "vi" ? "Ví dụ: Phát hiện vi phạm chất lượng / vi sinh" : "e.g., Quality violation / microbiological detection"}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-500 bg-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border text-sm outline-none focus:border-red-500 bg-input-background"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-700 mb-1.5 block uppercase tracking-wide">{lang === "vi" ? "Mức Độ Nghiêm Trọng" : "Severity Level"}</label>
+                <label className="text-xs font-semibold text-foreground mb-1.5 block uppercase tracking-wide">{lang === "vi" ? "Mức Độ Nghiêm Trọng" : "Severity Level"}</label>
                 <select
                   value={form.severity}
                   onChange={(e) => setForm({ ...form, severity: Number(e.target.value) })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white cursor-pointer focus:border-red-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background cursor-pointer focus:border-red-500"
                 >
                   <option value={3}>{lang === "vi" ? "High (Cao — Nguy cơ ảnh hưởng sức khỏe)" : "High (Health risk)"}</option>
                   <option value={2}>{lang === "vi" ? "Medium (Trung bình — Sai sót quy cách / nhãn mác)" : "Medium (Specification / labeling error)"}</option>
@@ -411,13 +411,13 @@ export function RecallPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-700 mb-1.5 block uppercase tracking-wide">{lang === "vi" ? "Ghi Chú Bổ Sung" : "Additional Notes"}</label>
+                <label className="text-xs font-semibold text-foreground mb-1.5 block uppercase tracking-wide">{lang === "vi" ? "Ghi Chú Bổ Sung" : "Additional Notes"}</label>
                 <textarea
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   rows={2}
                   placeholder={lang === "vi" ? "Nhập hướng dẫn xử lý hoặc các thông tin bổ sung khác..." : "Enter handling instructions or other additional info..."}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none resize-none focus:border-red-500 bg-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border text-sm outline-none resize-none focus:border-red-500 bg-input-background"
                 />
               </div>
 
@@ -430,7 +430,7 @@ export function RecallPage() {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowCreate(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors"
                 >
                   {lang === "vi" ? "Hủy bỏ" : "Cancel"}
                 </button>
@@ -451,20 +451,20 @@ export function RecallPage() {
       {/* Resolve Confirmation Modal */}
       {showResolveModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+          <div className="bg-card rounded-2xl p-6 max-w-md w-full" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-700">
                   <CheckCircle className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-gray-900">{lang === "vi" ? "Hoàn Tất Thu Hồi Lô Hàng" : "Complete Batch Recall"}</h3>
+                <h3 className="font-bold text-foreground">{lang === "vi" ? "Hoàn Tất Thu Hồi Lô Hàng" : "Complete Batch Recall"}</h3>
               </div>
-              <button onClick={() => setShowResolveModal(null)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                <X className="w-4 h-4 text-gray-500" />
+              <button onClick={() => setShowResolveModal(null)} className="p-1.5 rounded-lg hover:bg-muted">
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
             <div className="space-y-4">
-              <p className="text-sm text-gray-700 leading-relaxed">
+              <p className="text-sm text-foreground leading-relaxed">
                 {lang === "vi" ? (
                   <>Bạn có chắc chắn muốn đánh dấu sự cố thu hồi này là <strong>Đã Xử Lý (Resolved)</strong>? Thao tác này xác nhận lô hàng đã được thu hồi an toàn.</>
                 ) : (
@@ -474,7 +474,7 @@ export function RecallPage() {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowResolveModal(null)}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors"
                 >
                   {lang === "vi" ? "Hủy bỏ" : "Cancel"}
                 </button>

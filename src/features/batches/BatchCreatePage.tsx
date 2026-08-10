@@ -37,7 +37,7 @@ const getSections = (lang: string): { key: Section; label: string; icon: React.E
 
 function FieldLabel({ required, children }: { required?: boolean; children: React.ReactNode }) {
   return (
-    <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide flex items-center gap-1">
+    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
       {children}
       {required && <span className="text-rose-500 font-bold">*</span>}
     </span>
@@ -334,8 +334,8 @@ export function BatchCreatePage() {
     }
   };
 
-  const inputClass = "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 outline-none text-sm transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 bg-white text-gray-800 shadow-xs font-medium";
-  const readOnlyInputClass = "w-full px-3.5 py-2.5 rounded-xl border border-gray-200 outline-none text-sm bg-gray-50 text-gray-600 font-medium cursor-not-allowed";
+  const inputClass = "w-full px-3.5 py-2.5 rounded-xl border border-border outline-none text-sm transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 bg-input-background text-foreground shadow-xs font-medium";
+  const readOnlyInputClass = "w-full px-3.5 py-2.5 rounded-xl border border-border outline-none text-sm bg-muted text-muted-foreground font-medium cursor-not-allowed";
 
   const previewCode = previewBatchCode(form.productName || "", form.productionDate);
 
@@ -387,33 +387,33 @@ export function BatchCreatePage() {
 
           {/* Left: Section Navigator */}
           <div className="xl:col-span-1">
-            <div className="bg-white rounded-2xl p-3 sticky top-4 border border-gray-100" style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
-              <div className="text-xs font-bold uppercase tracking-wider text-gray-400 px-2 mb-2">{lang === "vi" ? "Các mục thông tin" : "Sections"}</div>
+            <div className="bg-card rounded-2xl p-3 sticky top-4 border border-border" style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
+              <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-2 mb-2">{lang === "vi" ? "Các mục thông tin" : "Sections"}</div>
               {getSections(lang).map(({ key, label, icon: Icon, desc }) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => scrollToSection(key)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all mb-1 ${activeSection === key ? "text-white shadow-sm" : "text-gray-600 hover:bg-gray-50"}`}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all mb-1 ${activeSection === key ? "text-white shadow-sm" : "text-muted-foreground hover:bg-muted"}`}
                   style={activeSection === key ? { background: "linear-gradient(135deg, #2E7D32, #388E3C)" } : {}}
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
                   <div>
                     <div className="text-xs font-bold">{label}</div>
-                    <div className={`text-[11px] mt-0.5 ${activeSection === key ? "text-green-100 opacity-90" : "text-gray-400"}`}>{desc}</div>
+                    <div className={`text-[11px] mt-0.5 ${activeSection === key ? "text-green-100 opacity-90" : "text-muted-foreground"}`}>{desc}</div>
                   </div>
                 </button>
               ))}
 
               {/* Progress completion bar */}
-              <div className="mt-4 px-2 pt-3 border-t border-gray-100">
-                <div className="flex justify-between text-xs text-gray-500 mb-1.5 font-medium">
+              <div className="mt-4 px-2 pt-3 border-t border-border">
+                <div className="flex justify-between text-xs text-muted-foreground mb-1.5 font-medium">
                   <span>{lang === "vi" ? "Tiến độ hoàn thành" : "Completion Progress"}</span>
                   <span className="font-bold" style={{ color: "#2E7D32" }}>
                     {completionScore}%
                   </span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -432,10 +432,10 @@ export function BatchCreatePage() {
                     { label: "Mã số vùng trồng", done: Boolean(msvt) },
                   ].map((check) => (
                     <div key={check.label} className="flex items-center gap-2 text-[11px]">
-                      <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 ${check.done ? "bg-green-500" : "bg-gray-200"}`}>
+                      <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 ${check.done ? "bg-green-500" : "bg-muted"}`}>
                         {check.done && <CheckCircle className="w-2.5 h-2.5 text-white" />}
                       </div>
-                      <span className={check.done ? "text-gray-700 font-medium" : "text-gray-400"}>{check.label}</span>
+                      <span className={check.done ? "text-foreground font-medium" : "text-muted-foreground"}>{check.label}</span>
                     </div>
                   ))}
                 </div>
@@ -448,14 +448,14 @@ export function BatchCreatePage() {
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
 
               {/* Section 1: Product Details */}
-              <div id="section-product" className="bg-white rounded-2xl overflow-hidden border border-gray-100" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-                <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+              <div id="section-product" className="bg-card rounded-2xl overflow-hidden border border-border" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-border bg-muted/50">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100">
                     <Package className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-bold text-gray-900 text-sm">1. Thông tin Sản phẩm (Product Details)</div>
-                    <div className="text-xs text-gray-500">Chọn sản phẩm nông sản và danh mục liên quan</div>
+                    <div className="font-bold text-foreground text-sm">1. Thông tin Sản phẩm (Product Details)</div>
+                    <div className="text-xs text-muted-foreground">Chọn sản phẩm nông sản và danh mục liên quan</div>
                   </div>
                   {(form.productId || form.product) && (
                     <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
@@ -561,7 +561,7 @@ export function BatchCreatePage() {
                         placeholder="https://example.com/product-image.jpg"
                       />
                       <div
-                        className="w-11 h-11 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center bg-gray-50 border border-dashed border-gray-300 shadow-xs"
+                        className="w-11 h-11 rounded-xl flex-shrink-0 overflow-hidden flex items-center justify-center bg-muted border border-dashed border-border shadow-xs"
                       >
                         {form.productImage && !imageError ? (
                           <img
@@ -571,7 +571,7 @@ export function BatchCreatePage() {
                             onError={() => setImageError(true)}
                           />
                         ) : (
-                          <ImageIcon className="w-5 h-5 text-gray-400" />
+                          <ImageIcon className="w-5 h-5 text-muted-foreground" />
                         )}
                       </div>
                     </div>
@@ -580,14 +580,14 @@ export function BatchCreatePage() {
               </div>
 
               {/* Section 2: Production & Quantity */}
-              <div id="section-quantity" className="bg-white rounded-2xl overflow-hidden border border-gray-100" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-                <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+              <div id="section-quantity" className="bg-card rounded-2xl overflow-hidden border border-border" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-border bg-muted/50">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100">
                     <Calendar className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-bold text-gray-900 text-sm">2. Sản xuất &amp; Số lượng (Production &amp; Volume)</div>
-                    <div className="text-xs text-gray-500">Quy mô sản xuất, đơn vị tính, ngày khởi tạo và hạn sử dụng</div>
+                    <div className="font-bold text-foreground text-sm">2. Sản xuất &amp; Số lượng (Production &amp; Volume)</div>
+                    <div className="text-xs text-muted-foreground">Quy mô sản xuất, đơn vị tính, ngày khởi tạo và hạn sử dụng</div>
                   </div>
                   {Number(form.quantity) > 0 && (form.unit || form.unitId) && form.productionDate && (
                     <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
@@ -655,14 +655,14 @@ export function BatchCreatePage() {
               </div>
 
               {/* Section 3: Origin & Notes */}
-              <div id="section-origin" className="bg-white rounded-2xl overflow-hidden border border-gray-100" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-                <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+              <div id="section-origin" className="bg-card rounded-2xl overflow-hidden border border-border" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-border bg-muted/50">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100">
                     <Leaf className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-bold text-gray-900 text-sm">3. Nguồn gốc Trang trại &amp; Ghi chú (Origin &amp; Notes)</div>
-                    <div className="text-xs text-gray-500">Đơn vị chủ quản, mã số vùng trồng và ghi chú bổ sung</div>
+                    <div className="font-bold text-foreground text-sm">3. Nguồn gốc Trang trại &amp; Ghi chú (Origin &amp; Notes)</div>
+                    <div className="text-xs text-muted-foreground">Đơn vị chủ quản, mã số vùng trồng và ghi chú bổ sung</div>
                   </div>
                   {form.location && form.gps && (
                     <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
@@ -689,7 +689,7 @@ export function BatchCreatePage() {
                         type="button"
                         onClick={handleDetectGps}
                         disabled={detectingGps}
-                        className="px-3.5 py-2 bg-white hover:bg-emerald-100 disabled:opacity-50 text-emerald-700 border border-emerald-300 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5"
+                        className="px-3.5 py-2 bg-card hover:bg-emerald-100 disabled:opacity-50 text-emerald-700 border border-emerald-300 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5"
                       >
                         <LocateFixed className={`w-4 h-4 ${detectingGps ? "animate-spin" : ""}`} />
                         {detectingGps ? "Đang định vị..." : "Use Device GPS"}
@@ -704,7 +704,7 @@ export function BatchCreatePage() {
                       <input
                         readOnly
                         value={form.farm || (user?.organizationName || "AgriTrace Vietnam")}
-                        className={`${readOnlyInputClass} pl-9 font-semibold text-gray-800`}
+                        className={`${readOnlyInputClass} pl-9 font-semibold text-foreground`}
                       />
                     </div>
                   </label>
@@ -716,7 +716,7 @@ export function BatchCreatePage() {
                       <input
                         readOnly
                         value={form.farmer || (user?.name || "System Administrator")}
-                        className={`${readOnlyInputClass} pl-9 font-semibold text-gray-800`}
+                        className={`${readOnlyInputClass} pl-9 font-semibold text-foreground`}
                       />
                     </div>
                   </label>
@@ -760,7 +760,7 @@ export function BatchCreatePage() {
                         maxLength={20}
                       />
                     </div>
-                    <p className="text-[10px] text-gray-400">Mã phân bổ bởi Cục Trồng Trọt — Bộ Nông nghiệp & PTNT Việt Nam</p>
+                    <p className="text-[10px] text-muted-foreground">Mã phân bổ bởi Cục Trồng Trọt — Bộ Nông nghiệp & PTNT Việt Nam</p>
                   </label>
 
                   <div className="space-y-1.5">
@@ -776,13 +776,13 @@ export function BatchCreatePage() {
                         type="button"
                         onClick={openMaps}
                         disabled={!form.gps}
-                        className="flex-shrink-0 px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-40 transition-colors flex items-center gap-1.5"
+                        className="flex-shrink-0 px-3 py-2.5 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:bg-muted disabled:opacity-40 transition-colors flex items-center gap-1.5"
                       >
                         <MapPin className="w-3.5 h-3.5" /> Google Maps
                       </button>
                     </div>
                     {form.gps && (
-                      <div className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                      <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                         <CheckCircle className="w-3 h-3 text-green-500" /> Tọa độ đã nhập ({form.gps})
                       </div>
                     )}
@@ -801,14 +801,14 @@ export function BatchCreatePage() {
               </div>
 
               {/* Section 4: Preview & Confirm */}
-              <div id="section-preview" className="bg-white rounded-2xl overflow-hidden border border-gray-100" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-                <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+              <div id="section-preview" className="bg-card rounded-2xl overflow-hidden border border-border" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+                <div className="flex items-center gap-3 px-6 py-4 border-b border-border bg-muted/50">
                   <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100">
                     <QrCode className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div>
-                    <div className="font-bold text-gray-900 text-sm">4. Xem Lại &amp; Xác Nhận Thông Tin Lô Hàng</div>
-                    <div className="text-xs text-gray-500">Kiểm tra thông tin trước khi ghi vào sổ cái AgriTrace Blockchain</div>
+                    <div className="font-bold text-foreground text-sm">4. Xem Lại &amp; Xác Nhận Thông Tin Lô Hàng</div>
+                    <div className="text-xs text-muted-foreground">Kiểm tra thông tin trước khi ghi vào sổ cái AgriTrace Blockchain</div>
                   </div>
                 </div>
                 <div className="p-6">
@@ -827,9 +827,9 @@ export function BatchCreatePage() {
                         { label: "GPS", value: form.gps || "(chưa nhập)" },
                         { label: "MSVT", value: msvt || "(chưa nhập)" },
                       ].map(({ label, value, highlight }) => (
-                        <div key={label} className="flex items-center justify-between text-xs py-1.5 border-b border-gray-50">
-                          <span className="text-gray-500 font-medium">{label}</span>
-                          <span className={`font-bold text-right max-w-[60%] truncate ${highlight ? "text-amber-600" : "text-gray-900"}`}>
+                        <div key={label} className="flex items-center justify-between text-xs py-1.5 border-b border-border">
+                          <span className="text-muted-foreground font-medium">{label}</span>
+                          <span className={`font-bold text-right max-w-[60%] truncate ${highlight ? "text-amber-600" : "text-foreground"}`}>
                             {value}
                           </span>
                         </div>
@@ -896,8 +896,7 @@ export function BatchCreatePage() {
               {/* Error message */}
               {error && (
                 <div
-                  className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium animate-in fade-in"
-                  style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}
+                  className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-medium animate-in fade-in bg-destructive/10 text-destructive border border-destructive/30"
                 >
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   {error}
@@ -909,7 +908,7 @@ export function BatchCreatePage() {
                 <button
                   type="button"
                   onClick={() => navigate("/app/batches")}
-                  className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-5 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors"
                 >
                   Hủy bỏ
                 </button>

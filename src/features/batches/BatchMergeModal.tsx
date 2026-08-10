@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Merge, X, Plus, Trash2, AlertCircle, Search } from "lucide-react";
 import { useMergeBatch, useBatches } from "./batches.queries";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface BatchMergeModalProps {
   currentBatchId: string;
@@ -22,6 +23,16 @@ export function BatchMergeModal({
   onMerged,
 }: BatchMergeModalProps) {
   const mergeBatch = useMergeBatch();
+  const { lang } = useLanguage();
+  const statusLabelMap: Record<string, string> = {
+    Harvested: "Đã thu hoạch",
+    Processing: "Đang chế biến",
+    Packaged: "Đã đóng gói",
+    "In Transit": "Đang vận chuyển",
+    Distributed: "Đã phân phối",
+    "At Retail": "Tại điểm bán",
+    Recalled: "Bị thu hồi",
+  };
   const { data: batchesData } = useBatches();
   const allBatches = batchesData?.data ?? [];
 
@@ -58,8 +69,8 @@ export function BatchMergeModal({
     if (!isValid) {
       setError(
         !selectedIds.length
-          ? "Select at least one other batch to merge."
-          : "Specify the quantity of the merged batch."
+          ? (lang === "vi" ? "Chọn ít nhất một lô hàng khác để gộp." : "Select at least one other batch to merge.")
+          : (lang === "vi" ? "Vui lòng nhập số lượng của lô hàng sau khi gộp." : "Specify the quantity of the merged batch.")
       );
       return;
     }
@@ -80,7 +91,7 @@ export function BatchMergeModal({
         err?.response?.data?.message ||
         err?.response?.data?.title ||
         err?.message ||
-        "Failed to merge batches. Please try again.";
+        (lang === "vi" ? "Không thể gộp lô hàng. Vui lòng thử lại." : "Failed to merge batches. Please try again.");
       setError(msg);
     }
   };
@@ -91,7 +102,7 @@ export function BatchMergeModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-lg mx-4 overflow-hidden"
+        className="bg-card rounded-2xl w-full max-w-lg mx-4 overflow-hidden"
         style={{ boxShadow: "0 24px 80px rgba(0,0,0,0.25)" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -105,7 +116,7 @@ export function BatchMergeModal({
               <Merge className="w-4 h-4 text-white" />
             </div>
             <div>
-              <div className="font-semibold text-white">Merge Batches</div>
+              <div className="font-semibold text-white">{lang === "vi" ? "Gộp Lô Hàng" : "Merge Batches"}</div>
               <code className="text-purple-200 text-xs font-mono">{currentBatchCode}</code>
             </div>
           </div>
@@ -120,10 +131,9 @@ export function BatchMergeModal({
         <div className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Current batch */}
           <div
-            className="rounded-xl p-3"
-            style={{ background: "#FAF5FF", border: "1px solid #E9D5FF" }}
+            className="rounded-xl p-3 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800"
           >
-            <div className="text-xs text-purple-500 font-semibold mb-0.5">Current Batch (primary)</div>
+            <div className="text-xs text-purple-500 font-semibold mb-0.5">{lang === "vi" ? "Lô Hàng Hiện Tại (chính)" : "Current Batch (primary)"}</div>
             <div className="text-sm font-semibold text-purple-900">{productName}</div>
             <code className="text-xs font-mono text-purple-600">{currentBatchCode}</code>
           </div>
@@ -131,27 +141,26 @@ export function BatchMergeModal({
           {/* Batch selector */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Select Batches to Merge
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {lang === "vi" ? "Chọn Lô Hàng Để Gộp" : "Select Batches to Merge"}
               </span>
-              <span className="text-xs text-gray-400">{selectedIds.length} selected</span>
+              <span className="text-xs text-muted-foreground">{selectedIds.length} {lang === "vi" ? "đã chọn" : "selected"}</span>
             </div>
             <div className="relative mb-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search batches..."
-                className="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-sm outline-none"
-                style={{ background: "#F8FAF8" }}
+                placeholder={lang === "vi" ? "Tìm kiếm lô hàng..." : "Search batches..."}
+                className="w-full pl-9 pr-3 py-2 rounded-xl border border-border text-sm outline-none bg-muted"
               />
             </div>
             <div
-              className="rounded-xl overflow-hidden divide-y divide-gray-50"
+              className="rounded-xl overflow-hidden divide-y divide-border"
               style={{ border: "1px solid #E5E7EB", maxHeight: 200, overflowY: "auto" }}
             >
               {filteredCandidates.length === 0 ? (
-                <div className="py-6 text-center text-sm text-gray-400">No other batches available</div>
+                <div className="py-6 text-center text-sm text-muted-foreground">{lang === "vi" ? "Không có lô hàng nào khác" : "No other batches available"}</div>
               ) : (
                 filteredCandidates.map((b) => {
                   const isSelected = selectedIds.includes(b.id);
@@ -159,8 +168,7 @@ export function BatchMergeModal({
                     <button
                       key={b.id}
                       onClick={() => toggleSelect(b.id)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-purple-50 transition-colors text-left"
-                      style={isSelected ? { background: "#FAF5FF" } : {}}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-purple-50 transition-colors text-left ${isSelected ? "bg-purple-50 dark:bg-purple-950/30" : ""}`}
                     >
                       <div
                         className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-all"
@@ -176,18 +184,18 @@ export function BatchMergeModal({
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-800 truncate">
+                        <div className="text-sm font-medium text-foreground truncate">
                           {b.productName ?? b.product}
                         </div>
-                        <code className="text-xs font-mono text-gray-400">
+                        <code className="text-xs font-mono text-muted-foreground">
                           {b.batchCode ?? b.id}
                         </code>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <div className="text-xs font-semibold text-gray-700">
+                        <div className="text-xs font-semibold text-foreground">
                           {b.quantity.toLocaleString()}
                         </div>
-                        <div className="text-xs text-gray-400">{b.status}</div>
+                        <div className="text-xs text-muted-foreground">{lang === "vi" ? (statusLabelMap[b.status] || b.status) : b.status}</div>
                       </div>
                     </button>
                   );
@@ -199,47 +207,46 @@ export function BatchMergeModal({
           {/* Result quantity */}
           <div className="grid grid-cols-2 gap-3">
             <label className="space-y-1.5">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Merged Quantity *
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {lang === "vi" ? "Số Lượng Sau Gộp *" : "Merged Quantity *"}
               </span>
               <input
                 type="number"
                 min={1}
                 value={mergedQuantity}
                 onChange={(e) => setMergedQuantity(e.target.value)}
-                placeholder="Total quantity"
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 outline-none text-sm"
+                placeholder={lang === "vi" ? "Tổng số lượng" : "Total quantity"}
+                className="w-full px-3 py-2.5 rounded-xl border border-border outline-none text-sm"
               />
             </label>
             <label className="space-y-1.5">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Unit</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{lang === "vi" ? "Đơn Vị" : "Unit"}</span>
               <input
                 value={mergedUnit}
                 onChange={(e) => setMergedUnit(e.target.value)}
                 placeholder="kg"
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 outline-none text-sm"
+                className="w-full px-3 py-2.5 rounded-xl border border-border outline-none text-sm"
               />
             </label>
           </div>
 
           {/* Notes */}
           <label className="space-y-1.5 block">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Notes (optional)
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              {lang === "vi" ? "Ghi Chú (tùy chọn)" : "Notes (optional)"}
             </span>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              placeholder="Reason for merging..."
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 outline-none text-sm resize-none"
+              placeholder={lang === "vi" ? "Lý do gộp lô..." : "Reason for merging..."}
+              className="w-full px-3 py-2.5 rounded-xl border border-border outline-none text-sm resize-none"
             />
           </label>
 
           {error && (
             <div
-              className="flex items-start gap-2 rounded-xl px-3 py-2 text-sm"
-              style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}
+              className="flex items-start gap-2 rounded-xl px-3 py-2 text-sm bg-destructive/10 text-destructive border border-destructive/30"
             >
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               {error}
@@ -248,12 +255,12 @@ export function BatchMergeModal({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 px-6 py-4 border-t border-gray-100">
+        <div className="flex gap-3 px-6 py-4 border-t border-border">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
-            Cancel
+            {lang === "vi" ? "Hủy bỏ" : "Cancel"}
           </button>
           <button
             onClick={handleMerge}
@@ -263,8 +270,8 @@ export function BatchMergeModal({
           >
             <Merge className="w-4 h-4" />
             {mergeBatch.isPending
-              ? "Merging..."
-              : `Merge ${selectedIds.length + 1} batches`}
+              ? (lang === "vi" ? "Đang gộp..." : "Merging...")
+              : (lang === "vi" ? `Gộp ${selectedIds.length + 1} lô hàng` : `Merge ${selectedIds.length + 1} batches`)}
           </button>
         </div>
       </div>

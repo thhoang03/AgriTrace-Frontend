@@ -26,8 +26,8 @@ function renderEventData(raw: string | undefined): React.ReactNode {
         <div className="flex flex-wrap gap-x-3 gap-y-1">
           {Object.entries(parsed).map(([k, v]) => (
             <span key={k} className="inline-flex items-center gap-1">
-              <span className="text-gray-400">{k}:</span>
-              <span className="font-medium text-gray-700">{String(v)}</span>
+              <span className="text-muted-foreground">{k}:</span>
+              <span className="font-medium text-foreground">{String(v)}</span>
             </span>
           ))}
         </div>
@@ -210,10 +210,10 @@ export function InspectionPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-primary/10">
           <FlaskConical className="w-5 h-5 animate-pulse" style={{ color: "#2E7D32" }} />
         </div>
-        <div className="text-sm text-gray-500">{lang === "vi" ? "Đang tải dữ liệu kiểm định..." : "Loading inspections..."}</div>
+        <div className="text-sm text-muted-foreground">{lang === "vi" ? "Đang tải dữ liệu kiểm định..." : "Loading inspections..."}</div>
       </div>
     );
   }
@@ -221,7 +221,7 @@ export function InspectionPage() {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="text-sm text-red-500">{lang === "vi" ? "Không thể tải dữ liệu kiểm định" : "Failed to load inspections"}</div>
+        <div className="text-sm text-destructive">{lang === "vi" ? "Không thể tải dữ liệu kiểm định" : "Failed to load inspections"}</div>
         <button onClick={() => refetch()} className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "#2E7D32" }}>
           {lang === "vi" ? "Thử lại" : "Retry"}
         </button>
@@ -232,10 +232,10 @@ export function InspectionPage() {
   if (allInspections.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "#F0F9F0" }}>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-primary/10">
           <FlaskConical className="w-5 h-5" style={{ color: "#A5D6A7" }} />
         </div>
-        <div className="text-sm text-gray-500">{lang === "vi" ? "Chưa có phiếu kiểm định nào" : "No inspections available"}</div>
+        <div className="text-sm text-muted-foreground">{lang === "vi" ? "Chưa có phiếu kiểm định nào" : "No inspections available"}</div>
       </div>
     );
   }
@@ -270,27 +270,26 @@ export function InspectionPage() {
 
       <div className="px-6 mt-4">
         {/* Search & Actions */}
-        <div className="bg-white rounded-2xl p-4 mb-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div className="bg-card rounded-2xl p-4 mb-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1 min-w-56 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 placeholder={lang === "vi" ? "Tìm kiếm theo mã lô hàng, chuyên viên QC..." : "Search by batch code, inspector..."}
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all"
-                style={{ background: "#F8FAF8" }}
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm outline-none transition-all bg-muted"
               />
               {search && (
-                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground">
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-muted-foreground border-border hover:bg-muted"}`}
               style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
             >
               <SlidersHorizontal className="w-4 h-4" />
@@ -313,8 +312,8 @@ export function InspectionPage() {
           </div>
 
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <label className="text-xs font-medium text-gray-500 mb-1.5 block">{lang === "vi" ? "Trạng thái kiểm định" : "Inspection Status"}</label>
+            <div className="mt-4 pt-4 border-t border-border">
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{lang === "vi" ? "Trạng thái kiểm định" : "Inspection Status"}</label>
               <div className="flex flex-wrap gap-1.5">
                 {[
                   { value: "All", label: lang === "vi" ? "Tất cả" : "All" },
@@ -340,13 +339,13 @@ export function InspectionPage() {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4 bg-white rounded-2xl border border-gray-100 shadow-xs">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "#F0F9F0" }}>
+          <div className="flex flex-col items-center justify-center py-20 gap-4 bg-card rounded-2xl border border-border shadow-xs">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-primary/10">
               <FlaskConical className="w-8 h-8" style={{ color: "#A5D6A7" }} />
             </div>
             <div className="text-center">
-              <div className="font-semibold text-gray-800 mb-1 text-base">{lang === "vi" ? "Không tìm thấy phiếu kiểm định nào" : "No inspections found"}</div>
-              <div className="text-sm text-gray-400">{lang === "vi" ? "Vui lòng thử điều chỉnh từ khóa tìm kiếm hoặc bộ lọc trạng thái" : "Please try adjusting your search or filters"}</div>
+              <div className="font-semibold text-foreground mb-1 text-base">{lang === "vi" ? "Không tìm thấy phiếu kiểm định nào" : "No inspections found"}</div>
+              <div className="text-sm text-muted-foreground">{lang === "vi" ? "Vui lòng thử điều chỉnh từ khóa tìm kiếm hoặc bộ lọc trạng thái" : "Please try adjusting your search or filters"}</div>
             </div>
           </div>
         ) : (
@@ -354,10 +353,10 @@ export function InspectionPage() {
             {/* Left panel: Master List (col-span-5) */}
             <div className="lg:col-span-5 space-y-3">
               <div className="flex items-center justify-between px-1">
-                <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {lang === "vi" ? "Danh sách phiếu" : "INSPECTION LIST"} (<span className="text-emerald-700 font-bold">{filtered.length}</span>)
                 </span>
-                <span className="text-xs text-gray-400">{lang === "vi" ? "Trang" : "Page"} {page} / {totalPages || 1}</span>
+                <span className="text-xs text-muted-foreground">{lang === "vi" ? "Trang" : "Page"} {page} / {totalPages || 1}</span>
               </div>
               {paginated.map((ins) => {
                 const cfg = getStatusConfig(lang)[ins.status];
@@ -370,7 +369,7 @@ export function InspectionPage() {
                     className={`w-full text-left p-4 rounded-2xl transition-all relative overflow-hidden ${
                       isSelected
                         ? "bg-emerald-50/70 border-2 border-emerald-600 shadow-md"
-                        : "bg-white hover:bg-gray-50/80 border border-gray-100 shadow-xs hover:shadow-md"
+                        : "bg-card hover:bg-muted/80 border border-border shadow-xs hover:shadow-md"
                     }`}
                   >
                     {isSelected && (
@@ -382,21 +381,21 @@ export function InspectionPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="font-bold text-gray-900 text-sm truncate">{ins.batchCode}</span>
+                          <span className="font-bold text-foreground text-sm truncate">{ins.batchCode}</span>
                           <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0" style={{ background: cfg.bg, color: cfg.color }}>
                             {cfg.label}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-500 font-medium">
+                        <div className="text-xs text-muted-foreground font-medium">
                           {lang === "vi" ? (InspectionTypeLabel[ins.inspectionType]?.vi || "Kiểm định nông sản") : (InspectionTypeLabel[ins.inspectionType]?.en || "Agri Inspection")}
                         </div>
-                        <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-gray-100/80 text-xs text-gray-400">
+                        <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-border/80 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1 font-mono">
-                            <Calendar className="w-3 h-3 text-gray-400" />
+                            <Calendar className="w-3 h-3 text-muted-foreground" />
                             {ins.inspectionDate}
                           </span>
-                          <span className="flex items-center gap-1 font-medium text-gray-600">
-                            <User className="w-3 h-3 text-gray-400" />
+                          <span className="flex items-center gap-1 font-medium text-muted-foreground">
+                            <User className="w-3 h-3 text-muted-foreground" />
                             {ins.inspector}
                           </span>
                           <span className="font-semibold text-emerald-800 bg-emerald-100/60 px-2 py-0.5 rounded-md text-[10px]">
@@ -414,9 +413,9 @@ export function InspectionPage() {
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}
-                    className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    <ChevronLeft className="w-4 h-4 text-gray-600" />
+                    <ChevronLeft className="w-4 h-4 text-muted-foreground" />
                   </button>
                   {(() => {
                     const pages: (number | "...")[] = [];
@@ -431,7 +430,7 @@ export function InspectionPage() {
                     }
                     return pages.map((p, idx) =>
                       p === "..." ? (
-                        <span key={`e-${idx}`} className="w-8 h-8 flex items-center justify-center text-sm text-gray-400">...</span>
+                        <span key={`e-${idx}`} className="w-8 h-8 flex items-center justify-center text-sm text-muted-foreground">...</span>
                       ) : (
                         <button
                           key={p}
@@ -447,9 +446,9 @@ export function InspectionPage() {
                   <button
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
-                    className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    <ChevronRight className="w-4 h-4 text-gray-600" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </button>
                 </div>
               )}
@@ -463,15 +462,15 @@ export function InspectionPage() {
                   const cfg = getStatusConfig(lang)[selected.status];
                   const Icon = cfg.icon;
                   return (
-                    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs">
-                      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-gray-100">
+                    <div className="bg-card rounded-2xl p-5 border border-border shadow-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-border">
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-2xs" style={{ background: cfg.bg }}>
                             <Icon style={{ color: cfg.color, width: 24, height: 24 }} />
                           </div>
                           <div>
-                            <div className="font-extrabold text-gray-900 text-lg">{selected.batchCode}</div>
-                            <div className="text-xs text-gray-400 font-mono mt-0.5">{selected.id}</div>
+                            <div className="font-extrabold text-foreground text-lg">{selected.batchCode}</div>
+                            <div className="text-xs text-muted-foreground font-mono mt-0.5">{selected.id}</div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -480,7 +479,7 @@ export function InspectionPage() {
                           </div>
                           <button
                             onClick={() => navigate(`/app/batches/${selected.batchId}`)}
-                            className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+                            className="px-3 py-1.5 rounded-xl text-xs font-semibold border border-border text-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
                           >
                             <Eye className="w-3.5 h-3.5 text-emerald-700" /> {lang === "vi" ? "Xem Lô Hàng" : "View Batch"}
                           </button>
@@ -494,19 +493,19 @@ export function InspectionPage() {
                           { icon: FlaskConical, label: lang === "vi" ? "Loại hình" : "Inspection Type", value: lang === "vi" ? (InspectionTypeLabel[selected.inspectionType]?.vi || "Nông sản") : (InspectionTypeLabel[selected.inspectionType]?.en || "Agri Product") },
                           { icon: FileText, label: lang === "vi" ? "Ghi chú" : "Notes", value: selected.notes || "—" },
                         ].map(({ icon: I, label, value }) => (
-                          <div key={label} className="p-2.5 rounded-xl bg-gray-50/70 border border-gray-100">
-                            <div className="flex items-center gap-1 text-gray-400 mb-0.5">
+                          <div key={label} className="p-2.5 rounded-xl bg-muted/70 border border-border">
+                            <div className="flex items-center gap-1 text-muted-foreground mb-0.5">
                               <I className="w-3 h-3" />
                               <span className="text-[11px] font-medium">{label}</span>
                             </div>
-                            <div className="text-xs font-bold text-gray-800 truncate">{value}</div>
+                            <div className="text-xs font-bold text-foreground truncate">{value}</div>
                           </div>
                         ))}
                       </div>
 
                       {/* Action Bar for Pending Ticket */}
                       {selected.status === "Pending" && canEdit && (
-                        <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+                        <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
                           <button
                             onClick={() => setShowAddLabTest(true)}
                             disabled={addLabTestMutation.isPending}
@@ -537,14 +536,14 @@ export function InspectionPage() {
                 })()}
 
                 {/* Lab Tests Section */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-xs overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                    <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+                <div className="bg-card rounded-2xl border border-border shadow-xs overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-border flex items-center justify-between bg-muted/50">
+                    <h3 className="font-bold text-foreground flex items-center gap-2 text-sm">
                       <Beaker className="w-4 h-4 text-emerald-600" />
                       {lang === "vi" ? "Chỉ Số Xét Nghiệm Phòng Lab (Lab Tests)" : "Lab Tests"}
                     </h3>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold px-2 py-0.5 bg-gray-200/80 text-gray-700 rounded-full">
+                      <span className="text-xs font-semibold px-2 py-0.5 bg-gray-200/80 text-foreground rounded-full">
                         {selected.labTests.length} {lang === "vi" ? "chỉ số" : "tests"}
                       </span>
                       {selected.status === "Pending" && canEdit && (
@@ -562,29 +561,29 @@ export function InspectionPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
-                          <tr className="bg-gray-50/80 border-b border-gray-100">
+                          <tr className="bg-muted/80 border-b border-border">
                             {(lang === "vi" ? ["Chỉ số xét nghiệm", "Kết quả đo", "Ngưỡng tiêu chuẩn", "Đánh giá", ""] : ["Test Name", "Measured Value", "Standard Range", "Evaluation", ""]).map((h) => (
-                              <th key={h} className="text-left px-4 py-2.5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">{h}</th>
+                              <th key={h} className="text-left px-4 py-2.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{h}</th>
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-border">
                           {selected.labTests.map((test) => (
-                            <tr key={test.id} className="hover:bg-gray-50/60 transition-colors text-xs">
-                              <td className="px-4 py-2.5 font-bold text-gray-800">{test.testName}</td>
-                              <td className="px-4 py-2.5 font-mono text-gray-900 font-semibold">{test.measuredValue || "—"} {test.unit || ""}</td>
-                              <td className="px-4 py-2.5 font-mono text-gray-400">
+                            <tr key={test.id} className="hover:bg-muted/60 transition-colors text-xs">
+                              <td className="px-4 py-2.5 font-bold text-foreground">{test.testName}</td>
+                              <td className="px-4 py-2.5 font-mono text-foreground font-semibold">{test.measuredValue || "—"} {test.unit || ""}</td>
+                              <td className="px-4 py-2.5 font-mono text-muted-foreground">
                                 {test.minStandardValue || test.maxStandardValue
                                   ? `${test.minStandardValue || "0"}${test.maxStandardValue ? ` - ${test.maxStandardValue}` : ""}`
                                   : "—"}
                               </td>
                               <td className="px-4 py-2.5">
                                 {test.isPassed ? (
-                                  <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: "#E8F5E9", color: "#2E7D32" }}>
+                                  <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-bold bg-primary/10" style={{ color: "#2E7D32" }}>
                                     <CheckCircle className="w-3 h-3" /> {lang === "vi" ? "Đạt (Pass)" : "Pass"}
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-bold" style={{ background: "#FFEBEE", color: "#C62828" }}>
+                                  <span className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full font-bold bg-destructive/10 text-destructive">
                                     <XCircle className="w-3 h-3" /> {lang === "vi" ? "Không đạt (Fail)" : "Fail"}
                                   </span>
                                 )}
@@ -593,7 +592,7 @@ export function InspectionPage() {
                                 {canEdit && (
                                   <button
                                     onClick={() => handleRemoveLabTest(test.id)}
-                                    className="p-1 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                                    className="p-1 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-600 transition-colors"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
@@ -605,10 +604,10 @@ export function InspectionPage() {
                       </table>
                     </div>
                   ) : (
-                    <div className="py-6 px-4 text-center bg-emerald-50/20 border-t border-dashed border-gray-200">
+                    <div className="py-6 px-4 text-center bg-emerald-50/20 border-t border-dashed border-border">
                       <Beaker className="w-6 h-6 text-emerald-300 mx-auto mb-1.5" />
-                      <p className="text-xs font-semibold text-gray-700">{lang === "vi" ? "Chưa có chỉ số xét nghiệm Lab được ghi nhận" : "No lab tests recorded"}</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">{lang === "vi" ? "Bấm nút \"Thêm Chỉ Số Lab\" để cập nhật dư lượng BVTV, chỉ tiêu vi sinh, độ đường..." : "Click \"Add Lab Test\" to update pesticide residues, microbiology metrics, brix level..."}</p>
+                      <p className="text-xs font-semibold text-foreground">{lang === "vi" ? "Chưa có chỉ số xét nghiệm Lab được ghi nhận" : "No lab tests recorded"}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{lang === "vi" ? "Bấm nút \"Thêm Chỉ Số Lab\" để cập nhật dư lượng BVTV, chỉ tiêu vi sinh, độ đường..." : "Click \"Add Lab Test\" to update pesticide residues, microbiology metrics, brix level..."}</p>
                       {selected.status === "Pending" && canEdit && (
                         <button
                           onClick={() => setShowAddLabTest(true)}
@@ -622,48 +621,48 @@ export function InspectionPage() {
                 </div>
 
                 {/* Supply Chain Events Section */}
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-xs overflow-hidden">
-                  <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                    <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+                <div className="bg-card rounded-2xl border border-border shadow-xs overflow-hidden">
+                  <div className="px-5 py-3.5 border-b border-border flex items-center justify-between bg-muted/50">
+                    <h3 className="font-bold text-foreground flex items-center gap-2 text-sm">
                       <FileText className="w-4 h-4 text-emerald-600" />
                       {lang === "vi" ? "Sự Kiện Chuỗi Cung Ứng Liên Quan" : "Related Supply Chain Events"}
                     </h3>
-                    <span className="text-xs font-semibold px-2 py-0.5 bg-gray-200/80 text-gray-700 rounded-full">
+                    <span className="text-xs font-semibold px-2 py-0.5 bg-gray-200/80 text-foreground rounded-full">
                       {relatedEvents.length} {lang === "vi" ? "sự kiện" : "events"}
                     </span>
                   </div>
                   {eventsLoading ? (
-                    <div className="py-6 text-center text-xs text-gray-400 font-medium">{lang === "vi" ? "Đang tải nhật ký sự kiện..." : "Loading event logs..."}</div>
+                    <div className="py-6 text-center text-xs text-muted-foreground font-medium">{lang === "vi" ? "Đang tải nhật ký sự kiện..." : "Loading event logs..."}</div>
                   ) : relatedEvents.length > 0 ? (
-                    <div className="divide-y divide-gray-100 text-xs">
+                    <div className="divide-y divide-border text-xs">
                       {relatedEvents.map((evt) => (
-                        <div key={evt.eventId} className="px-5 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                        <div key={evt.eventId} className="px-5 py-3 flex items-center justify-between hover:bg-muted transition-colors">
                           <div>
-                            <div className="font-bold text-gray-800">{evt.eventTypeCode ?? (lang === "vi" ? "SỰ KIỆN" : "EVENT")}</div>
-                            <div className="text-[11px] text-gray-400 mt-0.5">{new Date(evt.eventTime ?? "").toLocaleString()}</div>
+                            <div className="font-bold text-foreground">{evt.eventTypeCode ?? (lang === "vi" ? "SỰ KIỆN" : "EVENT")}</div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5">{new Date(evt.eventTime ?? "").toLocaleString()}</div>
                             {evt.eventData && (
-                              <div className="text-[11px] text-gray-600 mt-1 bg-gray-100/80 px-2 py-1.5 rounded-md">
+                              <div className="text-[11px] text-muted-foreground mt-1 bg-muted/80 px-2 py-1.5 rounded-md">
                                 {renderEventData(evt.eventData)}
                               </div>
                             )}
                           </div>
-                          <span className="text-xs text-gray-500 font-medium bg-gray-100 px-2.5 py-1 rounded-lg">{evt.location ?? "—"}</span>
+                          <span className="text-xs text-muted-foreground font-medium bg-muted px-2.5 py-1 rounded-lg">{evt.location ?? "—"}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="py-6 px-4 text-center bg-gray-50/30">
+                    <div className="py-6 px-4 text-center bg-muted/30">
                       <FileText className="w-6 h-6 text-gray-300 mx-auto mb-1.5" />
-                      <p className="text-xs text-gray-500 font-medium">{lang === "vi" ? "Không có sự kiện chuỗi cung ứng trực tiếp đính kèm phiếu này" : "No supply chain events directly attached to this inspection"}</p>
+                      <p className="text-xs text-muted-foreground font-medium">{lang === "vi" ? "Không có sự kiện chuỗi cung ứng trực tiếp đính kèm phiếu này" : "No supply chain events directly attached to this inspection"}</p>
                     </div>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="lg:col-span-7 flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-xs">
+              <div className="lg:col-span-7 flex flex-col items-center justify-center py-20 bg-card rounded-2xl border border-border shadow-xs">
                 <FlaskConical className="w-10 h-10 text-emerald-300 mb-2" />
-                <div className="font-bold text-gray-700 text-base">{lang === "vi" ? "Vui lòng chọn phiếu kiểm định" : "Please select an inspection"}</div>
-                <div className="text-xs text-gray-400 mt-1">{lang === "vi" ? "Bấm vào phiếu bên danh sách để xem chi tiết nghiệm thu & chỉ số Lab" : "Click on an inspection in the list to view conclusion details & lab tests"}</div>
+                <div className="font-bold text-foreground text-base">{lang === "vi" ? "Vui lòng chọn phiếu kiểm định" : "Please select an inspection"}</div>
+                <div className="text-xs text-muted-foreground mt-1">{lang === "vi" ? "Bấm vào phiếu bên danh sách để xem chi tiết nghiệm thu & chỉ số Lab" : "Click on an inspection in the list to view conclusion details & lab tests"}</div>
               </div>
             )}
           </div>

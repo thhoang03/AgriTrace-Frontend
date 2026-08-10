@@ -122,7 +122,7 @@ export function ReportsPage() {
         <div className="px-6 mt-5">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl p-5 flex items-center gap-4" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              <div key={i} className="bg-card rounded-2xl p-5 flex items-center gap-4" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                 <div className="w-11 h-11 rounded-xl bg-gray-200 animate-pulse" />
                 <div className="flex-1">
                   <div className="h-6 w-20 bg-gray-200 rounded animate-pulse mb-1" />
@@ -133,9 +133,9 @@ export function ReportsPage() {
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-white rounded-2xl p-6 animate-pulse" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              <div key={i} className="bg-card rounded-2xl p-6 animate-pulse" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                 <div className="h-6 w-40 bg-gray-200 rounded mb-4" />
-                <div className="h-48 bg-gray-100 rounded" />
+                <div className="h-48 bg-muted rounded" />
               </div>
             ))}
           </div>
@@ -155,9 +155,9 @@ export function ReportsPage() {
           </div>
         </div>
         <div className="px-6 mt-5">
-          <div className="bg-white rounded-2xl p-8 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="bg-card rounded-2xl p-8 text-center" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <AlertTriangle className="w-10 h-10 text-red-400 mx-auto mb-3" />
-            <div className="font-semibold text-gray-700 mb-2">Failed to load reports data</div>
+            <div className="font-semibold text-foreground mb-2">Failed to load reports data</div>
             <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ background: "#2E7D32" }}>
               Retry
             </button>
@@ -192,23 +192,23 @@ export function ReportsPage() {
       <div className="px-6 mt-5">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {summaryCards.map(({ label, value, icon: Icon, color, bg }) => (
-            <div key={label} className="bg-white rounded-2xl p-5 flex items-center gap-4" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div key={label} className="bg-card rounded-2xl p-5 flex items-center gap-4" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
                 <Icon style={{ color, width: 20, height: 20 }} />
               </div>
               <div>
-                <div className="font-bold text-gray-900" style={{ fontSize: 20 }}>{value}</div>
-                <div className="text-gray-400 text-xs mt-0.5">{label}</div>
+                <div className="font-bold text-foreground" style={{ fontSize: 20 }}>{value}</div>
+                <div className="text-muted-foreground text-xs mt-0.5">{label}</div>
               </div>
             </div>
           ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
-          <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="bg-card rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="mb-5">
-              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Monthly Production Volume</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Total quantity produced per month</p>
+              <h3 className="font-semibold text-foreground" style={{ fontSize: 15 }}>Monthly Production Volume</h3>
+              <p className="text-muted-foreground text-xs mt-0.5">Total quantity produced per month</p>
             </div>
             {overview?.monthlyProduction && overview.monthlyProduction.length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
@@ -227,16 +227,16 @@ export function ReportsPage() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
                 <div className="text-sm">No production data available</div>
               </div>
             )}
           </div>
 
-          <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="bg-card rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="mb-5">
-              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Batch Status Distribution</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Current batch status breakdown</p>
+              <h3 className="font-semibold text-foreground" style={{ fontSize: 15 }}>Batch Status Distribution</h3>
+              <p className="text-muted-foreground text-xs mt-0.5">Current batch status breakdown</p>
             </div>
             {batchDistribution.length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
@@ -259,7 +259,7 @@ export function ReportsPage() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
                 <div className="text-sm">No status data available</div>
               </div>
             )}
@@ -267,10 +267,10 @@ export function ReportsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
-          <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="bg-card rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="mb-5">
-              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Inspection Results</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Pass/Fail breakdown</p>
+              <h3 className="font-semibold text-foreground" style={{ fontSize: 15 }}>Inspection Results</h3>
+              <p className="text-muted-foreground text-xs mt-0.5">Pass/Fail breakdown</p>
             </div>
             {overview?.inspectionResults && overview.inspectionResults.length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
@@ -285,16 +285,16 @@ export function ReportsPage() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
                 <div className="text-sm">No inspection data available</div>
               </div>
             )}
           </div>
 
-          <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="bg-card rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
             <div className="mb-5">
-              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Recall Incidents</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Monthly recall count trend</p>
+              <h3 className="font-semibold text-foreground" style={{ fontSize: 15 }}>Recall Incidents</h3>
+              <p className="text-muted-foreground text-xs mt-0.5">Monthly recall count trend</p>
             </div>
             {overview?.recallTrend && overview.recallTrend.length > 0 ? (
               <ResponsiveContainer width="100%" height={200}>
@@ -307,22 +307,22 @@ export function ReportsPage() {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+              <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
                 <div className="text-sm">No recall trend data available</div>
               </div>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="bg-card rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>Generated Reports</h3>
-              <p className="text-gray-400 text-xs mt-0.5">Recently generated reports and exports</p>
+              <h3 className="font-semibold text-foreground" style={{ fontSize: 15 }}>Generated Reports</h3>
+              <p className="text-muted-foreground text-xs mt-0.5">Recently generated reports and exports</p>
             </div>
             <button
               onClick={() => refetchReports()}
-              className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-muted transition-colors"
               style={{ color: "#2E7D32" }}
             >
               <RefreshCw className="w-3.5 h-3.5" /> Refresh
@@ -332,49 +332,49 @@ export function ReportsPage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-50">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Report</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Format</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Generated</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">By</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Size</th>
-                    <th className="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Report</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Format</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Generated</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">By</th>
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Size</th>
+                    <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {reports.map((report) => (
-                    <tr key={report.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                    <tr key={report.id} className="border-b border-border hover:bg-muted/50 transition-colors">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#E8F5E9" }}>
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
                             <FileText className="w-4 h-4" style={{ color: "#2E7D32" }} />
                           </div>
-                          <span className="text-sm font-medium text-gray-800">{TYPE_LABELS[report.type] ?? report.type}</span>
+                          <span className="text-sm font-medium text-foreground">{TYPE_LABELS[report.type] ?? report.type}</span>
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="text-xs text-gray-500">{TYPE_LABELS[report.type] ?? report.type}</span>
+                        <span className="text-xs text-muted-foreground">{TYPE_LABELS[report.type] ?? report.type}</span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-gray-100 text-gray-700">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-muted text-foreground">
                           {FORMAT_ICONS[report.format] ?? report.format}
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <Calendar className="w-3 h-3" />
                           {formatDate(report.generatedAt)}
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <User className="w-3 h-3" />
                           {report.generatedBy || "-"}
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <HardDrive className="w-3 h-3" />
                           {formatFileSize(report.size)}
                         </div>
@@ -385,13 +385,13 @@ export function ReportsPage() {
                             href={report.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-                            style={{ color: "#2E7D32", background: "#E8F5E9" }}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors bg-primary/10"
+                            style={{ color: "#2E7D32" }}
                           >
                             <Download className="w-3 h-3" /> Download
                           </a>
                         ) : (
-                          <span className="text-xs text-gray-400">-</span>
+                          <span className="text-xs text-muted-foreground">-</span>
                         )}
                       </td>
                     </tr>
@@ -400,10 +400,10 @@ export function ReportsPage() {
               </table>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
               <FileText className="w-10 h-10 mb-3 opacity-50" />
-              <div className="text-sm font-medium text-gray-500 mb-1">No reports generated yet</div>
-              <p className="text-xs text-gray-400 mb-4">Generate your first report to see it here</p>
+              <div className="text-sm font-medium text-muted-foreground mb-1">No reports generated yet</div>
+              <p className="text-xs text-muted-foreground mb-4">Generate your first report to see it here</p>
               <button
                 onClick={() => setShowGenerate(true)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity"
@@ -418,20 +418,20 @@ export function ReportsPage() {
 
       {showGenerate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-lg w-full" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+          <div className="bg-card rounded-2xl p-6 max-w-lg w-full" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="font-semibold text-gray-900" style={{ fontSize: 16 }}>Generate Report</h3>
-                <p className="text-gray-400 text-xs mt-0.5">Configure and generate a new report</p>
+                <h3 className="font-semibold text-foreground" style={{ fontSize: 16 }}>Generate Report</h3>
+                <p className="text-muted-foreground text-xs mt-0.5">Configure and generate a new report</p>
               </div>
-              <button onClick={() => setShowGenerate(false)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors">
-                <X className="w-4 h-4 text-gray-400" />
+              <button onClick={() => setShowGenerate(false)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted transition-colors">
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Report Type</label>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Report Type</label>
                 <div className="grid grid-cols-2 gap-2">
                   {REPORT_TYPES.map(({ value, label }) => (
                     <button
@@ -440,7 +440,7 @@ export function ReportsPage() {
                       className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
                         genType === value
                           ? "border-green-600 text-green-700 bg-green-50"
-                          : "border-gray-200 text-gray-600 hover:border-gray-300"
+                          : "border-border text-muted-foreground hover:border-border"
                       }`}
                     >
                       {label}
@@ -450,7 +450,7 @@ export function ReportsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Format</label>
+                <label className="block text-sm font-medium text-foreground mb-1.5">Format</label>
                 <div className="flex gap-2">
                   {REPORT_FORMATS.map(({ value, label }) => (
                     <button
@@ -459,7 +459,7 @@ export function ReportsPage() {
                       className={`flex-1 px-3 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
                         genFormat === value
                           ? "border-green-600 text-green-700 bg-green-50"
-                          : "border-gray-200 text-gray-600 hover:border-gray-300"
+                          : "border-border text-muted-foreground hover:border-border"
                       }`}
                     >
                       {label}
@@ -470,21 +470,21 @@ export function ReportsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Date From</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Date From</label>
                   <input
                     type="date"
                     value={genDateFrom}
                     onChange={(e) => setGenDateFrom(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+                    className="w-full rounded-xl border border-border px-3 py-2.5 text-sm outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Date To</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Date To</label>
                   <input
                     type="date"
                     value={genDateTo}
                     onChange={(e) => setGenDateTo(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+                    className="w-full rounded-xl border border-border px-3 py-2.5 text-sm outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
                   />
                 </div>
               </div>
@@ -499,7 +499,7 @@ export function ReportsPage() {
             <div className="flex items-center justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowGenerate(false)}
-                className="px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+                className="px-4 py-2.5 rounded-xl text-sm font-medium border border-border text-foreground hover:bg-muted transition-colors"
               >
                 Cancel
               </button>

@@ -7,10 +7,11 @@ export function useOrganizationsList(params?: {
   search?: string;
   status?: string;
   organizationTypeId?: string;
-}) {
+}, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ["organizations", "list", params],
     queryFn: () => organizationsApi.getAll(params),
     staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled ?? true,
   });
 }
