@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   Search, Plus, Eye, Edit2, Trash2, RotateCcw, ToggleLeft, ToggleRight,
-  ChevronLeft, ChevronRight, X, SlidersHorizontal,
+  ChevronLeft, ChevronRight, X, SlidersHorizontal, Package,
 } from "lucide-react";
 import { useProductsList, useDeleteProduct, useUpdateProductStatus } from "./products.queries";
 import { useCategoriesList } from "../categories/categories.queries";
@@ -262,8 +262,7 @@ export function ProductManagementPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100">
-                      <SortHeader label="ID" sortKey="id" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                      <SortHeader label={lang === "vi" ? "Tên Sản Phẩm" : "Name"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Sản Phẩm" : "Product"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
                       <SortHeader label={lang === "vi" ? "Danh Mục" : "Category"} sortKey="category" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
                       <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
                       <SortHeader label={lang === "vi" ? "Đơn Vị Tính" : "Unit"} sortKey="unit" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
@@ -276,9 +275,16 @@ export function ProductManagementPage() {
                       const prodId = product.id || product.productId;
                       return (
                         <tr key={prodId} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 text-xs font-medium text-gray-500 font-mono">{String(prodId).slice(0, 8)}...</td>
                           <td className="px-6 py-4">
-                            <span className="text-sm font-semibold text-gray-900">{product.name}</span>
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E8F5E9" }}>
+                                <Package className="w-4 h-4" style={{ color: "#1B5E20" }} />
+                              </div>
+                              <div>
+                                <div className="text-sm font-semibold text-gray-900">{product.name}</div>
+                                <div className="text-xs text-gray-400 font-mono">ID: {String(prodId).slice(0, 8)}...</div>
+                              </div>
+                            </div>
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600">{product.categoryName}</td>
                           <td className="px-6 py-4 text-sm text-gray-600">{product.organizationName || "—"}</td>

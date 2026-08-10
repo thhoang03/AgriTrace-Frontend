@@ -631,22 +631,15 @@ export function OrganizationsPage() {
                             </span>
                           </td>
                           <td className="px-5 py-4">
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="w-1.5 h-1.5 rounded-full"
-                                style={{
-                                  background: isActive ? "#4CAF50" : "#9E9E9E",
-                                }}
-                              />
-                              <span
-                                className="text-sm"
-                                style={{
-                                  color: isActive ? "#2E7D32" : "#757575",
-                                }}
-                              >
-                                {org.status}
-                              </span>
-                            </div>
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${isActive
+                                ? "text-green-700"
+                                : "text-gray-600"
+                                }`}
+                              style={{ background: isActive ? "#E8F5E9" : "#F5F5F5" }}
+                            >
+                              {isActive ? (lang === "vi" ? "Hoạt động" : "Active") : (lang === "vi" ? "Ngưng hoạt động" : "Inactive")}
+                            </span>
                           </td>
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-1 transition-opacity">
