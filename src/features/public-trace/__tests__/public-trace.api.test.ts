@@ -34,13 +34,25 @@ describe("publicTraceApi", () => {
     expect(result).toEqual({ data: mockData, status: 200, message: "OK" });
   });
 
-  it("should fetch batch lineage by batch ID", async () => {
-    const mockData = { rootBatchId: "123", lineage: [] };
+  it("should fetch batch lineage by batch UUID", async () => {
+    const uuid = "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d";
+    const mockData = { rootBatchId: uuid, lineage: [] };
     vi.mocked(api.get).mockResolvedValueOnce({ data: mockData, status: 200, message: "OK" });
 
-    const result = await publicTraceApi.getLineage("123");
+    const result = await publicTraceApi.getLineage(uuid);
 
-    expect(api.get).toHaveBeenCalledWith("/public/trace/123/lineage");
+    expect(api.get).toHaveBeenCalledWith(`/public/trace/${uuid}/lineage`);
+    expect(result).toEqual({ data: mockData, status: 200, message: "OK" });
+  });
+
+  it("should fetch batch lineage by batch code", async () => {
+    const batchCode = "RICE-20260112-001";
+    const mockData = { rootBatchId: batchCode, lineage: [] };
+    vi.mocked(api.get).mockResolvedValueOnce({ data: mockData, status: 200, message: "OK" });
+
+    const result = await publicTraceApi.getLineage(batchCode);
+
+    expect(api.get).toHaveBeenCalledWith(`/public/trace/code/${batchCode}/lineage`);
     expect(result).toEqual({ data: mockData, status: 200, message: "OK" });
   });
 });

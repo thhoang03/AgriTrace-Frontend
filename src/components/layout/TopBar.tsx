@@ -88,7 +88,7 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
 
   const notifications = [
     { id: 1, text: lang === "vi" ? "Cảnh báo thu hồi: BTH-2024-006 (Sầu riêng)" : "Recall alert: BTH-2024-006 (Durian)", type: "recall", time: lang === "vi" ? "1 giờ trước" : "1h ago" },
-    { id: 2, text: lang === "vi" ? "Kiểm định đạt chuẩn: BTH-2024-001" : "Inspection passed: BTH-2024-001", type: "pass", time: lang === "vi" ? "2 giờ trước" : "2h ago" },
+    { id: 2, text: lang === "vi" ? "Kiểm định đạt chuẩn: RICE-20260112-001" : "Inspection passed: RICE-20260112-001", type: "pass", time: lang === "vi" ? "2 giờ trước" : "2h ago" },
     { id: 3, text: lang === "vi" ? "Lô hàng mới khởi tạo: BTH-2024-008" : "New batch created: BTH-2024-008", type: "info", time: lang === "vi" ? "3 giờ trước" : "3h ago" },
   ];
 

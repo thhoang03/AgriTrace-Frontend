@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
+import { Html5Qrcode } from "html5-qrcode";
 import {
   QrCode, Camera, Upload, X, RefreshCw, CheckCircle, AlertCircle, Sparkles, ArrowRight
 } from "lucide-react";
@@ -26,14 +27,13 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose,
   const [manualCode, setManualCode] = useState("");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
+  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Play audio beep sound on scan success
   const playScanBeep = () => {
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioCtx) {
         const ctx = new AudioCtx();
         const osc = ctx.createOscillator();
@@ -53,8 +53,24 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose,
   };
 
   const handleSuccessfulScan = (code: string) => {
-    const cleanCode = code.trim();
+    let cleanCode = code.trim();
     if (!cleanCode) return;
+
+    try {
+      const url = new URL(cleanCode);
+      if (url.pathname.includes('/trace/')) {
+        const parts = url.pathname.split('/trace/');
+        if (parts.length > 1 && parts[1]) {
+          cleanCode = parts[1].replace(/\/$/, "");
+        }
+      }
+    } catch (e) {
+      // Not a valid URL, use raw text or it might be raw trace code
+      if (cleanCode.includes("/trace/")) {
+        const parts = cleanCode.split("/trace/");
+        cleanCode = parts[parts.length - 1];
+      }
+    }
 
     playScanBeep();
     toast.success(
@@ -65,32 +81,31 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose,
     stopCamera();
     onClose();
 
-    // Check if full URL or raw ID
-    if (cleanCode.includes("/trace/")) {
-      const parts = cleanCode.split("/trace/");
-      const traceId = parts[parts.length - 1];
-      navigate(`/trace/${traceId}`);
-    } else {
-      navigate(`/trace/${cleanCode}`);
-    }
+    navigate(`/trace/${cleanCode}`);
   };
 
   // Start Camera Stream
   const startCamera = async () => {
     setCameraError(null);
     try {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop());
+      if (!html5QrCodeRef.current) {
+        html5QrCodeRef.current = new Html5Qrcode("home-camera-qr-reader-container");
       }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-      });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
-    } catch (err: unknown) {
+
+      await html5QrCodeRef.current.start(
+        { facingMode: facingMode },
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        (decodedText) => {
+          handleSuccessfulScan(decodedText);
+        },
+        () => {
+          // ignore scan errors per frame
+        }
+      );
+    } catch (err: any) {
       console.warn("Camera access warning:", err);
       setCameraError(
         lang === "vi"
@@ -101,52 +116,57 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose,
   };
 
   // Stop Camera Stream
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
+  const stopCamera = async () => {
+    if (html5QrCodeRef.current) {
+      try {
+        if (html5QrCodeRef.current.isScanning) {
+          await html5QrCodeRef.current.stop();
+        }
+        await html5QrCodeRef.current.clear();
+      } catch (e) {
+        console.error("Error stopping QR scanner", e);
+      }
     }
   };
 
   useEffect(() => {
-    if (isOpen && activeTab === "camera") {
+    if (!isOpen) {
+      stopCamera();
+      return;
+    }
+
+    if (activeTab === "camera") {
       startCamera();
     } else {
       stopCamera();
     }
+
     return () => {
       stopCamera();
     };
   }, [isOpen, activeTab, facingMode]);
 
   // Handle File Upload QR decoding simulation / file parsing
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadedFile(file);
 
-    // Try to detect QR via BarcodeDetector API if available, else simulate parsing file name / mock
-    if ("BarcodeDetector" in window) {
-      const img = new Image();
-      img.onload = async () => {
-        try {
-          const barcodeDetector = new (window as unknown as { BarcodeDetector: new (opts: { formats: string[] }) => { detect: (image: HTMLImageElement) => Promise<{ rawValue: string }[]> } }).BarcodeDetector({
-            formats: ["qr_code"],
-          });
-          const barcodes = await barcodeDetector.detect(img);
-          if (barcodes.length > 0 && barcodes[0].rawValue) {
-            handleSuccessfulScan(barcodes[0].rawValue);
-            return;
-          }
-        } catch {
-          // Fallback to default sample
-        }
-        handleSuccessfulScan("BTH-2024-001");
-      };
-      img.src = URL.createObjectURL(file);
-    } else {
+    try {
+      const html5Qr = new Html5Qrcode("home-file-qr-reader-container");
+      const decodedText = await html5Qr.scanFile(file, false);
+      try {
+        await html5Qr.clear();
+      } catch (e) {}
+      handleSuccessfulScan(decodedText);
+    } catch (err) {
+      console.error("QR File parse error", err);
+      toast.error(
+        lang === "vi" ? "Không tìm thấy mã QR trong ảnh!" : "No QR code found in image!"
+      );
+      // Fallback
       setTimeout(() => {
-        handleSuccessfulScan("BTH-2024-001");
+        handleSuccessfulScan("RICE-20260112-001");
       }, 500);
     }
   };
@@ -154,8 +174,11 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose,
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-white/20 flex flex-col max-h-[90vh]">
+        {/* Hidden Container for File QR Processing */}
+        <div id="home-file-qr-reader-container" className="hidden" />
+
         {/* Header */}
         <div className="px-6 py-4 flex items-center justify-between border-b border-gray-100" style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)" }}>
           <div className="flex items-center gap-3">
@@ -225,7 +248,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose,
             <div className="space-y-4">
               <div className="relative w-full aspect-square max-h-[300px] bg-gray-900 rounded-2xl overflow-hidden flex items-center justify-center border-2 border-green-600/30 shadow-inner">
                 {cameraError ? (
-                  <div className="p-6 text-center text-gray-300 space-y-3">
+                  <div className="p-6 text-center text-gray-300 space-y-3 z-20 relative">
                     <AlertCircle className="w-10 h-10 text-amber-400 mx-auto" />
                     <p className="text-xs text-gray-200 leading-relaxed">{cameraError}</p>
                     <button
@@ -237,32 +260,38 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose,
                   </div>
                 ) : (
                   <>
-                    <video
-                      ref={videoRef}
-                      className="w-full h-full object-cover"
-                      playsInline
-                      muted
-                    />
-
-                    {/* Laser Scanner Frame Overlay */}
-                    <div className="absolute inset-0 border-[3px] border-green-500/40 rounded-2xl pointer-events-none flex items-center justify-center">
-                      <div className="w-48 h-48 border-2 border-green-400 rounded-xl relative flex items-center justify-center">
-                        <div className="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-green-400 -mt-1 -ml-1 rounded-tl" />
-                        <div className="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-green-400 -mt-1 -mr-1 rounded-tr" />
-                        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-green-400 -mb-1 -ml-1 rounded-bl" />
-                        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-green-400 -mb-1 -mr-1 rounded-br" />
-
-                        {/* Animated Scanning Beam */}
-                        <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-green-400 to-transparent shadow-[0_0_12px_#4ade80] animate-bounce" />
+                    <style>{`
+                      @keyframes scan {
+                        0%, 100% { top: 0%; opacity: 0; }
+                        10%, 90% { opacity: 1; }
+                        50% { top: 100%; }
+                      }
+                      .animate-scanline {
+                        animation: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                      }
+                    `}</style>
+                    <div id="home-camera-qr-reader-container" className="absolute inset-0 w-full h-full object-cover [&>video]:w-full [&>video]:h-full [&>video]:object-cover [&>div]:hidden" />
+                    
+                    {/* Custom Scanner Overlay */}
+                    <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center overflow-hidden">
+                      <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-2xl" style={{ boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.55)' }}>
+                        {/* Scanline animation */}
+                        <div className="absolute left-0 w-full h-0.5 bg-green-500 shadow-[0_0_12px_3px_rgba(34,197,94,0.6)] animate-scanline"></div>
+                        
+                        {/* Corner markers */}
+                        <div className="absolute -top-0.5 -left-0.5 w-10 h-10 border-t-4 border-l-4 border-green-500 rounded-tl-2xl"></div>
+                        <div className="absolute -top-0.5 -right-0.5 w-10 h-10 border-t-4 border-r-4 border-green-500 rounded-tr-2xl"></div>
+                        <div className="absolute -bottom-0.5 -left-0.5 w-10 h-10 border-b-4 border-l-4 border-green-500 rounded-bl-2xl"></div>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-10 h-10 border-b-4 border-r-4 border-green-500 rounded-br-2xl"></div>
                       </div>
                     </div>
 
-                    {/* Camera Control Bar */}
-                    <div className="absolute bottom-3 right-3 flex gap-2">
+                    {/* Camera Control Bar (only when no error) */}
+                    <div className="absolute bottom-3 right-3 flex gap-2 z-20 pointer-events-auto">
                       <button
-                        onClick={() =>
-                          setFacingMode((prev) => (prev === "user" ? "environment" : "user"))
-                        }
+                        onClick={async () => {
+                          setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+                        }}
                         className="p-2 rounded-xl bg-black/60 text-white backdrop-blur hover:bg-black/80 transition-colors"
                         title={lang === "vi" ? "Đổi Camera" : "Switch Camera"}
                       >
@@ -272,12 +301,14 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose,
                   </>
                 )}
               </div>
-
-              <div className="text-center text-xs text-gray-500">
-                {lang === "vi"
-                  ? "Căn chỉnh mã QR vào vị trí khung xanh để quét tự động"
-                  : "Position the QR code inside the frame to scan automatically"}
-              </div>
+              
+              {!cameraError && (
+                <div className="text-center text-xs text-gray-500 font-medium">
+                  {lang === "vi"
+                    ? "Hướng khung camera vào mã QR. Hệ thống sẽ tự động quét."
+                    : "Point camera at QR code. Scanning is automatic."}
+                </div>
+              )}
             </div>
           )}
 
@@ -320,7 +351,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = ({ isOpen, onClose,
                     value={manualCode}
                     onChange={(e) => setManualCode(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSuccessfulScan(manualCode)}
-                    placeholder="e.g. BTH-2024-001"
+                    placeholder="e.g. RICE-20260112-001"
                     className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-green-600"
                   />
                   <button

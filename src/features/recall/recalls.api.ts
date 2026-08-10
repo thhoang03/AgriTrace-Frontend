@@ -80,7 +80,7 @@ export const recallsApi = {
   },
 
   resolve: async (id: string) => {
-    const newRequest: ResolveRecallRequest = { status: 2 };
+    const newRequest: ResolveRecallRequest = { status: 3 };
     return patch<void>(`/recalls/${id}/resolve`, newRequest);
   },
 

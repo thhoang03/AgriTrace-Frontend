@@ -17,10 +17,15 @@ export interface PublicTraceInspection {
 
 /** Quality certificate visible to the public */
 export interface PublicTraceCertificate {
+  certificateNumber?: string;
   certificateType: string; // "VietGAP" | "Organic" | …
+  issuingOrganization?: string;
   fileUrl: string;
-  issuedDate: string;      // "YYYY-MM-DD"
+  issuedDate?: string;     // "YYYY-MM-DD"
+  expiryDate?: string;     // "YYYY-MM-DD"
+  status?: number;
 }
+
 
 /** Recall information — null when the batch is not recalled */
 export interface PublicTraceRecallStatus {
@@ -52,7 +57,9 @@ export interface PublicTraceData {
   timeline: PublicTraceTimeline[];
   inspections: PublicTraceInspection[];
   certificates: PublicTraceCertificate[];
-  recallStatus: PublicTraceRecallStatus | null;
+  recallStatus: PublicTraceRecallStatus | string | null;
+  recallReason?: string;
+  recallSeverity?: number;
 }
 
 // ── Lineage Types ──────────────────────────────────────────────────────────

@@ -10,14 +10,14 @@ export const ROLE_ACCESS: Record<UserRole, string[]> = {
   ],
   MANAGER: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
-    "/app/supply-chain", "/app/event-requests", "/app/inspection", "/app/inspections", "/app/recall",
+    "/app/supply-chain", "/app/event-requests", "/app/recall",
     "/app/reports", "/app/categories",
     "/app/users", "/app/products", "/app/profile",
     "/app/analytics", "/app/notifications", "/app/change-password",
   ],
   STAFF: [
     "/app/dashboard", "/app/batches", "/app/batches/new",
-    "/app/supply-chain", "/app/event-requests", "/app/inspection", "/app/inspections", "/app/profile",
+    "/app/supply-chain", "/app/event-requests", "/app/profile",
     "/app/notifications", "/app/change-password",
   ],
 };
@@ -42,6 +42,11 @@ export function canAccessRoute(
 ): boolean {
   if (!role) return false;
 
+  // Quality Inspection (/app/inspection) is accessible ONLY by ADMIN or INSPECTION organization type
+  if (path === "/app/inspection" || path.startsWith("/app/inspection/") || path === "/app/inspections" || path.startsWith("/app/inspections/")) {
+    return role === "ADMIN" || organizationType === "INSPECTION";
+  }
+
   // Batch Management (/app/batches) is accessible by ADMIN, FARM, or if extraAllowedEvents includes CREATED or HARVEST
   if (path === "/app/batches" || path.startsWith("/app/batches/")) {
     const hasFarmerEvents = (extraAllowedEvents || []).some(
@@ -53,6 +58,11 @@ export function canAccessRoute(
   // Supply Chain (/app/supply-chain) is hidden/disabled for INSPECTION (Inspector) organization type
   if (path === "/app/supply-chain" || path.startsWith("/app/supply-chain/")) {
     if (organizationType === "INSPECTION") return false;
+  }
+
+  // Recall Management (/app/recall) is accessible ONLY by ADMIN or INSPECTION organization type
+  if (path === "/app/recall" || path.startsWith("/app/recall/")) {
+    return role === "ADMIN" || organizationType === "INSPECTION" || organizationType === "SYSTEM";
   }
 
   const allowed = ROLE_ACCESS[role] || [];

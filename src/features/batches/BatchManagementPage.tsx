@@ -396,9 +396,6 @@ export function BatchManagementPage() {
                       <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
                         {lang === "vi" ? "Mã Lô Hàng" : "Batch Code"}
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
-                        {lang === "vi" ? "Trang Trại / Nông Dân" : "Farm / Farmer"}
-                      </th>
                       <th
                         className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("harvestDate")}
@@ -468,10 +465,6 @@ export function BatchManagementPage() {
                             </div>
                           </td>
                           <td className="px-4 py-3.5">
-                            <div className="text-sm font-medium text-gray-700">{batch.farm}</div>
-                            <div className="text-xs text-gray-400">{batch.farmer}</div>
-                          </td>
-                          <td className="px-4 py-3.5">
                             <div className="text-sm text-gray-700">{batch.harvestDate}</div>
                             <div className="text-xs text-gray-400">{batch.location}</div>
                           </td>
@@ -505,13 +498,7 @@ export function BatchManagementPage() {
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
-                              <button
-                                onClick={() => setEditTarget(batch)}
-                                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-600 transition-colors"
-                                title="Edit"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </button>
+
                               <div className="relative">
                                 <button
                                   onClick={(e) => {

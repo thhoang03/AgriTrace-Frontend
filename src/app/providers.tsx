@@ -12,7 +12,7 @@ export default function Providers() {
       <LanguageProvider>
         <AuthProvider>
           <RouterProvider router={router} />
-          <Toaster position="top-right" richColors closeButton duration={4000} />
+          <Toaster position="top-right" richColors duration={3000} />
         </AuthProvider>
       </LanguageProvider>
     </QueryClientProvider>

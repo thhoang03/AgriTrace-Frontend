@@ -22,7 +22,7 @@ interface ProductItem {
 const FEATURED_PRODUCTS: ProductItem[] = [
   {
     id: "1",
-    code: "BTH-2024-001",
+    code: "RICE-20260112-001",
     nameVi: "Gạo ST25 Sóc Trăng Hữu Cơ",
     nameEn: "ST25 Organic Rice Sóc Trăng",
     category: "grain",
@@ -34,7 +34,7 @@ const FEATURED_PRODUCTS: ProductItem[] = [
   },
   {
     id: "2",
-    code: "BTH-2024-002",
+    code: "TOMATO-20260105-001",
     nameVi: "Xoài Cát Chu Cao Lãnh",
     nameEn: "Cao Lãnh Cat Chu Mango",
     category: "fruit",
@@ -46,7 +46,7 @@ const FEATURED_PRODUCTS: ProductItem[] = [
   },
   {
     id: "3",
-    code: "BTH-2024-004",
+    code: "DRAGONFRUIT-20260108-001",
     nameVi: "Thanh Long Ruột Đỏ Bình Thuận",
     nameEn: "Bình Thuận Red Dragon Fruit",
     category: "fruit",
@@ -58,7 +58,7 @@ const FEATURED_PRODUCTS: ProductItem[] = [
   },
   {
     id: "4",
-    code: "BTH-2024-005",
+    code: "COFFEE-20260110-001",
     nameVi: "Cà Phê Arabica Đắk Lắk Special",
     nameEn: "Đắk Lắk Arabica Coffee Special",
     category: "coffee",

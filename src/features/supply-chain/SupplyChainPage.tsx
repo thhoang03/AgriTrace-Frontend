@@ -508,10 +508,44 @@ export function SupplyChainPage() {
                             const isLast = idx === events.length - 1;
                             const { date, time } = formatEventTime(event.eventTime);
                             const eventData = parseEventData(event.eventData);
-                            const description = (eventData.description as string) ?? "";
+                            
+                            let description = (eventData.description as string) ?? "";
+                            if (!description && eventData.action) {
+                              if (eventData.action === "created") {
+                                description = lang === "vi" ? "Khởi tạo phiếu kiểm định chất lượng" : "Quality inspection created";
+                              } else if (eventData.action === "concluded") {
+                                const res = eventData.overallResult ? ` (${eventData.overallResult})` : "";
+                                description = lang === "vi" ? `Kết luận nghiệm thu kiểm định${res}` : `Quality inspection concluded${res}`;
+                              }
+                            } else if (!description && typeof event.eventData === "string" && event.eventData.trim()) {
+                              if (event.eventData.startsWith("{")) {
+                                try {
+                                  const parsed = JSON.parse(event.eventData);
+                                  const parts = Object.entries(parsed)
+                                    .filter(([k]) => k !== "inspectionId")
+                                    .map(([k, v]) => `${k}: ${v}`);
+                                  description = parts.join(" | ");
+                                } catch {
+                                  description = event.eventData;
+                                }
+                              } else {
+                                description = event.eventData;
+                              }
+                            }
+
                             const temperature = eventData.temperature as string | undefined;
                             const humidity = eventData.humidity as string | undefined;
                             const verified = !!event.currentHash;
+
+                            // Custom sub-label for inspection action
+                            let eventLabel = lang === "vi" ? cfg.label.vi : cfg.label.en;
+                            if (typeCode === "INSPECTION" && eventData.action) {
+                              if (eventData.action === "created") {
+                                eventLabel += lang === "vi" ? " (Khởi tạo)" : " (Created)";
+                              } else if (eventData.action === "concluded") {
+                                eventLabel += lang === "vi" ? " (Kết luận)" : " (Concluded)";
+                              }
+                            }
 
                             return (
                               <div key={event.eventId} className="relative flex gap-4">
@@ -525,7 +559,7 @@ export function SupplyChainPage() {
                                     onClick={() => setExpandedEvent(isExpanded ? null : event.eventId)}
                                   >
                                     <div className="flex items-center gap-3">
-                                      <span className="text-sm font-semibold" style={{ color: cfg.color }}>{lang === "vi" ? cfg.label.vi : cfg.label.en}</span>
+                                      <span className="text-sm font-semibold" style={{ color: cfg.color }}>{eventLabel}</span>
                                       {verified && <CheckCircle className="w-3.5 h-3.5 text-green-500" />}
                                       <span className="text-xs text-gray-400">{date} · {time}</span>
                                     </div>
