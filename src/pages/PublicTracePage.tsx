@@ -9,6 +9,7 @@ import {
   Eye, X, ExternalLink
 } from "lucide-react";
 import { publicTraceApi } from "../features/public-trace/public-trace.api";
+import type { PublicTraceCertificate } from "../features/public-trace/public-trace.types";
 import { toast } from "sonner";
 
 // Pre-populated realistic verified supply chain data for sample batch codes
@@ -179,6 +180,7 @@ export function PublicTracePage() {
   });
 
   const rawBatch = traceData?.data;
+  const certificates: PublicTraceCertificate[] = rawBatch?.certificates ?? [];
   const sampleFallback = SAMPLE_VERIFIED_DATA[id || ""] || SAMPLE_VERIFIED_DATA["RICE-20260112-001"];
 
   // Merge backend data with rich sample fallback
