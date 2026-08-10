@@ -301,13 +301,13 @@ export function ProductManagementPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex items-center justify-end gap-1">
+                            <div className="flex items-center justify-end gap-1 transition-opacity">
                               <button
                                 onClick={() => navigate(`/app/products/${prodId}`)}
-                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
-                                title={lang === "vi" ? "Xem chi tiết" : "View"}
+                                className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors"
+                                title={lang === "vi" ? "Xem chi tiết" : "View Detail"}
                               >
-                                <Eye className="w-4 h-4" />
+                                <Eye className="w-3.5 h-3.5" />
                               </button>
                               
                               {/* Only allow edit/deactivate/delete if ADMIN or belongs to user's org */}
@@ -315,26 +315,26 @@ export function ProductManagementPage() {
                                 <>
                                   <button
                                     onClick={() => setShowEditModal(prodId)}
-                                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                                    className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"
                                     title={lang === "vi" ? "Chỉnh sửa" : "Edit"}
                                   >
-                                    <Edit2 className="w-4 h-4" />
+                                    <Edit2 className="w-3.5 h-3.5" />
                                   </button>
                                   {product.isActive ? (
                                     <button
                                       onClick={() => setShowDeleteModal(prodId)}
-                                      className="p-2 rounded-lg hover:bg-red-50 transition-colors text-red-500 hover:text-red-700"
+                                      className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 transition-colors"
                                       title={lang === "vi" ? "Xóa" : "Delete"}
                                     >
-                                      <Trash2 className="w-4 h-4" />
+                                      <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                   ) : (
                                     <button
                                       onClick={() => handleToggleStatus(product)}
-                                      className="p-2 rounded-lg hover:bg-green-50 transition-colors text-green-600 hover:text-green-800"
+                                      className="p-1.5 rounded-lg hover:bg-green-50 text-green-500 transition-colors"
                                       title={lang === "vi" ? "Khôi phục" : "Restore"}
                                     >
-                                      <RotateCcw className="w-4 h-4" />
+                                      <RotateCcw className="w-3.5 h-3.5" />
                                     </button>
                                   )}
                                 </>
