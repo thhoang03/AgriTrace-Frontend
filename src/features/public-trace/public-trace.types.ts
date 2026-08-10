@@ -4,6 +4,7 @@
 export interface PublicTraceTimeline {
   eventTypeCode: string;
   organizationName: string;
+  performedByName?: string;
   eventTime: string;      // ISO‑8601
   location: string;
 }
@@ -27,15 +28,6 @@ export interface PublicTraceCertificate {
 }
 
 
-/** Recall information — null when the batch is not recalled */
-export interface PublicTraceRecallStatus {
-  recallId: string;
-  reason: string;
-  severity: "Critical" | "High" | "Medium" | "Low";
-  createdDate: string;
-  status: "Active" | "Resolved" | "Pending";
-}
-
 /** Full public trace response for a single batch */
 export interface PublicTraceData {
   batchId: string;
@@ -57,7 +49,8 @@ export interface PublicTraceData {
   timeline: PublicTraceTimeline[];
   inspections: PublicTraceInspection[];
   certificates: PublicTraceCertificate[];
-  recallStatus: PublicTraceRecallStatus | string | null;
+  /** "PENDING" | "PROCESSING" | "COMPLETED" | "CANCELLED" | null (no recall on record) */
+  recallStatus: string | null;
   recallReason?: string;
   recallSeverity?: number;
 }

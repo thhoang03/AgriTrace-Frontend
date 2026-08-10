@@ -1,37 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   Search, QrCode, CheckCircle, Leaf, Shield, Globe, Award,
   TrendingUp, Phone, Mail, MapPin, ChevronRight, ArrowRight,
-  Sparkles, Layers, Zap, X, User, Play, ChevronDown, ChevronUp, Lock, Check
+  Layers, Zap, X, User, Play, ChevronDown, ChevronUp, Lock, Check, Loader2
 } from "lucide-react";
 import { useAuth } from "../features/auth/auth.store";
 import { QRScannerModal } from "../components/common/QRScannerModal";
 import { FeatureModal } from "../components/home/FeatureModal";
 import { InfoPolicyModal } from "../components/home/InfoPolicyModal";
 import { QRGeneratorWidget } from "../components/home/QRGeneratorWidget";
-import { BatchShowcaseSection } from "../components/home/BatchShowcaseSection";
 import { PartnerModal } from "../components/home/PartnerModal";
 import { DistributorLogosSection } from "../components/home/DistributorLogosSection";
 import { NationalStandardsSection } from "../components/home/NationalStandardsSection";
+import { publicTraceApi } from "../features/public-trace/public-trace.api";
 
 const HERO_IMG = "https://images.unsplash.com/photo-1480996408299-fc0e830b5db1?w=1920&q=80";
-
-// Real system sample batch database for search autocomplete & quick chips
-const SAMPLE_BATCHES = [
-  { id: "RICE-20260112-001", name: "Gạo ST25 Sóc Trăng Hữu Cơ", type: "Lúa gạo", org: "HTX Mỹ Xuyên (Sóc Trăng)" },
-  { id: "COFFEE-20260110-001", name: "Cà Phê Arabica Đắk Lắk Special", type: "Cà phê", org: "Nông Trường Buôn Ma Thuột" },
-  { id: "DRAGONFRUIT-20260108-001", name: "Thanh Long Ruột Đỏ Bình Thuận", type: "Trái cây", org: "Trang Trại Bình Thuận" },
-  { id: "TOMATO-20260105-001", name: "Cà Chua Hữu Cơ Đà Lạt", type: "Rau củ", org: "Đà Lạt EcoFarm" },
-  { id: "COCONUT-20260104-001", name: "Dừa Xiêm Xanh Bến Tre VietGAP", type: "Trái cây", org: "HTX Dừa Bến Tre" },
-  { id: "TEA-20260103-001", name: "Trà Oolong Lâm Đồng Hảo Hạng", type: "Trà & Đồ uống", org: "Nông Trường Trà Bảo Lộc" },
-  { id: "MANGO-20260102-001", name: "Xoài Cát Hòa Lộc Tiền Giang", type: "Trái cây", org: "HTX Xoài Hòa Lộc" },
-  { id: "PEPPER-20260101-001", name: "Hạt Tiêu Đen Chư Sê Gia Lai", type: "Gia vị & Hạt", org: "HTX Tiêu Chư Sê" },
-  { id: "CASHEW-20251228-001", name: "Hạt Điều Rang Salted Bình Phước", type: "Gia vị & Hạt", org: "Cơ Sở Hạt Điều Bình Phước" },
-  { id: "HONEY-20251225-001", name: "Mật Ong Rừng U Minh Cà Mau", type: "Nông sản chế biến", org: "HTX Mật Ong U Minh" },
-  { id: "DURIAN-20251220-001", name: "Sầu Riêng Ri6 Vĩnh Long", type: "Trái cây", org: "Trang Trại Vĩnh Long" },
-  { id: "LYCHEE-20251215-001", name: "Vải Thiều Lục Ngạn Bắc Giang", type: "Trái cây", org: "HTX Vải Lục Ngạn" },
-];
 
 /** Scroll Reveal Component using IntersectionObserver for dynamic scroll animations */
 const RevealOnScroll: React.FC<{
@@ -113,6 +98,24 @@ export function HomePage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Debounce the query before hitting the real trace-by-code lookup
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(query.trim()), 400);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Live preview: looks up the real batch record for the typed code (min 3 chars, no partial-match search API exists)
+  const previewCode = debouncedQuery.length >= 3 ? debouncedQuery : "";
+  const { data: previewData, isLoading: isPreviewLoading, isError: isPreviewError } = useQuery({
+    queryKey: ["homeSearchPreview", previewCode],
+    queryFn: () => publicTraceApi.getTrace(previewCode),
+    enabled: !!previewCode && showSuggestions,
+    retry: false,
+    staleTime: 30_000,
+  });
+  const previewBatch = previewData?.data;
+
   // Modal States
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [selectedFeatureKey, setSelectedFeatureKey] = useState<string | null>(null);
@@ -188,13 +191,6 @@ export function HomePage() {
     navigate(`/trace/${text.trim()}`);
   };
 
-  // Filtered Auto-suggestions
-  const filteredSuggestions = SAMPLE_BATCHES.filter(
-    (b) =>
-      b.id.toLowerCase().includes(query.toLowerCase()) ||
-      b.name.toLowerCase().includes(query.toLowerCase()) ||
-      b.org.toLowerCase().includes(query.toLowerCase())
-  );
 
   // Scroll tracking state for scroll effects
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -251,7 +247,6 @@ export function HomePage() {
           {/* Center Navigation Links (Smooth Scroll) */}
           <div className="hidden md:flex items-center gap-7 text-sm font-semibold text-gray-600">
             <a href="#features" className="hover:text-green-700 transition-colors">{lang === "vi" ? "Tính năng" : "Features"}</a>
-            <a href="#showcase" className="hover:text-green-700 transition-colors">{lang === "vi" ? "Sản phẩm" : "Products"}</a>
             <a href="#how-it-works" className="hover:text-green-700 transition-colors">{lang === "vi" ? "Quy trình" : "How It Works"}</a>
             <a href="#stats" className="hover:text-green-700 transition-colors">{lang === "vi" ? "Thống kê" : "Statistics"}</a>
             <a href="#generator" className="hover:text-green-700 transition-colors">{lang === "vi" ? "Tạo QR" : "QR Generator"}</a>
@@ -403,55 +398,47 @@ export function HomePage() {
                 </div>
               </div>
 
-              {/* Search Autocomplete Suggestions Dropdown */}
+              {/* Live Real-Data Preview / Direct Search Hint */}
               {showSuggestions && query.trim() && (
                 <div className="absolute left-0 right-0 top-full mt-2.5 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden text-left z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="p-3 bg-gray-50/90 border-b border-gray-100 text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-green-800">
-                      <Sparkles className="w-3.5 h-3.5 text-green-700" />
-                      {lang === "vi" ? `Gợi ý nông sản (${filteredSuggestions.length} kết quả)` : `Batch Suggestions (${filteredSuggestions.length} matches)`}
-                    </span>
-                    <button
-                      onClick={() => setShowSuggestions(false)}
-                      className="px-2 py-0.5 rounded-lg bg-gray-200/60 hover:bg-gray-200 text-gray-600 text-[10px] font-bold transition-colors"
+                  {previewCode && isPreviewLoading ? (
+                    <div className="p-4 flex items-center justify-center gap-2 text-xs text-gray-500 font-medium">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      {lang === "vi" ? "Đang tra cứu dữ liệu thật..." : "Looking up real data..."}
+                    </div>
+                  ) : previewCode && previewBatch ? (
+                    <div
+                      onClick={() => {
+                        setShowSuggestions(false);
+                        handleSearch(previewCode);
+                      }}
+                      className="p-3.5 hover:bg-emerald-50/80 cursor-pointer flex items-center justify-between gap-3 transition-colors group"
                     >
-                      {lang === "vi" ? "Đóng ✕" : "Close ✕"}
-                    </button>
-                  </div>
-                  {filteredSuggestions.length > 0 ? (
-                    <>
-                      <div className="max-h-80 overflow-y-auto divide-y divide-gray-100">
-                        {filteredSuggestions.map((item) => (
-                          <div
-                            key={item.id}
-                            onClick={() => {
-                              setQuery(item.id);
-                              setShowSuggestions(false);
-                              handleSearch(item.id);
-                            }}
-                            className="p-3.5 hover:bg-emerald-50/80 cursor-pointer flex items-center justify-between transition-colors group"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-700 group-hover:text-white transition-colors shadow-xs">
-                                <Leaf className="w-4 h-4" />
-                              </div>
-                              <div>
-                                <div className="font-bold text-gray-900 text-xs group-hover:text-emerald-950">{item.name}</div>
-                                <div className="text-[11px] text-gray-500 mt-0.5">{item.org} • <span className="text-emerald-700 font-semibold">{item.type}</span></div>
-                              </div>
-                            </div>
-                            <code className="text-xs font-mono font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-lg border border-emerald-200/60 flex-shrink-0">
-                              {item.id}
-                            </code>
-                          </div>
-                        ))}
-                      </div>
-                      {filteredSuggestions.length > 4 && (
-                        <div className="p-2 bg-gray-50 text-center text-[10px] text-gray-400 border-t border-gray-100 font-medium">
-                          {lang === "vi" ? "↓ Cuộn xuống để xem thêm các mã sản phẩm khác" : "↓ Scroll down to view more matching batch codes"}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-700 group-hover:text-white transition-colors shadow-xs">
+                          <Leaf className="w-4 h-4" />
                         </div>
-                      )}
-                    </>
+                        <div className="min-w-0">
+                          <div className="font-bold text-gray-900 text-xs truncate">{previewBatch.productName || previewBatch.batchCode}</div>
+                          <div className="text-[11px] text-gray-500 mt-0.5 truncate">
+                            {previewBatch.currentOrganizationName || (lang === "vi" ? "Chưa cập nhật đơn vị" : "No organization on record")}
+                            {" • "}
+                            {previewBatch.status === 7 ? (
+                              <span className="text-red-600 font-semibold">{lang === "vi" ? "Đã thu hồi" : "Recalled"}</span>
+                            ) : (
+                              <span className="text-emerald-700 font-semibold">{lang === "vi" ? "Đã xác thực" : "Verified"}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <code className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-100/80 px-2 py-1 rounded-lg border border-emerald-200/60 flex-shrink-0">
+                        {previewBatch.batchCode}
+                      </code>
+                    </div>
+                  ) : previewCode && isPreviewError ? (
+                    <div className="p-4 text-xs text-center text-gray-500 font-medium">
+                      {lang === "vi" ? `Không tìm thấy lô hàng với mã "${query}"` : `No batch found for "${query}"`}
+                    </div>
                   ) : (
                     <div
                       onClick={() => {
@@ -465,23 +452,6 @@ export function HomePage() {
                   )}
                 </div>
               )}
-
-              {/* Clickable Quick Sample Chips */}
-              <div className="flex flex-wrap items-center justify-center gap-2 mt-4 text-xs text-green-100">
-                <span className="font-medium">{lang === "vi" ? "Thử nhanh các lô:" : "Try sample batches:"}</span>
-                {["RICE-20260112-001", "COFFEE-20260110-001", "DRAGONFRUIT-20260108-001"].map((code) => (
-                  <button
-                    key={code}
-                    onClick={() => {
-                      setQuery(code);
-                      handleSearch(code);
-                    }}
-                    className="px-3 py-1 rounded-full bg-white/15 hover:bg-white/30 text-white font-mono font-semibold transition-all border border-white/20 shadow-sm active:scale-95"
-                  >
-                    {code}
-                  </button>
-                ))}
-              </div>
             </div>
           </RevealOnScroll>
         </div>
@@ -572,13 +542,6 @@ export function HomePage() {
       <RevealOnScroll direction="up" delayMs={0}>
         <NationalStandardsSection lang={lang} />
       </RevealOnScroll>
-
-      {/* 4. Showcase of Featured Verified Products */}
-      <div id="showcase">
-        <RevealOnScroll direction="up" delayMs={0}>
-          <BatchShowcaseSection lang={lang} />
-        </RevealOnScroll>
-      </div>
 
       {/* 5. Statistics Section with Animated Counters */}
       <section id="stats" className="py-16 px-6 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)" }}>
@@ -746,13 +709,13 @@ export function HomePage() {
               <div className="font-bold text-white mb-4 text-sm uppercase tracking-wider">{lang === "vi" ? "Liên Hệ Cơ Quan" : "Contact Information"}</div>
               <div className="space-y-2.5 text-xs text-green-200">
                 <a href="tel:+842437221234" className="flex items-center gap-2 hover:text-white transition-colors">
-                  <Phone className="w-3.5 h-3.5" /> +84 24 3722 1234
+                  <Phone className="w-3.5 h-3.5" /> +84 999 898 989
                 </a>
-                <a href="mailto:agritrace@mard.gov.vn" className="flex items-center gap-2 hover:text-white transition-colors">
-                  <Mail className="w-3.5 h-3.5" /> agritrace@mard.gov.vn
+                <a href="mailto:lengocsonnn9605@gmail.com" className="flex items-center gap-2 hover:text-white transition-colors">
+                  <Mail className="w-3.5 h-3.5" /> lengocsonnn9605@gmail.com
                 </a>
-                <a href="https://www.mard.gov.vn" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
-                  <Globe className="w-3.5 h-3.5" /> www.traceviet.gov.vn
+                <a href="https://agritracevn.onrender.com/" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
+                  <Globe className="w-3.5 h-3.5" /> agritracevn.onrender.com
                 </a>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-3.5 h-3.5 flex-shrink-0" /> 2 Ngọc Hà, Ba Đình, Hà Nội
