@@ -179,9 +179,11 @@ export function HomePage() {
       </nav>
 
       {/* 2. Hero Section with Background Shimmer & Smart Search */}
-      <section className="relative min-h-[640px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${HERO_IMG})` }} />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(27,94,32,0.90) 0%, rgba(46,125,50,0.80) 50%, rgba(0,0,0,0.65) 100%)" }} />
+      <section className="relative min-h-[640px] flex items-center justify-center z-20">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${HERO_IMG})` }} />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(27,94,32,0.90) 0%, rgba(46,125,50,0.80) 50%, rgba(0,0,0,0.65) 100%)" }} />
+        </div>
 
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto py-20">
           {/* Government Badge */}
@@ -206,7 +208,7 @@ export function HomePage() {
           </p>
 
           {/* Smart Search Bar */}
-          <div className="max-w-2xl mx-auto relative">
+          <div className="max-w-2xl mx-auto relative z-30">
             <div className="flex flex-col sm:flex-row gap-2 p-2 rounded-2xl bg-white/95 backdrop-blur-md shadow-2xl border border-white/40">
               <div className="flex-1 relative flex items-center">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -262,7 +264,7 @@ export function HomePage() {
 
             {/* Search Autocomplete Suggestions Dropdown */}
             {showSuggestions && query.trim() && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden text-left z-30 animate-in fade-in duration-150">
+              <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden text-left z-50 animate-in fade-in duration-150">
                 <div className="p-2.5 bg-gray-50 border-b border-gray-100 text-[11px] font-bold text-gray-400 uppercase tracking-wider flex justify-between">
                   <span>{lang === "vi" ? "Gợi ý mã nông sản" : "Batch Suggestions"}</span>
                   <button onClick={() => setShowSuggestions(false)} className="hover:underline">Close</button>
