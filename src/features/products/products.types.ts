@@ -7,6 +7,7 @@ export interface Product {
   id: string;
   productId?: string;
   name: string;
+  gtin?: string;
   categoryId?: string;
   categoryName?: string;
   category?: ProductCategoryRef;
@@ -22,6 +23,7 @@ export interface ProductListItem {
   id: string;
   productId?: string;
   name: string;
+  gtin?: string;
   categoryId?: string;
   categoryName: string;
   unit: string;
@@ -43,6 +45,7 @@ export interface ProductImage {
 
 export interface CreateProductRequest {
   name: string;
+  gtin?: string;
   categoryId?: string;
   unit?: string;
   unitId?: string;
@@ -51,6 +54,7 @@ export interface CreateProductRequest {
 
 export interface UpdateProductRequest {
   name?: string;
+  gtin?: string;
   categoryId?: string;
   unit?: string;
   unitId?: string;

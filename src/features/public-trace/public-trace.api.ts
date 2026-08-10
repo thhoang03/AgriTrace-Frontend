@@ -24,6 +24,10 @@ export const publicTraceApi = {
    * Public endpoint — no auth required.
    * Returns the parent/child lineage tree for the batch.
    */
-  getLineage: (batchId: string) =>
-    get<BatchLineageData>(`/public/trace/${batchId}/lineage`),
+  getLineage: (batchId: string) => {
+    if (UUID_REGEX.test(batchId)) {
+      return get<BatchLineageData>(`/public/trace/${batchId}/lineage`);
+    }
+    return get<BatchLineageData>(`/public/trace/code/${batchId}/lineage`);
+  },
 };

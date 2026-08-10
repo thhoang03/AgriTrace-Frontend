@@ -184,6 +184,39 @@ export function PublicTracePage() {
         </div>
       </nav>
 
+      {/* 1.5 Urgent Recall Banner (If batch is recalled) */}
+      {(batch.status === 6 || batch.recallStatus) && (
+        <div className="bg-red-600 text-white px-6 py-4 border-b border-red-700 shadow-md animate-in fade-in duration-300">
+          <div className="max-w-7xl mx-auto flex items-start gap-4">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0 animate-pulse mt-0.5">
+              <AlertTriangle className="w-6 h-6 text-white" />
+            </div>
+            <div className="space-y-1 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-sm uppercase tracking-wider bg-white text-red-700 px-2.5 py-0.5 rounded-md shadow-sm">
+                  {lang === "vi" ? "🚨 CẢNH BÁO THU HỒI LÔ HÀNG" : "🚨 URGENT RECALL ALERT"}
+                </span>
+                {batch.recallSeverity && (
+                  <span className="text-xs font-bold bg-red-800 text-red-100 px-2 py-0.5 rounded-md border border-red-500">
+                    {lang === "vi" ? `Mức độ: ${batch.recallSeverity === 3 ? "Rất nghiêm trọng (Critical)" : batch.recallSeverity === 2 ? "Trung bình" : "Nhẹ"}` : `Severity: ${batch.recallSeverity}`}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm font-semibold leading-relaxed text-red-50">
+                {lang === "vi"
+                  ? `Lô nông sản này [${batch.batchCode || batch.batchId}] ĐÃ BỊ THU HỒI do vi phạm an toàn thực phẩm hoặc kiểm định không đạt. Vui lòng KHÔNG TIÊU DÙNG hoặc NGUYÊN TẮC DỪNG BÁN ngay lập tức!`
+                  : `This product batch [${batch.batchCode || batch.batchId}] HAS BEEN RECALLED due to safety or quality inspection failure. Please DO NOT CONSUME or HALT DISTRIBUTION immediately!`}
+              </p>
+              {batch.recallReason && (
+                <div className="text-xs bg-red-950/40 p-2.5 rounded-xl border border-red-400/30 text-red-100 font-mono mt-1">
+                  <strong>{lang === "vi" ? "Lý do thu hồi:" : "Reason:"}</strong> {batch.recallReason}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 2. Hero Product Banner */}
       <section className="relative bg-gradient-to-r from-green-950 via-green-900 to-emerald-900 text-white py-12 px-6 overflow-hidden">
         <div className="absolute inset-0 opacity-20 bg-cover bg-center mix-blend-overlay pointer-events-none" style={{ backgroundImage: `url(${DEFAULT_PRODUCT_IMG})` }} />
@@ -373,29 +406,78 @@ export function PublicTracePage() {
                 {lang === "vi" ? "Chứng Nhận An Toàn & Chất Lượng" : "Verified Quality Certificates"}
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  { name: "VietGAP Certificate", code: "VG-2026-8819", valid: true, org: "Ministry of Agriculture & RD" },
-                  { name: "Food Safety HACCP", code: "HACCP-VN-992", valid: true, org: "Vietnam Food Authority" },
-                  { name: "Phytosanitary Cert", code: "PPD-VN-4412", valid: true, org: "Plant Protection Department" },
-                  { name: "ISO 22000:2018", code: "ISO-22K-2024", valid: true, org: "Global Standards Vietnam" },
-                ].map((cert, i) => (
-                  <div key={i} className="p-4 rounded-2xl bg-amber-50/40 border border-amber-100/80 flex items-start gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Award className="w-5 h-5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-bold text-gray-900 text-sm truncate">{cert.name}</h4>
-                        <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+              {certificates.length === 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { name: "VietGAP Certificate", code: "VG-2026-8819", valid: true, org: "Ministry of Agriculture & RD" },
+                    { name: "Food Safety HACCP", code: "HACCP-VN-992", valid: true, org: "Vietnam Food Authority" },
+                    { name: "Phytosanitary Cert", code: "PPD-VN-4412", valid: true, org: "Plant Protection Department" },
+                    { name: "ISO 22000:2018", code: "ISO-22K-2024", valid: true, org: "Global Standards Vietnam" },
+                  ].map((cert, i) => (
+                    <div key={i} className="p-4 rounded-2xl bg-amber-50/40 border border-amber-100/80 flex items-start gap-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Award className="w-5 h-5" />
                       </div>
-                      <div className="text-xs text-gray-500 font-mono mt-0.5">{cert.code}</div>
-                      <div className="text-[11px] text-gray-400 mt-1">{cert.org}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-bold text-gray-900 text-sm truncate">{cert.name}</h4>
+                          <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                        </div>
+                        <div className="text-xs text-gray-500 font-mono mt-0.5">{cert.code}</div>
+                        <div className="text-[11px] text-gray-400 mt-1">{cert.org}</div>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {certificates.map((cert, i) => {
+                    const isValid = cert.status === 3 || cert.status === undefined || cert.status === 2;
+                    const issuedStr = cert.issuedDate ? new Date(cert.issuedDate).toLocaleDateString() : null;
+                    const expiryStr = cert.expiryDate ? new Date(cert.expiryDate).toLocaleDateString() : null;
+
+                    return (
+                      <div key={i} className={`p-4 rounded-2xl border flex items-start gap-3.5 ${
+                        isValid ? "bg-amber-50/40 border-amber-100/80" : "bg-gray-50 border-gray-200"
+                      }`}>
+                        <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Award className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className="font-bold text-gray-900 text-sm truncate">{cert.certificateType}</h4>
+                            {isValid ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
+                                <CheckCircle className="w-3 h-3 text-green-600" />
+                                {lang === "vi" ? "HIỆU LỰC" : "ACTIVE"}
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">
+                                {lang === "vi" ? "HẾT HẠN" : "EXPIRED"}
+                              </span>
+                            )}
+                          </div>
+                          {cert.certificateNumber && (
+                            <div className="text-xs font-mono font-bold text-amber-800 mt-0.5">
+                              {cert.certificateNumber}
+                            </div>
+                          )}
+                          <div className="text-[11px] text-gray-500 mt-0.5">
+                            {cert.issuingOrganization || "Accredited Certification Body"}
+                          </div>
+                          {expiryStr && (
+                            <div className="text-[10px] text-gray-400 mt-1">
+                              {lang === "vi" ? `Có hiệu lực đến: ${expiryStr}` : `Valid until: ${expiryStr}`}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
+
 
             {/* Inspections Section */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100">
@@ -444,6 +526,7 @@ export function PublicTracePage() {
                 {[
                   { labelVi: "Tên sản phẩm", labelEn: "Product Name", value: batch.productName || "—" },
                   { labelVi: "Mã định danh", labelEn: "Batch Code", value: batch.batchCode || batch.batchId, code: true },
+                  ...(batch.gs1BatchCode ? [{ labelVi: "Mã vạch GS1-128", labelEn: "GS1-128 Code", value: batch.gs1BatchCode, code: true }] : []),
                   { labelVi: "Số lượng", labelEn: "Quantity", value: batch.quantity ? `${batch.quantity}` : "500" },
                   { labelVi: "Đơn vị sở hữu", labelEn: "Current Org", value: batch.currentOrganizationName || "—" },
                   { labelVi: "Trạng thái thu hồi", labelEn: "Recall Status", value: batch.recallStatus || "None (Safe)", safe: true },

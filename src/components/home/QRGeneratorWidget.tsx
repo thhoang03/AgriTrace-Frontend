@@ -13,7 +13,7 @@ export const QRGeneratorWidget: React.FC<QRGeneratorWidgetProps> = ({ lang = "en
   const [productName, setProductName] = useState(lang === "vi" ? "Gạo Lài Thơm" : "Jasmine Rice");
   const [copied, setCopied] = useState(false);
 
-  const qrUrl = `https://agritrace.vn/trace/${encodeURIComponent(batchCode.trim() || "BTH-2024-001")}`;
+  const qrUrl = `https://agritrace.vn/trace/${encodeURIComponent(batchCode.trim() || "RICE-20260112-001")}`;
   // Generate QR Code image via reliable public QR API service with high resolution
   const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qrUrl)}&color=1B5E20&bg=ffffff`;
 
@@ -75,7 +75,7 @@ export const QRGeneratorWidget: React.FC<QRGeneratorWidgetProps> = ({ lang = "en
                     type="text"
                     value={batchCode}
                     onChange={(e) => setBatchCode(e.target.value)}
-                    placeholder="e.g. BTH-2024-001"
+                    placeholder="e.g. RICE-20260112-001"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-white/90 text-gray-900 text-sm font-mono font-semibold focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>

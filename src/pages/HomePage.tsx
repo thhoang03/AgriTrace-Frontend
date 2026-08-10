@@ -89,7 +89,7 @@ export function HomePage() {
     const searchText = (overrideQuery ?? query).trim();
     if (!searchText) return;
 
-    // Check if input is a full URL like http://.../trace/BTH-2024-001
+    // Check if input is a full URL like http://.../trace/RICE-20260112-001
     if (searchText.includes("/trace/")) {
       const parts = searchText.split("/trace/");
       const extractedId = parts[parts.length - 1];
@@ -225,7 +225,7 @@ export function HomePage() {
                       handleSearch();
                     }
                   }}
-                  placeholder={lang === "vi" ? "Nhập Mã QR hoặc Mã Lô (VD: BTH-2024-001)... [Nhấn / để tìm]" : "Enter QR Code or Batch ID (e.g. BTH-2024-001)..."}
+                  placeholder={lang === "vi" ? "Nhập Mã QR hoặc Mã Lô (VD: RICE-20260112-001)... [Nhấn / để tìm]" : "Enter QR Code or Batch ID (e.g. RICE-20260112-001)..."}
                   className="w-full pl-10 pr-9 py-3 text-sm outline-none rounded-xl bg-transparent text-gray-900 placeholder-gray-400 font-medium"
                 />
                 {query && (
