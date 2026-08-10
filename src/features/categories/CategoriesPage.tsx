@@ -10,6 +10,7 @@ import { useAuth } from "../auth/auth.store";
 import type { Category } from "./categories.types";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
+import { useProductsList } from "../products/products.queries";
 
 const EMPTY_FORM = { name: "", description: "" };
 
@@ -433,73 +434,129 @@ export function CategoriesPage() {
 
       {/* Detail Modal */}
       {detail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-            <div className="p-5" style={{ background: "linear-gradient(135deg, #1B5E20, #2E7D32)" }}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.15)" }}>
-                    <Tags className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">{detail.name}</h3>
-                    <p className="text-green-200 text-xs">ID: {detail.categoryId}</p>
-                  </div>
-                </div>
-                <button onClick={() => setDetail(null)} className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10">
-                  <X className="w-4 h-4" />
-                </button>
+        <CategoryDetailModal
+          detail={detail}
+          onClose={() => setDetail(null)}
+          onEdit={(cat) => openEdit(cat)}
+          onToggleStatus={(cat) => handleToggleStatus(cat)}
+          isAdmin={isAdmin}
+        />
+      )}
+    </div>
+  );
+}
+
+function CategoryDetailModal({
+  detail,
+  onClose,
+  onEdit,
+  onToggleStatus,
+  isAdmin,
+}: {
+  detail: Category;
+  onClose: () => void;
+  onEdit: (c: Category) => void;
+  onToggleStatus: (c: Category) => void;
+  isAdmin: boolean;
+}) {
+  const catIdStr = String(detail.categoryId || detail.id || "");
+  const { data: productsData, isLoading } = useProductsList({
+    categoryId: catIdStr,
+    pageSize: 100,
+  });
+
+  const rawProducts = productsData?.data?.items ?? [];
+  const matchingProducts = rawProducts.filter(
+    (p) =>
+      p.categoryId === catIdStr ||
+      (p.categoryName && p.categoryName.toLowerCase() === detail.name.toLowerCase())
+  );
+  const count = productsData?.data?.totalCount ?? matchingProducts.length;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl">
+        <div className="p-5" style={{ background: "linear-gradient(135deg, #1B5E20, #2E7D32)" }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/15">
+                <Tags className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white">{detail.name}</h3>
+                <p className="text-green-200 text-xs font-mono">ID: {detail.categoryId || detail.id}</p>
               </div>
             </div>
-
-            <div className="p-5 space-y-4">
-              {[
-                { label: "Description", value: detail.description || "—" },
-                { label: "Status", value: detail.isActive ? "ACTIVE" : "INACTIVE" },
-              ].map(({ label, value }) => {
-                const isStatus = label === "Status";
-                const isActive = value === "ACTIVE";
-                return (
-                  <div key={label} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
-                    <span className="text-sm text-gray-400">{label}</span>
-                    {isStatus ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? "#4CAF50" : "#9E9E9E" }} />
-                        <span className="text-sm font-medium" style={{ color: isActive ? "#2E7D32" : "#757575" }}>{value}</span>
-                      </div>
-                    ) : (
-                      <span className="text-sm font-medium text-gray-800">{value}</span>
-                    )}
-                  </div>
-                );
-              })}
-
-              <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "#F8FAF8" }}>
-                <Layers className="w-4 h-4 text-gray-400" />
-                <div>
-                  <div className="text-xs text-gray-400">Products</div>
-                  <div className="text-sm font-semibold text-gray-800">—</div>
-                </div>
-              </div>
-
-              {isAdmin && (
-                <div className="flex gap-3 pt-1">
-                  <button onClick={() => { setDetail(null); openEdit(detail); }} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2">
-                    <Edit2 className="w-3.5 h-3.5" /> Edit
-                  </button>
-                  <button
-                    onClick={() => handleToggleStatus(detail)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 ${detail.isActive ? "bg-red-50 text-red-600 hover:bg-red-100" : "text-white hover:opacity-90"}`}
-                    style={!detail.isActive ? { background: "#2E7D32" } : {}}
-                  >
-                    {detail.isActive ? <><PowerOff className="w-3.5 h-3.5" /> Deactivate</> : <><Power className="w-3.5 h-3.5" /> Activate</>}
-                  </button>
-                </div>
-              )}
-            </div>
+            <button onClick={onClose} className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10">
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
-      )}
+
+        <div className="p-5 space-y-4">
+          {[
+            { label: "Description", value: detail.description || "—" },
+            { label: "Status", value: detail.isActive ? "ACTIVE" : "INACTIVE" },
+          ].map(({ label, value }) => {
+            const isStatus = label === "Status";
+            const isActive = value === "ACTIVE";
+            return (
+              <div key={label} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+                <span className="text-sm text-gray-400">{label}</span>
+                {isStatus ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? "#4CAF50" : "#9E9E9E" }} />
+                    <span className="text-sm font-medium" style={{ color: isActive ? "#2E7D32" : "#757575" }}>{value}</span>
+                  </div>
+                ) : (
+                  <span className="text-sm font-medium text-gray-800">{value}</span>
+                )}
+              </div>
+            );
+          })}
+
+          <div className="rounded-xl p-3.5 bg-gray-50 border border-gray-100 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-green-600" />
+                <span className="text-xs font-semibold text-gray-700">Associated Products</span>
+              </div>
+              <span className="text-xs font-bold text-green-700 px-2.5 py-0.5 bg-green-100 rounded-full">
+                {isLoading ? "..." : `${count} product${count !== 1 ? "s" : ""}`}
+              </span>
+            </div>
+
+            {isLoading ? (
+              <p className="text-xs text-gray-400 animate-pulse">Loading products...</p>
+            ) : matchingProducts.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5 pt-1 max-h-36 overflow-y-auto pr-1">
+                {matchingProducts.map((p) => (
+                  <span key={p.id} className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-white text-gray-800 border border-gray-200 shadow-2xs">
+                    {p.name}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 italic">No products registered under this category.</p>
+            )}
+          </div>
+
+          {isAdmin && (
+            <div className="flex gap-3 pt-1">
+              <button onClick={() => { onClose(); onEdit(detail); }} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2">
+                <Edit2 className="w-3.5 h-3.5" /> Edit
+              </button>
+              <button
+                onClick={() => onToggleStatus(detail)}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 ${detail.isActive ? "bg-red-50 text-red-600 hover:bg-red-100" : "text-white hover:opacity-90"}`}
+                style={!detail.isActive ? { background: "#2E7D32" } : {}}
+              >
+                {detail.isActive ? <><PowerOff className="w-3.5 h-3.5" /> Deactivate</> : <><Power className="w-3.5 h-3.5" /> Activate</>}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
