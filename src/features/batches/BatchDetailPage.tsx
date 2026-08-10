@@ -136,10 +136,10 @@ export function BatchDetailPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-primary/10">
           <Package className="w-5 h-5 animate-pulse" style={{ color: "#2E7D32" }} />
         </div>
-        <div className="text-sm text-gray-500">Loading batch details...</div>
+        <div className="text-sm text-muted-foreground">Loading batch details...</div>
       </div>
     );
   }
@@ -148,8 +148,8 @@ export function BatchDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
         <AlertCircle className="w-8 h-8 text-red-400" />
-        <div className="text-sm text-red-500">Error loading batch details.</div>
-        <button onClick={() => navigate("/app/batches")} className="text-sm text-gray-500 hover:underline flex items-center gap-1">
+        <div className="text-sm text-destructive">Error loading batch details.</div>
+        <button onClick={() => navigate("/app/batches")} className="text-sm text-muted-foreground hover:underline flex items-center gap-1">
           <ArrowLeft className="w-3.5 h-3.5" /> Return to Batch List
         </button>
       </div>
@@ -172,7 +172,7 @@ export function BatchDetailPage() {
             onClick={() => navigate("/app/batches")}
             className="flex items-center gap-2 text-white/80 hover:text-white text-sm transition-colors self-start bg-black/20 hover:bg-black/30 px-3 py-1.5 rounded-lg"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Batch List
+            <ArrowLeft className="w-4 h-4" /> {lang === "vi" ? "Về Danh Sách Lô Hàng" : "Back to Batch List"}
           </button>
           <div className="flex items-end justify-between">
             <div>
@@ -226,12 +226,12 @@ export function BatchDetailPage() {
 
       <div className="px-6 mt-5">
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-white rounded-2xl p-1.5 max-w-fit flex-wrap" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div className="flex gap-1 mb-6 bg-card rounded-2xl p-1.5 max-w-fit flex-wrap" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           {tabsEn.map((tab, idx) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab ? "text-white" : "text-gray-500 hover:text-gray-700"}`}
+              className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab ? "text-white" : "text-muted-foreground hover:text-foreground"}`}
               style={activeTab === tab ? { background: "linear-gradient(135deg, #2E7D32, #388E3C)" } : {}}
             >
               {lang === "vi" ? tabsVi[idx] : tab}
@@ -243,12 +243,12 @@ export function BatchDetailPage() {
         {activeTab === "Information" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             {/* Product Info */}
-            <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div className="bg-card rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#E8F5E9" }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
                   <Award style={{ color: "#2E7D32", width: 16, height: 16 }} />
                 </div>
-                <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Thông Tin Sản Phẩm" : "Product Information"}</h3>
+                <h3 className="font-semibold text-foreground" style={{ fontSize: 15 }}>{lang === "vi" ? "Thông Tin Sản Phẩm" : "Product Information"}</h3>
               </div>
               <div className="space-y-3.5">
                 {[
@@ -262,9 +262,9 @@ export function BatchDetailPage() {
                   { label: lang === "vi" ? "Trạng thái" : "Status", value: statusNorm || batch.status },
                 ].map(({ label, value, mono }) => (
                   <div key={label} className="flex justify-between items-start gap-3">
-                    <span className="text-gray-400 text-sm flex-shrink-0">{label}</span>
+                    <span className="text-muted-foreground text-sm flex-shrink-0">{label}</span>
                     <span
-                      className={`text-sm font-medium text-gray-800 text-right ${mono ? "font-mono" : ""}`}
+                      className={`text-sm font-medium text-foreground text-right ${mono ? "font-mono" : ""}`}
                       style={mono ? { color: "#2E7D32" } : {}}
                     >{value}</span>
                   </div>
@@ -273,12 +273,12 @@ export function BatchDetailPage() {
             </div>
 
             {/* Farm & Producer */}
-            <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div className="bg-card rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <div className="flex items-center gap-2 mb-5">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#E8F5E9" }}>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
                   <Building2 style={{ color: "#2E7D32", width: 16, height: 16 }} />
                 </div>
-                <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Trang Trại & Nhà Sản Xuất" : "Farm & Producer"}</h3>
+                <h3 className="font-semibold text-foreground" style={{ fontSize: 15 }}>{lang === "vi" ? "Trang Trại & Nhà Sản Xuất" : "Farm & Producer"}</h3>
               </div>
               <div className="space-y-3.5">
                 {[
@@ -290,8 +290,8 @@ export function BatchDetailPage() {
                   { label: lang === "vi" ? "Chứng nhận" : "Certification", value: "VietGAP Grade A" },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between items-start gap-3">
-                    <span className="text-gray-400 text-sm flex-shrink-0">{label}</span>
-                    <span className="text-sm font-medium text-gray-800 text-right">{value}</span>
+                    <span className="text-muted-foreground text-sm flex-shrink-0">{label}</span>
+                    <span className="text-sm font-medium text-foreground text-right">{value}</span>
                   </div>
                 ))}
                 {batch.gps && (
@@ -311,30 +311,30 @@ export function BatchDetailPage() {
             {/* Right column: QR + Compliance */}
             <div className="space-y-5">
               {/* QR Code */}
-              <div className="bg-white rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              <div className="bg-card rounded-2xl p-6" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#E8F5E9" }}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary/10">
                     <QrCode style={{ color: "#2E7D32", width: 16, height: 16 }} />
                   </div>
-                  <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>QR Code</h3>
+                  <h3 className="font-semibold text-foreground" style={{ fontSize: 15 }}>QR Code</h3>
                 </div>
                 <div className="flex flex-col items-center gap-3">
-                  <div className="w-36 h-36 rounded-2xl overflow-hidden flex items-center justify-center" style={{ background: "#F8FAF8", border: "2px dashed #E0E0E0" }}>
+                  <div className="w-36 h-36 rounded-2xl overflow-hidden flex items-center justify-center bg-white" style={{ border: "2px dashed #E0E0E0" }}>
                     <img
                       src={qrCode?.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.origin + "/trace/" + (batch.batchCode || batch.id || ""))}`}
                       alt="QR Code"
                       className="w-full h-full object-contain"
                     />
                   </div>
-                  <code className="text-xs font-mono px-3 py-1 rounded-lg" style={{ background: "#E8F5E9", color: "#2E7D32" }}>
+                  <code className="text-xs font-mono px-3 py-1 rounded-lg bg-primary/10" style={{ color: "#2E7D32" }}>
                     {qrCode?.batchCode ?? batch.batchCode ?? batch.id}
                   </code>
                   {/* Public trace URL */}
-                  <div className="text-[10px] text-gray-400 text-center break-all leading-relaxed font-mono bg-gray-50 px-2 py-1.5 rounded-lg border border-gray-100">
+                  <div className="text-[10px] text-muted-foreground text-center break-all leading-relaxed font-mono bg-muted px-2 py-1.5 rounded-lg border border-border">
                     /trace/{batch.batchCode || batch.id}
                   </div>
                   <div className="flex gap-2 w-full">
-                    <button onClick={handleDownloadQr} className="flex-1 py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5">
+                    <button onClick={handleDownloadQr} className="flex-1 py-2 rounded-xl text-xs font-semibold border border-border text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-1.5">
                       <Download className="w-3.5 h-3.5" /> {lang === "vi" ? "Tải QR" : "Download"}
                     </button>
                     <button onClick={handleShare} className="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90 flex items-center justify-center gap-1.5" style={{ background: "#2E7D32" }}>
@@ -354,14 +354,14 @@ export function BatchDetailPage() {
               </div>
 
               {/* Compliance card */}
-              <div className="bg-white rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+              <div className="bg-card rounded-2xl p-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10">
                     <Shield style={{ color: "#2E7D32", width: 20, height: 20 }} />
                   </div>
                   <div>
-                    <div className="font-semibold text-gray-900" style={{ fontSize: 14 }}>{lang === "vi" ? "Chính Phủ Xác Thực" : "Government Verified"}</div>
-                    <div className="text-xs text-gray-400">{lang === "vi" ? "Bộ Nông Nghiệp" : "Ministry of Agriculture"}</div>
+                    <div className="font-semibold text-foreground" style={{ fontSize: 14 }}>{lang === "vi" ? "Chính Phủ Xác Thực" : "Government Verified"}</div>
+                    <div className="text-xs text-muted-foreground">{lang === "vi" ? "Bộ Nông Nghiệp" : "Ministry of Agriculture"}</div>
                   </div>
                   <CheckCircle className="ml-auto w-5 h-5 text-green-500" />
                 </div>
@@ -371,8 +371,8 @@ export function BatchDetailPage() {
                   { label: lang === "vi" ? "Bảo mật Blockchain" : "Blockchain Secured", ok: true },
                   { label: lang === "vi" ? "Không thu hồi" : "Recall-Free", ok: !batch.status.toLowerCase().includes("recall") },
                 ].map(({ label, ok }) => (
-                  <div key={label} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
-                    <span className="text-sm text-gray-600">{label}</span>
+                  <div key={label} className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
+                    <span className="text-sm text-muted-foreground">{label}</span>
                     <span className={`text-xs font-semibold ${ok ? "text-green-600" : "text-red-500"}`}>{ok ? (lang === "vi" ? "✓ Đạt" : "✓ Pass") : (lang === "vi" ? "✗ Không đạt" : "✗ Fail")}</span>
                   </div>
                 ))}
@@ -394,25 +394,25 @@ export function BatchDetailPage() {
             </div>
             {timelineLoading ? (
               <div className="flex flex-col items-center py-12 gap-2">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center animate-pulse" style={{ background: "#E8F5E9" }}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center animate-pulse bg-primary/10">
                   <Calendar className="w-4 h-4" style={{ color: "#2E7D32" }} />
                 </div>
-                <div className="text-xs text-gray-400">{lang === "vi" ? "Đang tải lịch sử..." : "Loading timeline..."}</div>
+                <div className="text-xs text-muted-foreground">{lang === "vi" ? "Đang tải lịch sử..." : "Loading timeline..."}</div>
               </div>
             ) : timelineEvents.length === 0 ? (
               <div className="flex flex-col items-center py-12 gap-2">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: "#F0F9F0" }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10">
                   <Calendar className="w-6 h-6" style={{ color: "#A5D6A7" }} />
                 </div>
-                <div className="font-semibold text-gray-600 text-sm">{lang === "vi" ? "Chưa có sự kiện nào" : "No timeline events yet"}</div>
-                <div className="text-xs text-gray-400">{lang === "vi" ? "Các sự kiện sẽ xuất hiện khi lô hàng di chuyển qua chuỗi cung ứng" : "Events will appear as this batch moves through the supply chain"}</div>
+                <div className="font-semibold text-muted-foreground text-sm">{lang === "vi" ? "Chưa có sự kiện nào" : "No timeline events yet"}</div>
+                <div className="text-xs text-muted-foreground">{lang === "vi" ? "Các sự kiện sẽ xuất hiện khi lô hàng di chuyển qua chuỗi cung ứng" : "Events will appear as this batch moves through the supply chain"}</div>
               </div>
             ) : (
               <div className="relative">
                 {timelineEvents.map((event, index) => (
                   <div key={event.id} className="flex gap-3 mb-1 last:mb-0">
                     <div className="flex flex-col items-center">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0 z-10" style={{ background: "#E8F5E9", border: "2px solid #2E7D32" }}>
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0 z-10 bg-primary/10" style={{ border: "2px solid #2E7D32" }}>
                         {event.icon}
                       </div>
                       {index < timelineEvents.length - 1 && (
@@ -420,21 +420,21 @@ export function BatchDetailPage() {
                       )}
                     </div>
                     <div className="flex-1 pb-3">
-                      <div className="bg-white rounded-xl p-3.5" style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)", border: "1px solid #EFA" }}>
+                      <div className="bg-card rounded-xl p-3.5" style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)", border: "1px solid #EFA" }}>
                         <div className="flex items-start justify-between mb-2">
                           <div>
-                            <h4 className="font-bold text-gray-900" style={{ fontSize: 14 }}>{event.stage}</h4>
-                            <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-400">
+                            <h4 className="font-bold text-foreground" style={{ fontSize: 14 }}>{event.stage}</h4>
+                            <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{event.date}</span>
                               <span>{event.time}</span>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full" style={{ background: "#E8F5E9" }}>
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10">
                             <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                             <span className="text-[11px] font-semibold" style={{ color: "#2E7D32" }}>{lang === "vi" ? "Xác thực" : "Verified"}</span>
                           </div>
                         </div>
-                        <p className="text-xs text-gray-600 leading-relaxed mb-2.5">{event.description}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed mb-2.5">{event.description}</p>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2.5">
                           {[
                             { label: lang === "vi" ? "Tổ chức" : "Organization", value: event.organization },
@@ -443,18 +443,18 @@ export function BatchDetailPage() {
                             ...(event.temp ? [{ label: lang === "vi" ? "Nhiệt độ" : "Temperature", value: event.temp }] : []),
                             ...(event.humidity ? [{ label: lang === "vi" ? "Độ ẩm" : "Humidity", value: event.humidity }] : []),
                           ].map(({ label, value }) => (
-                            <div key={label} className="p-2 rounded-lg" style={{ background: "#F8FAF8" }}>
-                              <div className="text-[11px] text-gray-400 mb-0.5">{label}</div>
-                              <div className="text-xs font-medium text-gray-800 truncate">{value}</div>
+                            <div key={label} className="p-2 rounded-lg bg-muted">
+                              <div className="text-[11px] text-muted-foreground mb-0.5">{label}</div>
+                              <div className="text-xs font-medium text-foreground truncate">{value}</div>
                             </div>
                           ))}
                         </div>
-                        <div className="rounded-lg p-2" style={{ background: "#F0F4F0" }}>
+                        <div className="rounded-lg p-2 bg-muted">
                           <div className="flex items-center gap-1 mb-0.5">
-                            <Hash className="w-3 h-3 text-gray-400" />
-                            <span className="text-[11px] font-semibold text-gray-500">{lang === "vi" ? "Mã xích Blockchain" : "Blockchain Hash"}</span>
+                            <Hash className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-[11px] font-semibold text-muted-foreground">{lang === "vi" ? "Mã xích Blockchain" : "Blockchain Hash"}</span>
                           </div>
-                          <code className="text-[11px] text-gray-600 break-all leading-snug font-mono">{event.hash}</code>
+                          <code className="text-[11px] text-muted-foreground break-all leading-snug font-mono">{event.hash}</code>
                         </div>
                       </div>
                     </div>
@@ -488,7 +488,7 @@ export function BatchDetailPage() {
                   const statusLabel = isPass ? "Đạt chuẩn (PASS)" : isFail ? "Không đạt (FAIL)" : "Chờ kiểm định";
 
                   return (
-                    <div key={ins.id} className="bg-white rounded-2xl p-6 hover:shadow-md transition-shadow" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+                    <div key={ins.id} className="bg-card rounded-2xl p-6 hover:shadow-md transition-shadow" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
                       <div className="flex items-start justify-between mb-4">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: bg }}>
                           <Award style={{ color, width: 20, height: 20 }} />
@@ -497,29 +497,29 @@ export function BatchDetailPage() {
                           {statusLabel}
                         </span>
                       </div>
-                      <h4 className="font-bold text-gray-900 mb-1" style={{ fontSize: 14 }}>
+                      <h4 className="font-bold text-foreground mb-1" style={{ fontSize: 14 }}>
                         Phiếu Kiểm Định QA/QC
                       </h4>
-                      <p className="text-xs text-gray-500 mb-3 font-medium">
+                      <p className="text-xs text-muted-foreground mb-3 font-medium">
                         Loại: {InspectionTypeLabel[ins.inspectionType as import("../inspection/inspection.types").InspectionType]?.[lang] || "Kiểm định nông sản"}
                       </p>
-                      <div className="space-y-1.5 border-t border-gray-100 pt-3">
+                      <div className="space-y-1.5 border-t border-border pt-3">
                         <div className="flex justify-between text-xs">
-                          <span className="text-gray-400">Chuyên viên QC</span>
-                          <span className="font-semibold text-gray-800">{ins.inspector}</span>
+                          <span className="text-muted-foreground">Chuyên viên QC</span>
+                          <span className="font-semibold text-foreground">{ins.inspector}</span>
                         </div>
                         <div className="flex justify-between text-xs">
-                          <span className="text-gray-400">Ngày kiểm định</span>
-                          <span className="font-medium text-gray-700">{ins.inspectionDate}</span>
+                          <span className="text-muted-foreground">Ngày kiểm định</span>
+                          <span className="font-medium text-foreground">{ins.inspectionDate}</span>
                         </div>
                         <div className="flex justify-between text-xs">
-                          <span className="text-gray-400">Chỉ số phòng Lab</span>
+                          <span className="text-muted-foreground">Chỉ số phòng Lab</span>
                           <span className="font-semibold text-emerald-700">{ins.labTests?.length ?? 0} chỉ số</span>
                         </div>
                       </div>
                       <button
                         onClick={handleDownloadPdf}
-                        className="mt-4 w-full py-2 rounded-xl text-xs font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
+                        className="mt-4 w-full py-2 rounded-xl text-xs font-semibold border border-border text-foreground hover:bg-muted transition-colors flex items-center justify-center gap-1.5"
                       >
                         <Download className="w-3.5 h-3.5" /> Tải Chứng Nhận (PDF)
                       </button>
@@ -528,10 +528,10 @@ export function BatchDetailPage() {
                 })}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 text-center px-4">
-                <Award className="w-12 h-12 text-gray-300 mb-3" />
-                <p className="text-gray-700 font-bold text-base">{lang === "vi" ? "Chưa có phiếu chứng nhận kiểm định" : "No Inspection Certificates Available"}</p>
-                <p className="text-gray-500 text-xs mt-1 max-w-md">
+              <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-border rounded-2xl bg-muted text-center px-4">
+                <Award className="w-12 h-12 text-muted-foreground mb-3" />
+                <p className="text-foreground font-bold text-base">{lang === "vi" ? "Chưa có phiếu chứng nhận kiểm định" : "No Inspection Certificates Available"}</p>
+                <p className="text-muted-foreground text-xs mt-1 max-w-md">
                   {lang === "vi" ? "Lô hàng này chưa có phiếu chứng nhận chất lượng QA/QC. Nếu bạn là Nông trại (Farmer), hãy gửi yêu cầu kiểm định đến Đơn vị kiểm định bên thứ 3." : "This batch does not have a QA/QC certificate yet. If you are a Farmer, please submit an inspection request."}
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-3 mt-5">
@@ -543,7 +543,7 @@ export function BatchDetailPage() {
                   </button>
                   <button
                     onClick={() => navigate("/app/quality-inspection")}
-                    className="px-4 py-2.5 border border-gray-300 hover:bg-gray-100 text-gray-700 text-xs font-semibold rounded-xl transition-all"
+                    className="px-4 py-2.5 border border-border hover:bg-muted text-foreground text-xs font-semibold rounded-xl transition-all"
                   >
                     {lang === "vi" ? "Đến Trang Quản Lý Kiểm Định (QC)" : "Go to Quality Inspection"}
                   </button>
@@ -556,13 +556,13 @@ export function BatchDetailPage() {
         {/* ── Inspection Requests ── */}
         {activeTab === "Inspection Requests" && (
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-gray-100 shadow-xs">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-card p-5 rounded-2xl border border-border shadow-xs">
               <div>
-                <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
+                <h3 className="font-bold text-foreground text-base flex items-center gap-2">
                   <Send className="w-5 h-5 text-emerald-700" />
                   {lang === "vi" ? `Nhật Ký Yêu Cầu Kiểm Định Lô Hàng (${batchRequests.length})` : `Batch Inspection Requests (${batchRequests.length})`}
                 </h3>
-                <p className="text-gray-500 text-xs mt-0.5">
+                <p className="text-muted-foreground text-xs mt-0.5">
                   {lang === "vi" ? "Theo dõi tiến độ yêu cầu lấy mẫu & chứng nhận QA/QC gửi đến Đơn vị kiểm định bên thứ 3" : "Track inspection and certification request progress"}
                 </p>
               </div>
@@ -580,9 +580,9 @@ export function BatchDetailPage() {
                   const isPending = req.status === 0 || req.status === "Pending";
                   const isApproved = req.status === 1 || req.status === "Approved";
                   return (
-                    <div key={req.id} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs space-y-3">
-                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-gray-100 text-gray-800">
+                    <div key={req.id} className="bg-card rounded-2xl p-5 border border-border shadow-xs space-y-3">
+                      <div className="flex items-center justify-between border-b border-border pb-3">
+                        <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-muted text-foreground">
                           {req.eventTypeCode || "INSPECT"}
                         </span>
                         {isPending ? (
@@ -600,28 +600,28 @@ export function BatchDetailPage() {
                         )}
                       </div>
 
-                      <div className="space-y-1.5 text-xs text-gray-700">
+                      <div className="space-y-1.5 text-xs text-foreground">
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-400">{lang === "vi" ? "Người gửi yêu cầu:" : "Requester:"}</span>
-                          <span className="font-semibold text-gray-900">{req.requestedByUserName || "Nông trại / Farmer"}</span>
+                          <span className="text-muted-foreground">{lang === "vi" ? "Người gửi yêu cầu:" : "Requester:"}</span>
+                          <span className="font-semibold text-foreground">{req.requestedByUserName || "Nông trại / Farmer"}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-400">{lang === "vi" ? "Địa điểm hẹn kiểm tra:" : "Location:"}</span>
-                          <span className="font-medium text-gray-800">{req.location || "Kho nông sản"}</span>
+                          <span className="text-muted-foreground">{lang === "vi" ? "Địa điểm hẹn kiểm tra:" : "Location:"}</span>
+                          <span className="font-medium text-foreground">{req.location || "Kho nông sản"}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-gray-400">{lang === "vi" ? "Thời gian tạo:" : "Created:"}</span>
-                          <span className="font-mono text-gray-600">{new Date(req.createdAt).toLocaleDateString("vi-VN")}</span>
+                          <span className="text-muted-foreground">{lang === "vi" ? "Thời gian tạo:" : "Created:"}</span>
+                          <span className="font-mono text-muted-foreground">{new Date(req.createdAt).toLocaleDateString("vi-VN")}</span>
                         </div>
                         {req.description && (
-                          <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2.5 rounded-xl border border-gray-100 italic">
+                          <div className="mt-2 text-xs text-muted-foreground bg-muted p-2.5 rounded-xl border border-border italic">
                             &ldquo;{req.description}&rdquo;
                           </div>
                         )}
                       </div>
 
                       {/* Inspector Quick Link */}
-                      <div className="pt-2 border-t border-gray-100 flex justify-end">
+                      <div className="pt-2 border-t border-border flex justify-end">
                         <button
                           onClick={() => navigate("/app/quality-inspection")}
                           className="text-xs text-emerald-700 hover:text-emerald-800 font-bold flex items-center gap-1"
@@ -634,10 +634,10 @@ export function BatchDetailPage() {
                 })}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 text-center px-4">
-                <Send className="w-12 h-12 text-gray-300 mb-3" />
-                <p className="text-gray-700 font-bold text-base">{lang === "vi" ? "Chưa gửi yêu cầu kiểm định nào cho lô này" : "No inspection requests sent for this batch"}</p>
-                <p className="text-gray-500 text-xs mt-1 max-w-md">
+              <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-border rounded-2xl bg-muted text-center px-4">
+                <Send className="w-12 h-12 text-muted-foreground mb-3" />
+                <p className="text-foreground font-bold text-base">{lang === "vi" ? "Chưa gửi yêu cầu kiểm định nào cho lô này" : "No inspection requests sent for this batch"}</p>
+                <p className="text-muted-foreground text-xs mt-1 max-w-md">
                   {lang === "vi" ? "Bạn có thể gửi yêu cầu trực tiếp đến Đơn vị Kiểm định bên thứ 3 (QUATEST, SGS, Vinacontrol...) để họ đến kho lấy mẫu nghiệm thu chất lượng." : "You can send requests directly to third-party Inspection Units."}
                 </p>
                 <button
@@ -653,19 +653,19 @@ export function BatchDetailPage() {
 
         {/* ── Audit Log ── */}
         {activeTab === "Audit Log" && (
-          <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div className="bg-card rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-gray-900" style={{ fontSize: 15 }}>{lang === "vi" ? "Nhật Ký Kiểm Toán Hệ Thống" : "System Audit Trail"}</h3>
-                <p className="text-gray-400 text-xs mt-0.5">{lang === "vi" ? "Tất cả sự kiện chuỗi cung ứng liên quan đến lô hàng này" : "All supply chain events related to this batch"}</p>
+                <h3 className="font-semibold text-foreground" style={{ fontSize: 15 }}>{lang === "vi" ? "Nhật Ký Kiểm Toán Hệ Thống" : "System Audit Trail"}</h3>
+                <p className="text-muted-foreground text-xs mt-0.5">{lang === "vi" ? "Tất cả sự kiện chuỗi cung ứng liên quan đến lô hàng này" : "All supply chain events related to this batch"}</p>
               </div>
-              <span className="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">
+              <span className="text-xs font-semibold px-2 py-0.5 bg-muted text-muted-foreground rounded-full">
                 {timelineEvents.length} {lang === "vi" ? "sự kiện" : "events"}
               </span>
             </div>
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-border">
               {timelineEvents.length === 0 ? (
-                <div className="py-10 text-center text-sm text-gray-400">
+                <div className="py-10 text-center text-sm text-muted-foreground">
                   {lang === "vi" ? "Chưa có sự kiện nào được ghi nhận." : "No audit events recorded yet."}
                 </div>
               ) : (
@@ -675,12 +675,12 @@ export function BatchDetailPage() {
                     : "update";
                   const style = auditTypeStyle[typeKey] ?? auditTypeStyle.update;
                   return (
-                    <div key={event.id} className="px-6 py-3.5 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                    <div key={event.id} className="px-6 py-3.5 flex items-center justify-between hover:bg-muted transition-colors">
                       <div className="flex items-center gap-3">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ background: style.dot }} />
                         <div>
-                          <div className="text-xs font-semibold text-gray-800">{event.icon} {event.stage}</div>
-                          <div className="text-[11px] text-gray-400 mt-0.5 flex items-center gap-2">
+                          <div className="text-xs font-semibold text-foreground">{event.icon} {event.stage}</div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-2">
                             <span>by {event.employee}</span>
                             <span>•</span>
                             <span>{event.organization}</span>
@@ -688,7 +688,7 @@ export function BatchDetailPage() {
                           </div>
                         </div>
                       </div>
-                      <span className="text-[11px] text-gray-400 font-mono whitespace-nowrap">{event.date} {event.time}</span>
+                      <span className="text-[11px] text-muted-foreground font-mono whitespace-nowrap">{event.date} {event.time}</span>
                     </div>
                   );
                 })

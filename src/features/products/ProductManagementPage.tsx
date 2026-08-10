@@ -151,27 +151,26 @@ export function ProductManagementPage() {
       </div>
 
       <div className="px-6 -mt-4 relative z-10">
-        <div className="bg-white rounded-2xl p-4 mb-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div className="bg-card rounded-2xl p-4 mb-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1 min-w-56 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 placeholder={lang === "vi" ? "Tìm kiếm theo tên sản phẩm, danh mục..." : "Search by product name, category..."}
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all"
-                style={{ background: "#F8FAF8" }}
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm outline-none transition-all bg-input-background"
               />
               {search && (
-                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-muted-foreground border-border hover:bg-muted"}`}
               style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
             >
               <SlidersHorizontal className="w-4 h-4" />
@@ -190,14 +189,14 @@ export function ProductManagementPage() {
           </div>
 
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-4 pt-4 border-t border-border">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Organization</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Organization</label>
                   <select
                     value={organizationFilter}
                     onChange={(e) => { setOrganizationFilter(e.target.value); setPage(1); }}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                    className="w-full px-3 py-2 rounded-lg border border-border text-sm outline-none bg-input-background"
                   >
                     <option value="">All Organizations</option>
                     {organizations.map((org: any) => {
@@ -209,11 +208,11 @@ export function ProductManagementPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Category</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Category</label>
                   <select
                     value={categoryFilter}
                     onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                    className="w-full px-3 py-2 rounded-lg border border-border text-sm outline-none bg-input-background"
                   >
                     <option value="">All Categories</option>
                     {categories.map((cat: any) => {
@@ -225,11 +224,11 @@ export function ProductManagementPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">{lang === "vi" ? "Trạng thái" : "Status"}</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">{lang === "vi" ? "Trạng thái" : "Status"}</label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as "All" | "Active" | "Inactive")}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                    className="w-full px-3 py-2 rounded-lg border border-border text-sm outline-none bg-input-background"
                   >
                     <option value="All">{lang === "vi" ? "Tất cả trạng thái" : "All Status"}</option>
                     <option value="Active">{lang === "vi" ? "Hoạt động" : "Active"}</option>
@@ -239,7 +238,7 @@ export function ProductManagementPage() {
                 <div className="flex items-end">
                   <button
                     onClick={handleResetFilters}
-                    className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                   >
                     <RotateCcw className="w-4 h-4" /> Reset Filters
                   </button>
@@ -249,47 +248,46 @@ export function ProductManagementPage() {
           )}
         </div>
 
-        <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div className="bg-card rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           {isLoading ? (
-            <div className="p-8 text-center text-gray-500">{lang === "vi" ? "Đang tải dữ liệu sản phẩm..." : "Loading products..."}</div>
+            <div className="p-8 text-center text-muted-foreground">{lang === "vi" ? "Đang tải dữ liệu sản phẩm..." : "Loading products..."}</div>
           ) : isError ? (
-            <div className="p-8 text-center text-red-500">{lang === "vi" ? "Lỗi khi tải danh sách sản phẩm" : "Error loading products"}</div>
+            <div className="p-8 text-center text-destructive">{lang === "vi" ? "Lỗi khi tải danh sách sản phẩm" : "Error loading products"}</div>
           ) : filteredProducts.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">{lang === "vi" ? "Không tìm thấy sản phẩm nào" : "No products found"}</div>
+            <div className="p-8 text-center text-muted-foreground">{lang === "vi" ? "Không tìm thấy sản phẩm nào" : "No products found"}</div>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-100">
-                      <SortHeader label="ID" sortKey="id" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                      <SortHeader label={lang === "vi" ? "Tên Sản Phẩm" : "Name"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
-                      <SortHeader label={lang === "vi" ? "Danh Mục" : "Category"} sortKey="category" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
-                      <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
-                      <SortHeader label={lang === "vi" ? "Đơn Vị Tính" : "Unit"} sortKey="unit" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
-                      <SortHeader label={lang === "vi" ? "Trạng Thái" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
-                      <th className="text-right px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
+                    <tr className="border-b border-border">
+                      <SortHeader label="ID" sortKey="id" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
+                      <SortHeader label={lang === "vi" ? "Tên Sản Phẩm" : "Name"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Danh Mục" : "Category"} sortKey="category" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Đơn Vị Tính" : "Unit"} sortKey="unit" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Trạng Thái" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider" />
+                      <th className="text-right px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {sortedProducts.map((product: any) => {
                       const prodId = product.id || product.productId;
                       return (
-                        <tr key={prodId} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 text-xs font-medium text-gray-500 font-mono">{String(prodId).slice(0, 8)}...</td>
+                        <tr key={prodId} className="border-b border-border hover:bg-muted transition-colors">
+                          <td className="px-6 py-4 text-xs font-medium text-muted-foreground font-mono">{String(prodId).slice(0, 8)}...</td>
                           <td className="px-6 py-4">
-                            <span className="text-sm font-semibold text-gray-900">{product.name}</span>
+                            <span className="text-sm font-semibold text-foreground">{product.name}</span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{product.categoryName}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{product.organizationName || "—"}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600">{product.unit}</td>
+                          <td className="px-6 py-4 text-sm text-muted-foreground">{product.categoryName}</td>
+                          <td className="px-6 py-4 text-sm text-muted-foreground">{product.organizationName || "—"}</td>
+                          <td className="px-6 py-4 text-sm text-muted-foreground">{product.unit}</td>
                           <td className="px-6 py-4">
                             <span
                               className={`px-2.5 py-1 rounded-full text-xs font-semibold ${product.isActive
-                                ? "text-green-700"
-                                : "text-gray-600"
+                                ? "text-green-700 bg-primary/10"
+                                : "text-gray-600 bg-muted"
                                 }`}
-                              style={{ background: product.isActive ? "#E8F5E9" : "#F5F5F5" }}
                             >
                               {product.isActive ? (lang === "vi" ? "Hoạt động" : "Active") : (lang === "vi" ? "Ngưng hoạt động" : "Inactive")}
                             </span>
@@ -298,18 +296,18 @@ export function ProductManagementPage() {
                             <div className="flex items-center justify-end gap-1">
                               <button
                                 onClick={() => navigate(`/app/products/${prodId}`)}
-                                className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                                className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                                 title={lang === "vi" ? "Xem chi tiết" : "View"}
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
-                              
+
                               {/* Only allow edit/deactivate/delete if ADMIN or belongs to user's org */}
                               {(user?.role === "ADMIN" || user?.organizationId === product.organizationId) && (
                                 <>
                                   <button
                                     onClick={() => setShowEditModal(prodId)}
-                                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                                    className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                                     title={lang === "vi" ? "Chỉnh sửa" : "Edit"}
                                   >
                                     <Edit2 className="w-4 h-4" />
@@ -342,19 +340,19 @@ export function ProductManagementPage() {
                 </table>
               </div>
 
-              <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="px-6 py-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-muted-foreground">
                     {lang === "vi"
                       ? `Hiển thị ${((page - 1) * perPage) + 1} đến ${Math.min(page * perPage, totalCount)} trong số ${totalCount} sản phẩm`
                       : `Showing ${((page - 1) * perPage) + 1} to ${Math.min(page * perPage, totalCount)} of ${totalCount} products`}
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-xs text-gray-500">Rows/page</label>
+                    <label className="text-xs text-muted-foreground">Rows/page</label>
                     <select
                       value={perPage}
                       onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
-                      className="px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                      className="px-2 py-1 rounded-lg border border-border text-sm outline-none bg-input-background"
                     >
                       {[5, 10, 20, 50].map((n) => (
                         <option key={n} value={n}>{n}</option>
@@ -366,7 +364,7 @@ export function ProductManagementPage() {
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
                     title="Previous"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -375,19 +373,19 @@ export function ProductManagementPage() {
                     <>
                       <button
                         onClick={() => setPage(1)}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-muted-foreground hover:bg-muted border-border"}`}
                         style={page === 1 ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
                       >
                         1
                       </button>
-                      {page > 2 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                      {page > 2 && <span className="px-1 text-muted-foreground text-sm">…</span>}
                     </>
                   )}
                   {[page - 1, page, page + 1].filter((p) => p > 1 && p < totalPages).map((p) => (
                     <button
                       key={p}
                       onClick={() => setPage(p)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-muted-foreground hover:bg-muted border-border"}`}
                       style={p === page ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
                     >
                       {p}
@@ -395,10 +393,10 @@ export function ProductManagementPage() {
                   ))}
                   {page < totalPages && (
                     <>
-                      {page < totalPages - 1 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                      {page < totalPages - 1 && <span className="px-1 text-muted-foreground text-sm">…</span>}
                       <button
                         onClick={() => setPage(totalPages)}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-muted-foreground hover:bg-muted border-border"}`}
                         style={page === totalPages ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
                       >
                         {totalPages}
@@ -408,7 +406,7 @@ export function ProductManagementPage() {
                   <button
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
                     title="Next"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -423,11 +421,11 @@ export function ProductManagementPage() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <div className="bg-card rounded-2xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-foreground mb-2">
               {lang === "vi" ? "Xóa sản phẩm" : "Delete Product"}
             </h3>
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-sm text-muted-foreground mb-6">
               {lang === "vi"
                 ? "Bạn có chắc chắn muốn xóa sản phẩm này không?"
                 : "Are you sure you want to delete this product?"}
@@ -435,7 +433,7 @@ export function ProductManagementPage() {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteModal(null)}
-                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                className="px-4 py-2 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted"
               >
                 {lang === "vi" ? "Hủy bỏ" : "Cancel"}
               </button>

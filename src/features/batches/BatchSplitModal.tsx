@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Scissors, Plus, Trash2, X, AlertCircle } from "lucide-react";
 import { useSplitBatch } from "./batches.queries";
 import type { SplitBatchChild } from "./split-merge.types";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface BatchSplitModalProps {
   batchId: string;
@@ -24,6 +25,7 @@ export function BatchSplitModal({
   onClose,
   onSplit,
 }: BatchSplitModalProps) {
+  const { lang } = useLanguage();
   const splitBatch = useSplitBatch(batchId);
   const [children, setChildren] = useState<SplitBatchChild[]>([
     { quantity: 0, unit },
@@ -55,8 +57,12 @@ export function BatchSplitModal({
     if (!isValid) {
       setError(
         totalAllocated > totalQuantity
-          ? `Total allocated (${totalAllocated}) exceeds parent quantity (${totalQuantity}).`
-          : "Each child batch must have a quantity greater than 0."
+          ? (lang === "vi"
+              ? `Tổng số lượng đã phân bổ (${totalAllocated}) vượt quá số lượng lô gốc (${totalQuantity}).`
+              : `Total allocated (${totalAllocated}) exceeds parent quantity (${totalQuantity}).`)
+          : (lang === "vi"
+              ? "Mỗi lô con phải có số lượng lớn hơn 0."
+              : "Each child batch must have a quantity greater than 0.")
       );
       return;
     }
@@ -73,7 +79,7 @@ export function BatchSplitModal({
         err?.response?.data?.message ||
         err?.response?.data?.title ||
         err?.message ||
-        "Failed to split batch. Please try again.";
+        (lang === "vi" ? "Không thể tách lô hàng. Vui lòng thử lại." : "Failed to split batch. Please try again.");
       setError(msg);
     }
   };
@@ -84,7 +90,7 @@ export function BatchSplitModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-lg mx-4 overflow-hidden"
+        className="bg-card rounded-2xl w-full max-w-lg mx-4 overflow-hidden"
         style={{ boxShadow: "0 24px 80px rgba(0,0,0,0.25)" }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -98,7 +104,7 @@ export function BatchSplitModal({
               <Scissors className="w-4 h-4 text-white" />
             </div>
             <div>
-              <div className="font-semibold text-white">Split Batch</div>
+              <div className="font-semibold text-white">{lang === "vi" ? "Tách Lô Hàng" : "Split Batch"}</div>
               <code className="text-blue-200 text-xs font-mono">{batchCode}</code>
             </div>
           </div>
@@ -120,7 +126,9 @@ export function BatchSplitModal({
             <div>
               <div className="text-sm font-semibold text-blue-900">{productName}</div>
               <div className="text-xs text-blue-600 mt-0.5">
-                Parent batch · {totalQuantity.toLocaleString()} total
+                {lang === "vi"
+                  ? `Lô gốc · Tổng ${totalQuantity.toLocaleString()}`
+                  : `Parent batch · ${totalQuantity.toLocaleString()} total`}
               </div>
             </div>
             <div className="text-right">
@@ -130,19 +138,19 @@ export function BatchSplitModal({
               >
                 {remaining.toLocaleString()}
               </div>
-              <div className="text-xs text-gray-400">remaining</div>
+              <div className="text-xs text-muted-foreground">{lang === "vi" ? "còn lại" : "remaining"}</div>
             </div>
           </div>
 
           {/* Progress bar */}
           <div>
-            <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span>Allocated</span>
+            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+              <span>{lang === "vi" ? "Đã phân bổ" : "Allocated"}</span>
               <span>
                 {totalAllocated.toLocaleString()} / {totalQuantity.toLocaleString()}
               </span>
             </div>
-            <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
+            <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
               <div
                 className="h-full rounded-full transition-all"
                 style={{
@@ -156,22 +164,22 @@ export function BatchSplitModal({
           {/* Children */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                Child Batches
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {lang === "vi" ? "Các Lô Con" : "Child Batches"}
               </span>
               <button
                 onClick={addChild}
                 className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-lg transition-colors"
                 style={{ color: "#1565C0", background: "#EFF6FF" }}
               >
-                <Plus className="w-3.5 h-3.5" /> Add Batch
+                <Plus className="w-3.5 h-3.5" /> {lang === "vi" ? "Thêm Lô" : "Add Batch"}
               </button>
             </div>
             {children.map((child, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-3 rounded-xl p-3"
-                style={{ background: "#F8FAF8", border: "1px solid #E5E7EB" }}
+                className="flex items-center gap-3 rounded-xl p-3 bg-muted"
+                style={{ border: "1px solid #E5E7EB" }}
               >
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
@@ -180,8 +188,8 @@ export function BatchSplitModal({
                   {idx + 1}
                 </div>
                 <div className="flex-1">
-                  <label className="text-xs text-gray-400 block mb-1">
-                    Quantity
+                  <label className="text-xs text-muted-foreground block mb-1">
+                    {lang === "vi" ? "Số lượng" : "Quantity"}
                   </label>
                   <input
                     type="number"
@@ -190,13 +198,13 @@ export function BatchSplitModal({
                     value={child.quantity || ""}
                     onChange={(e) => setQty(idx, e.target.value)}
                     placeholder="0"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none text-sm"
+                    className="w-full px-3 py-2 rounded-lg border border-border outline-none text-sm"
                   />
                 </div>
                 {children.length > 2 && (
                   <button
                     onClick={() => removeChild(idx)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -207,22 +215,21 @@ export function BatchSplitModal({
 
           {/* Notes */}
           <label className="space-y-1.5 block">
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Notes (optional)
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              {lang === "vi" ? "Ghi chú (tùy chọn)" : "Notes (optional)"}
             </span>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              placeholder="Reason for splitting this batch..."
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 outline-none text-sm resize-none"
+              placeholder={lang === "vi" ? "Lý do tách lô hàng này..." : "Reason for splitting this batch..."}
+              className="w-full px-3 py-2.5 rounded-xl border border-border outline-none text-sm resize-none"
             />
           </label>
 
           {error && (
             <div
-              className="flex items-start gap-2 rounded-xl px-3 py-2 text-sm"
-              style={{ background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA" }}
+              className="flex items-start gap-2 rounded-xl px-3 py-2 text-sm bg-destructive/10 text-destructive border border-destructive/30"
             >
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               {error}
@@ -231,12 +238,12 @@ export function BatchSplitModal({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 px-6 py-4 border-t border-gray-100">
+        <div className="flex gap-3 px-6 py-4 border-t border-border">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-muted transition-colors"
           >
-            Cancel
+            {lang === "vi" ? "Hủy bỏ" : "Cancel"}
           </button>
           <button
             onClick={handleSplit}
@@ -245,7 +252,9 @@ export function BatchSplitModal({
             style={{ background: "#1565C0" }}
           >
             <Scissors className="w-4 h-4" />
-            {splitBatch.isPending ? "Splitting..." : `Split into ${children.length} batches`}
+            {splitBatch.isPending
+              ? (lang === "vi" ? "Đang tách..." : "Splitting...")
+              : (lang === "vi" ? `Tách thành ${children.length} lô hàng` : `Split into ${children.length} batches`)}
           </button>
         </div>
       </div>

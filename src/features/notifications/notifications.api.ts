@@ -10,6 +10,7 @@ export interface Notification {
   userId?: string;
   title?: string;
   message?: string;
+  type?: string;
   isRead?: boolean;
   createdAt?: string;
 }
@@ -31,6 +32,7 @@ function adaptNotificationFromItem(item: any): Notification {
     userId: item.userId ?? "",
     title: item.title ?? "",
     message: item.message ?? "",
+    type: item.type ?? "",
     isRead: item.isRead ?? false,
     createdAt: item.createdAt ?? "",
   };

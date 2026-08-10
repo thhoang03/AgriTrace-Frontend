@@ -85,7 +85,7 @@ export function SplitBatchModal({ isOpen, onClose, batch, onSuccess }: SplitBatc
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-gray-100">
+      <div className="bg-card rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-border">
         {/* Header Banner */}
         <div className="px-6 py-5 bg-gradient-to-r from-purple-800 via-indigo-800 to-purple-700 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export function SplitBatchModal({ isOpen, onClose, batch, onSuccess }: SplitBatc
           {/* Child Splits Inputs */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider">
+              <label className="text-xs font-bold text-foreground uppercase tracking-wider">
                 {lang === "vi" ? "Danh sách Lô con" : "Child Batches"} ({splits.length})
               </label>
               <button
@@ -134,7 +134,7 @@ export function SplitBatchModal({ isOpen, onClose, batch, onSuccess }: SplitBatc
 
             <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
               {splits.map((s, idx) => (
-                <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 border border-gray-200/80">
+                <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl bg-muted border border-border">
                   <div className="w-7 h-7 rounded-xl bg-purple-100 text-purple-700 font-bold text-xs flex items-center justify-center flex-shrink-0">
                     #{idx + 1}
                   </div>
@@ -145,11 +145,11 @@ export function SplitBatchModal({ isOpen, onClose, batch, onSuccess }: SplitBatc
                       value={s.quantity || ""}
                       onChange={(e) => handleQuantityChange(idx, parseFloat(e.target.value) || 0)}
                       placeholder={lang === "vi" ? `Nhập sản lượng lô #${idx + 1}` : `Quantity for child #${idx + 1}`}
-                      className="w-full h-9 px-3 rounded-xl border border-gray-200 text-xs font-semibold outline-none focus:border-purple-500 bg-white"
+                      className="w-full h-9 px-3 rounded-xl border border-border text-xs font-semibold outline-none focus:border-purple-500 bg-input-background"
                       required
                     />
                   </div>
-                  <span className="text-xs text-gray-500 font-medium">{batch.unit || "kg"}</span>
+                  <span className="text-xs text-muted-foreground font-medium">{batch.unit || "kg"}</span>
                   {splits.length > 2 && (
                     <button
                       type="button"
@@ -165,14 +165,14 @@ export function SplitBatchModal({ isOpen, onClose, batch, onSuccess }: SplitBatc
           </div>
 
           {/* Summary Progress Bar */}
-          <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-200 space-y-1.5">
+          <div className="p-3.5 rounded-2xl bg-muted border border-border space-y-1.5">
             <div className="flex items-center justify-between text-xs font-medium">
-              <span className="text-gray-600">{lang === "vi" ? "Đã phân chia:" : "Total Allocated:"}</span>
+              <span className="text-muted-foreground">{lang === "vi" ? "Đã phân chia:" : "Total Allocated:"}</span>
               <span className={`font-bold ${isOverQuantity ? "text-rose-600" : "text-purple-900"}`}>
                 {totalSplitQty} / {remainingQty} {batch.unit || "kg"}
               </span>
             </div>
-            <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-border h-2 rounded-full overflow-hidden">
               <div
                 className={`h-full transition-all duration-300 ${isOverQuantity ? "bg-rose-500" : "bg-purple-600"}`}
                 style={{ width: `${Math.min(100, (totalSplitQty / (remainingQty || 1)) * 100)}%` }}
@@ -191,7 +191,7 @@ export function SplitBatchModal({ isOpen, onClose, batch, onSuccess }: SplitBatc
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-2.5 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition-colors"
             >
               {lang === "vi" ? "Hủy bỏ" : "Cancel"}
             </button>

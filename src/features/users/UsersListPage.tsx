@@ -294,29 +294,28 @@ const handleResetPassword = async (user: UserItem) => {
       <div className="px-6 -mt-4 relative z-10">
         {/* Filter Bar */}
         <div
-          className="bg-white rounded-2xl p-4 mb-5"
+          className="bg-card rounded-2xl p-4 mb-5"
           style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
         >
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1 min-w-48 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 placeholder={lang === "vi" ? "Tìm kiếm người dùng..." : "Search users..."}
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                style={{ background: "#F8FAF8" }}
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
               />
               {search && (
-                <button onClick={() => { setSearch(""); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button onClick={() => { setSearch(""); setPage(1); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-muted-foreground border-border hover:bg-muted"}`}
               style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
             >
               <SlidersHorizontal className="w-4 h-4" />
@@ -333,17 +332,17 @@ const handleResetPassword = async (user: UserItem) => {
           </div>
 
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-4 pt-4 border-t border-border">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Role</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Role</label>
                   <select
                     value={roleFilter}
                     onChange={(e) => {
                       setRoleFilter(e.target.value as UserRole | "All");
                       setPage(1);
                     }}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                    className="w-full px-3 py-2 rounded-lg border border-border text-sm outline-none bg-input-background"
                   >
                     {roles.map((r) => (
                       <option key={r}>{r}</option>
@@ -351,14 +350,14 @@ const handleResetPassword = async (user: UserItem) => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Org. Type</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Org. Type</label>
                   <select
                     value={orgTypeFilter}
                     onChange={(e) => {
                       setOrgTypeFilter(e.target.value);
                       setPage(1);
                     }}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                    className="w-full px-3 py-2 rounded-lg border border-border text-sm outline-none bg-input-background"
                   >
                     {orgTypes.map((o) => (
                       <option key={o}>{o}</option>
@@ -366,14 +365,14 @@ const handleResetPassword = async (user: UserItem) => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">Status</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Status</label>
                   <select
                     value={statusFilter}
                     onChange={(e) => {
                       setStatusFilter(e.target.value as UserStatus | "All");
                       setPage(1);
                     }}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                    className="w-full px-3 py-2 rounded-lg border border-border text-sm outline-none bg-input-background"
                   >
                     {statuses.map((s) => (
                       <option key={s}>{s}</option>
@@ -383,7 +382,7 @@ const handleResetPassword = async (user: UserItem) => {
                 <div className="flex items-end">
                   <button
                     onClick={handleResetFilters}
-                    className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                   >
                     <RotateCcw className="w-4 h-4" /> Reset Filters
                   </button>
@@ -395,37 +394,37 @@ const handleResetPassword = async (user: UserItem) => {
 
         {/* Table */}
         <div
-          className="bg-white rounded-2xl overflow-hidden"
+          className="bg-card rounded-2xl overflow-hidden"
           style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
         >
-          <div className="px-6 py-4 border-b border-gray-100">
-            <span className="text-sm text-gray-500">
+          <div className="px-6 py-4 border-b border-border">
+            <span className="text-sm text-muted-foreground">
               {lang === "vi" ? `Hiển thị ${filtered.length} người dùng` : `Showing ${filtered.length} users`}
             </span>
           </div>
           <div className="overflow-x-auto">
             {isLoading ? (
-              <div className="flex items-center justify-center py-10 text-gray-500">
+              <div className="flex items-center justify-center py-10 text-muted-foreground">
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {lang === "vi" ? "Đang tải dữ liệu người dùng..." : "Loading users..."}
               </div>
             ) : isError ? (
-              <div className="py-10 text-center text-red-500">
+              <div className="py-10 text-center text-destructive">
                 {lang === "vi" ? "Không thể tải dữ liệu người dùng." : "Unable to load users right now."}
               </div>
             ) : (
               <table className="w-full">
                 <thead>
-                  <tr style={{ background: "#F8FAF8" }}>
-                    <SortHeader label={lang === "vi" ? "NGƯỜI DÙNG" : "User"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "TỔ CHỨC" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "LOẠI ĐƠN VỊ" : "Org. Type"} sortKey="orgType" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "VAI TRÒ" : "Role"} sortKey="role" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "LIÊN HỆ" : "Contact"} sortKey="contact" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap" />
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
+                  <tr className="bg-muted">
+                    <SortHeader label={lang === "vi" ? "NGƯỜI DÙNG" : "User"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "TỔ CHỨC" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "LOẠI ĐƠN VỊ" : "Org. Type"} sortKey="orgType" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "VAI TRÒ" : "Role"} sortKey="role" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "LIÊN HỆ" : "Contact"} sortKey="contact" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-border">
                   {sortedUsers.map((user) => {
 const roleCfg = roleColors[user.role.toUpperCase()] || {
                        bg: "#F5F5F5",
@@ -444,20 +443,20 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                             <img
                               src={apiUrl}
                               alt={user.fullName}
-                              className="w-9 h-9 rounded-full object-cover ring-2 ring-gray-100"
+                              className="w-9 h-9 rounded-full object-cover ring-2 ring-border"
                             />
                             <div>
-                              <div className="text-sm font-semibold text-gray-900">
+                              <div className="text-sm font-semibold text-foreground">
                                 {user.fullName}
                               </div>
-                              <div className="text-xs text-gray-400">
+                              <div className="text-xs text-muted-foreground">
                                 {user.email}
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="text-sm text-gray-700 max-w-40 truncate">
+                          <div className="text-sm text-muted-foreground max-w-40 truncate">
                             {user.organization || "—"}
                           </div>
                         </td>
@@ -502,10 +501,10 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                           </button>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="text-sm text-gray-700">
+                          <div className="text-sm text-muted-foreground">
                             {user.phone}
                           </div>
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-muted-foreground">
                             {user.email}
                           </div>
                         </td>
@@ -546,17 +545,17 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
             )}
           </div>
 
-          <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="px-6 py-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-muted-foreground">
                 Showing {totalCount === 0 ? 0 : ((page - 1) * perPage) + 1} to {Math.min(page * perPage, totalCount)} of {totalCount} users
               </div>
               <div className="flex items-center gap-2">
-                <label className="text-xs text-gray-500">Rows/page</label>
+                <label className="text-xs text-muted-foreground">Rows/page</label>
                 <select
                   value={perPage}
                   onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
-                  className="px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                  className="px-2 py-1 rounded-lg border border-border text-sm outline-none bg-input-background"
                 >
                   {[5, 10, 20, 50].map((n) => (
                     <option key={n} value={n}>{n}</option>
@@ -568,7 +567,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Previous"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -577,19 +576,19 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                 <>
                   <button
                     onClick={() => setPage(1)}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-muted-foreground hover:bg-muted border-border"}`}
                     style={page === 1 ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
                   >
                     1
                   </button>
-                  {page > 2 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                  {page > 2 && <span className="px-1 text-muted-foreground text-sm">…</span>}
                 </>
               )}
               {[page - 1, page, page + 1].filter((p) => p > 1 && p < totalPages).map((p) => (
                 <button
                   key={p}
                   onClick={() => setPage(p)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-muted-foreground hover:bg-muted border-border"}`}
                   style={p === page ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
                 >
                   {p}
@@ -597,10 +596,10 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
               ))}
               {page < totalPages && (
                 <>
-                  {page < totalPages - 1 && <span className="px-1 text-gray-400 text-sm">…</span>}
+                  {page < totalPages - 1 && <span className="px-1 text-muted-foreground text-sm">…</span>}
                   <button
                     onClick={() => setPage(totalPages)}
-                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                    className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-muted-foreground hover:bg-muted border-border"}`}
                     style={page === totalPages ? { background: "#2E7D32", borderColor: "#2E7D32" } : {}}
                   >
                     {totalPages}
@@ -610,7 +609,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
                 title="Next"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -624,24 +623,24 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
       {showAdd && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div
-            className="bg-white rounded-2xl p-6 max-w-md w-full"
+            className="bg-card rounded-2xl p-6 max-w-md w-full"
             style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-bold text-gray-900">
+              <h3 className="font-bold text-foreground">
                 {isAdmin ? "Add New User" : "Mời nhân viên mới (Invite Staff)"}
               </h3>
               <button
                 onClick={() => setShowAdd(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100"
+                className="p-1.5 rounded-lg hover:bg-muted"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
             <div className="space-y-4">
               {/* Full Name */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Họ và tên <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -649,15 +648,14 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   onChange={(e) =>
                     setForm({ ...form, fullName: e.target.value })
                   }
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                  style={{ background: "#F8FAF8" }}
+                  className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
                   placeholder="Nguyễn Văn X"
                 />
               </div>
 
               {/* Email */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Email <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -666,15 +664,14 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   onChange={(e) =>
                     setForm({ ...form, email: e.target.value })
                   }
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                  style={{ background: "#F8FAF8" }}
+                  className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
                   placeholder="email@org.vn"
                 />
               </div>
 
               {/* Password */}
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Mật khẩu khởi tạo <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
@@ -684,14 +681,13 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                     onChange={(e) =>
                       setForm({ ...form, password: e.target.value })
                     }
-                    className="flex-1 px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                    style={{ background: "#F8FAF8" }}
+                    className="flex-1 px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
                     placeholder="Tối thiểu 6 ký tự"
                   />
                   <button
                     type="button"
                     onClick={handleAutoGeneratePassword}
-                    className="px-3 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 flex items-center gap-1.5"
+                    className="px-3 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-muted flex items-center gap-1.5"
                     title="Tự động tạo mật khẩu"
                   >
                     <Sparkles className="w-4 h-4" />
@@ -704,7 +700,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
               {isAdmin ? (
                 <>
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
                       Tổ chức (Organization) <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -712,7 +708,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                       onChange={(e) =>
                         setForm({ ...form, organizationId: e.target.value || undefined })
                       }
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
                     >
                       <option value="">-- Chọn tổ chức --</option>
                       {organizations.map((org) => (
@@ -723,7 +719,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                     </select>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
                       Vai trò (Role) <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -734,7 +730,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                           role: e.target.value as CreateUserRequest["role"],
                         })
                       }
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
                     >
                       <option value="MANAGER">MANAGER</option>
                       <option value="STAFF">STAFF</option>
@@ -745,18 +741,18 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                 <>
                   {/* MANAGER: Org read-only + Role fixed */}
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
                       Tổ chức (Organization)
                     </label>
-                    <div className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 bg-gray-50">
+                    <div className="w-full px-3 py-2.5 rounded-xl border border-border text-sm text-muted-foreground bg-muted">
                       {currentUser?.organizationName || "—"}
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">
                       Vai trò (Role)
                     </label>
-                    <div className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 bg-gray-50">
+                    <div className="w-full px-3 py-2.5 rounded-xl border border-border text-sm text-muted-foreground bg-muted">
                       STAFF
                     </div>
                   </div>
@@ -765,7 +761,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowAdd(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-muted"
                 >
                   Cancel
                 </button>
@@ -787,21 +783,21 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
       {selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div
-            className="bg-white rounded-2xl p-6 max-w-md w-full"
+            className="bg-card rounded-2xl p-6 max-w-md w-full"
             style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-bold text-gray-900">Edit User</h3>
+              <h3 className="font-bold text-foreground">Edit User</h3>
               <button
                 onClick={() => setSelectedUser(null)}
-                className="p-1.5 rounded-lg hover:bg-gray-100"
+                className="p-1.5 rounded-lg hover:bg-muted"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Full Name
                 </label>
                 <input
@@ -812,13 +808,12 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                       fullName: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                  style={{ background: "#F8FAF8" }}
+                  className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">
                     Role
                   </label>
                   <select
@@ -829,7 +824,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                         role: e.target.value as UserRole,
                       })
                     }
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
+                    className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
                   >
                     {["MANAGER", "STAFF"].map((r) => (
                       <option key={r} value={r}>{r}</option>
@@ -837,7 +832,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">
                     Status
                   </label>
                   <select
@@ -848,7 +843,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                         status: e.target.value as UserItem["status"],
                       })
                     }
-                    className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white"
+                    className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
                   >
             {(["Active", "Inactive"] as const).map((s) => (
                       <option key={s}>{s}</option>
@@ -857,20 +852,19 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Organization
                 </label>
                 <input
                   value={selectedUser.organization}
                   onChange={(e) => setSelectedUser({ ...selectedUser, organization: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                  style={{ background: "#F8FAF8" }}
+                  className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
                 />
               </div>
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setSelectedUser(null)}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-muted"
                 >
                   Cancel
                 </button>
