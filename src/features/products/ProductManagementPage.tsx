@@ -10,6 +10,7 @@ import { useOrganizationsList } from "../organizations/organizations.queries";
 import { ProductFormModal } from "./ProductFormModal";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { toast } from "sonner";
+import { translateApiError } from "../../utils/error-translator";
 import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
 import { useAuth } from "../auth/auth.store";
 
@@ -98,7 +99,8 @@ export function ProductManagementPage() {
     } catch (error: any) {
       console.error("Error toggling product status:", error);
       const backendError = error?.response?.data?.message || error?.response?.data?.detail;
-      toast.error(backendError || (lang === "vi" ? "Cập nhật trạng thái thất bại" : "Failed to update status"));
+      const rawMsg = backendError || (lang === "vi" ? "Cập nhật trạng thái thất bại" : "Failed to update status");
+      toast.error(translateApiError(rawMsg, lang));
     }
   };
 
@@ -113,7 +115,8 @@ export function ProductManagementPage() {
     } catch (error: any) {
       console.error("Error deactivating product:", error);
       const backendError = error?.response?.data?.message || error?.response?.data?.detail;
-      toast.error(backendError || (lang === "vi" ? "Xóa sản phẩm thất bại" : "Failed to delete product"));
+      const rawMsg = backendError || (lang === "vi" ? "Xóa sản phẩm thất bại" : "Failed to delete product");
+      toast.error(translateApiError(rawMsg, lang));
     }
   };
 
