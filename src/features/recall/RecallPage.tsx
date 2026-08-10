@@ -39,11 +39,10 @@ function mapSeverityName(name: string): RecallSeverity {
 }
 
 function mapStatusName(name: string): RecallStatus {
-  const lower = name.toLowerCase();
-  if (lower === "active") return "Active";
-  if (lower === "resolved") return "Resolved";
-  if (lower === "pending") return "Pending";
-  return "Pending";
+  const lower = (name || "").toLowerCase();
+  if (lower === "active" || lower === "pending" || lower === "processing") return "Active";
+  if (lower === "resolved" || lower === "completed") return "Resolved";
+  return "Active";
 }
 
 export function RecallPage() {
@@ -71,9 +70,9 @@ export function RecallPage() {
   const availableBatches: Batch[] = batchesData?.data || [];
 
   const recalls = recallsData?.data || [];
-  const activeCount = recalls.filter((r: any) => r.status === 1).length;
-  const resolvedCount = recalls.filter((r: any) => r.status === 2).length;
-  const pendingCount = recalls.filter((r: any) => r.status === 0).length;
+  const activeCount = recalls.filter((r: any) => r.status === 1 || r.status === 2 || r.statusName === "PENDING" || r.statusName === "PROCESSING" || r.statusName === "ACTIVE").length;
+  const resolvedCount = recalls.filter((r: any) => r.status === 3 || r.statusName === "COMPLETED" || r.statusName === "RESOLVED").length;
+  const pendingCount = 0;
 
   const selectedBatch = availableBatches.find(
     (b) => b.id === form.batchId || b.batchCode === form.batchId
@@ -193,11 +192,10 @@ export function RecallPage() {
 
       <div className="px-6 mt-6">
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
           {[
-            { label: lang === "vi" ? "Đang Thu Hồi" : "Active Recalls", count: activeCount, icon: AlertTriangle, bg: "#FFEBEE", color: "#C62828", desc: lang === "vi" ? "Yêu cầu xử lý ngay" : "Requiring immediate action" },
-            { label: lang === "vi" ? "Đã Giải Quyết" : "Resolved Recalls", count: resolvedCount, icon: CheckCircle, bg: "#E8F5E9", color: "#2E7D32", desc: lang === "vi" ? "Đã đóng thành công" : "Successfully closed" },
-            { label: lang === "vi" ? "Đang Chờ Duyệt" : "Pending Review", count: pendingCount, icon: Clock, bg: "#FFF9C4", color: "#F57F17", desc: lang === "vi" ? "Đang chờ điều tra" : "Awaiting investigation" },
+            { label: lang === "vi" ? "Đang Thu Hồi (PENDING)" : "Pending Recalls", count: activeCount, icon: Clock, bg: "#FFF9C4", color: "#F57F17", desc: lang === "vi" ? "Đang xử lý thu hồi lô hàng" : "Pending recall processing" },
+            { label: lang === "vi" ? "Đã Hoàn Tất (COMPLETED)" : "Completed Recalls", count: resolvedCount, icon: CheckCircle, bg: "#E8F5E9", color: "#2E7D32", desc: lang === "vi" ? "Đã hoàn tất lệnh thu hồi" : "Successfully closed" },
           ].map(({ label, count, icon: Icon, bg, color, desc }) => (
             <div key={label} className="bg-white rounded-2xl p-6 flex items-center gap-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
@@ -285,9 +283,7 @@ export function RecallPage() {
                       lang === "vi" ? "Mã Lô Hàng / ID" : "Batch Code / ID",
                       lang === "vi" ? "Lý Do" : "Reason",
                       lang === "vi" ? "Mức Độ" : "Severity",
-                      lang === "vi" ? "Trạng Thái" : "Status",
-                      lang === "vi" ? "Ngày Tạo" : "Created Date",
-                      lang === "vi" ? "Hành Động" : "Actions"
+                      lang === "vi" ? "Ngày Tạo" : "Created Date"
                     ].map((h) => (
                       <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                     ))}
@@ -296,16 +292,18 @@ export function RecallPage() {
                 <tbody className="divide-y divide-gray-50">
                   {recalls.map((recall: RecallItem) => {
                     const sev = severityConfig[mapSeverityName(recall.severityName || "")];
-                    const sta = statusConfig[mapStatusName(recall.statusName || "")] ?? statusConfig.Pending;
-                    const StatusIcon = sta.icon;
                     return (
-                      <tr key={recall.recallId} className="hover:bg-red-50/20 transition-colors group">
+                      <tr 
+                        key={recall.recallId} 
+                        onClick={() => navigate(`/app/batches/${recall.batchId}`)}
+                        className="hover:bg-red-50/20 transition-colors group cursor-pointer"
+                      >
                         <td className="px-5 py-4">
-                          <div className="font-semibold text-gray-900 text-sm flex items-center gap-1.5">
-                            <Box className="w-4 h-4 text-red-600" />
-                            {recall.batchCode || (lang === "vi" ? "Lô Hàng" : "Batch")}
+                          <div className="font-semibold text-emerald-800 group-hover:underline text-sm flex items-center gap-1.5">
+                            <Box className="w-4 h-4 text-red-600 flex-shrink-0" />
+                            <span>{recall.batchCode || (lang === "vi" ? "Lô Hàng" : "Batch")}</span>
                           </div>
-                          <code className="text-xs font-mono text-gray-500">{recall.batchId}</code>
+                          <code className="text-xs font-mono text-gray-400 block mt-0.5">{recall.batchId}</code>
                         </td>
                         <td className="px-5 py-4">
                           <p className="text-sm text-gray-700 max-w-xs leading-relaxed">{recall.reason}</p>
@@ -315,24 +313,7 @@ export function RecallPage() {
                             {recall.severityName}
                           </span>
                         </td>
-                        <td className="px-5 py-4">
-                          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold w-fit" style={{ background: sta.bg, color: sta.color }}>
-                            <StatusIcon style={{ width: 12, height: 12 }} /> {recall.statusName}
-                          </span>
-                        </td>
                         <td className="px-5 py-4 text-sm text-gray-600">{recall.createdAt?.split("T")[0]}</td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-2">
-                            {recall.statusName === "Active" && (
-                              <button
-                                onClick={() => setShowResolveModal(recall.recallId)}
-                                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 transition-colors"
-                              >
-                                {lang === "vi" ? "Đóng / Hoàn Tất" : "Clear / Close"}
-                              </button>
-                            )}
-                          </div>
-                        </td>
                       </tr>
                     );
                   })}

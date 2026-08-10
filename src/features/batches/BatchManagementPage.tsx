@@ -498,13 +498,7 @@ export function BatchManagementPage() {
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
-                              <button
-                                onClick={() => setEditTarget(batch)}
-                                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-blue-600 transition-colors"
-                                title="Edit"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </button>
+
                               <div className="relative">
                                 <button
                                   onClick={(e) => {
