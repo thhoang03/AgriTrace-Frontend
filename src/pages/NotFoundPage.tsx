@@ -78,7 +78,7 @@ export function NotFoundPage() {
           </p>
           <div className="flex flex-col gap-2">
             {[
-              { icon: QrCode, label: "Trace BTH-2024-001", action: () => navigate("/trace/BTH-2024-001") },
+              { icon: QrCode, label: "Trace RICE-20260112-001", action: () => navigate("/trace/RICE-20260112-001") },
               { icon: Search, label: "Search Products on Home", action: () => navigate("/#features") },
               { icon: Leaf, label: "Go to Dashboard", action: () => navigate("/app/dashboard") },
             ].map(({ icon: Icon, label, action }) => (
