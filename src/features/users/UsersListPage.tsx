@@ -816,20 +816,30 @@ const handleResetPassword = async (user: UserItem) => {
                   <label className="text-sm font-medium text-foreground mb-1.5 block">
                     Role
                   </label>
-                  <select
-                    value={selectedUser.role}
-                    onChange={(e) =>
-                      setSelectedUser({
-                        ...selectedUser,
-                        role: e.target.value as UserRole,
-                      })
-                    }
-                    className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
-                  >
-                    {["MANAGER", "STAFF"].map((r) => (
-                      <option key={r} value={r}>{r}</option>
-                    ))}
-                  </select>
+                  {selectedUser.role.toUpperCase() === "ADMIN" ? (
+                    <div
+                      className="w-full px-3 py-2.5 rounded-xl border border-border text-sm bg-muted text-muted-foreground cursor-not-allowed"
+                      title={lang === "vi" ? "Không thể thay đổi vai trò Admin" : "Cannot change Admin role"}
+                    >
+                      ADMIN
+                      <span className="ml-2 text-xs opacity-60">🔒</span>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedUser.role}
+                      onChange={(e) =>
+                        setSelectedUser({
+                          ...selectedUser,
+                          role: e.target.value as UserRole,
+                        })
+                      }
+                      className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
+                    >
+                      {["MANAGER", "STAFF"].map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1.5 block">
@@ -881,9 +891,8 @@ const handleResetPassword = async (user: UserItem) => {
                           organization: selectedUser.organization,
                         },
                       });
-                      showAlert("success", `User "${selectedUser.fullName}" updated successfully`);
+                      showAlert("success", lang === "vi" ? `Cập nhật "${selectedUser.fullName}" thành công` : `User "${selectedUser.fullName}" updated successfully`);
                       setSelectedUser(null);
-                      showAlert("success", "User updated successfully");
                     } catch (e: any) {
                       showAlert("error", getApiErrorMessage(e));
                     }
