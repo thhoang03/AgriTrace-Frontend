@@ -161,6 +161,7 @@ export function ProductManagementPage() {
               <input
                 type="text"
                 value={search}
+                maxLength={200}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 placeholder={lang === "vi" ? "Tìm kiếm theo tên sản phẩm, danh mục..." : "Search by product name, category..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm outline-none transition-all bg-input-background"

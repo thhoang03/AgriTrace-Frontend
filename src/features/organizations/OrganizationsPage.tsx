@@ -416,6 +416,7 @@ export function OrganizationsPage() {
               <input
                 type="text"
                 value={search}
+                maxLength={200}
                 onChange={(e) => {
                   setSearch(e.target.value);
                   setPage(1);

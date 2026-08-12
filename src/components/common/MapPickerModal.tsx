@@ -239,6 +239,7 @@ export function MapPickerModal({
               type="text"
               placeholder="Search hamlet, commune, district, province (e.g. Đại Lộc, Hậu Lộc, Thanh Hóa)..."
               value={searchQuery}
+              maxLength={200}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-24 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
             />
