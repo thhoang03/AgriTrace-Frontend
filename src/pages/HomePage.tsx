@@ -382,37 +382,6 @@ export function HomePage() {
                 </button>
               </div>
             </div>
-          </RevealOnScroll>
-
-            {/* Search Autocomplete Suggestions Dropdown */}
-            {showSuggestions && query.trim() && (
-              <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden text-left z-50 animate-in fade-in duration-150">
-                <div className="p-2.5 bg-gray-50 border-b border-gray-100 text-[11px] font-bold text-gray-400 uppercase tracking-wider flex justify-between">
-                  <span>{lang === "vi" ? "Gợi ý mã nông sản" : "Batch Suggestions"}</span>
-                  <button onClick={() => setShowSuggestions(false)} className="hover:underline">Close</button>
-                </div>
-
-                {/* Search Action Buttons */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setShowSuggestions(false);
-                      handleSearch();
-                    }}
-                    className="px-6 py-3 rounded-xl text-white text-sm font-bold transition-all hover:opacity-90 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95"
-                    style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)", whiteSpace: "nowrap" }}
-                  >
-                    <Search className="w-4 h-4" /> {lang === "vi" ? "Tra cứu" : "Search"}
-                  </button>
-                  <button
-                    onClick={() => setIsQRModalOpen(true)}
-                    className="px-5 py-3 rounded-xl text-sm font-bold border flex items-center justify-center gap-2 transition-all hover:bg-gray-100 bg-gray-50 text-gray-800 active:scale-95"
-                    style={{ border: "1px solid #e0e0e0", whiteSpace: "nowrap" }}
-                  >
-                    <QrCode className="w-4 h-4 text-green-700" /> {lang === "vi" ? "Quét QR" : "Scan QR"}
-                  </button>
-                </div>
-              </div>
 
               {/* Live Real-Data Preview / Direct Search Hint */}
               {showSuggestions && query.trim() && (
@@ -467,9 +436,7 @@ export function HomePage() {
                     </div>
                   )}
                 </div>
-              )}
             </div>
-          </RevealOnScroll>
         </div>
       </section>
 
