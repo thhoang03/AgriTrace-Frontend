@@ -85,7 +85,7 @@ export function MergeBatchModal({ isOpen, onClose, availableBatches, onSuccess }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl border border-gray-100">
+      <div className="bg-card rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl border border-border">
         {/* Header Banner */}
         <div className="px-6 py-5 bg-gradient-to-r from-teal-800 via-emerald-800 to-teal-700 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -105,13 +105,13 @@ export function MergeBatchModal({ isOpen, onClose, availableBatches, onSuccess }
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* Select Source Batches List */}
           <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block">
+            <label className="text-xs font-bold text-foreground uppercase tracking-wider block">
               {lang === "vi" ? "Chọn các Lô hàng Nguồn *" : "Select Source Batches *"} ({selectedIds.length} {lang === "vi" ? "đã chọn" : "selected"})
             </label>
 
             <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
               {validBatches.length === 0 ? (
-                <div className="p-4 rounded-xl bg-gray-50 text-center text-xs text-gray-500">
+                <div className="p-4 rounded-xl bg-muted text-center text-xs text-muted-foreground">
                   {lang === "vi" ? "Không có lô hàng khả dụng để gộp" : "No available batches to merge"}
                 </div>
               ) : (
@@ -125,16 +125,16 @@ export function MergeBatchModal({ isOpen, onClose, availableBatches, onSuccess }
                       className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                         isChecked
                           ? "bg-teal-50/80 border-teal-400 shadow-sm"
-                          : "bg-gray-50/60 border-gray-200/80 hover:bg-gray-100/60"
+                          : "bg-muted/60 border-border hover:bg-muted"
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-colors ${isChecked ? "bg-teal-600 border-teal-600 text-white" : "border-gray-300 bg-white"}`}>
+                        <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-colors ${isChecked ? "bg-teal-600 border-teal-600 text-white" : "border-border bg-card"}`}>
                           {isChecked && <CheckCircle2 className="w-3.5 h-3.5" />}
                         </div>
                         <div>
-                          <div className="font-bold text-gray-900 text-xs">{b.batchCode || b.id}</div>
-                          <div className="text-[11px] text-gray-500">{b.product || b.productName}</div>
+                          <div className="font-bold text-foreground text-xs">{b.batchCode || b.id}</div>
+                          <div className="text-[11px] text-muted-foreground">{b.product || b.productName}</div>
                         </div>
                       </div>
                       <div className="text-right text-xs">
@@ -164,14 +164,14 @@ export function MergeBatchModal({ isOpen, onClose, availableBatches, onSuccess }
           )}
 
           <div>
-            <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1.5">
+            <label className="text-xs font-bold text-foreground uppercase tracking-wider block mb-1.5">
               {lang === "vi" ? "Ngày sản xuất lô mới *" : "Production Date *"}
             </label>
             <input
               type="date"
               value={productionDate}
               onChange={(e) => setProductionDate(e.target.value)}
-              className="w-full h-10 px-3.5 rounded-xl border border-gray-200 text-xs font-semibold outline-none focus:border-teal-500 bg-white"
+              className="w-full h-10 px-3.5 rounded-xl border border-border text-xs font-semibold outline-none focus:border-teal-500 bg-input-background"
               required
             />
           </div>
@@ -187,7 +187,7 @@ export function MergeBatchModal({ isOpen, onClose, availableBatches, onSuccess }
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              className="flex-1 py-2.5 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition-colors"
             >
               {lang === "vi" ? "Hủy bỏ" : "Cancel"}
             </button>

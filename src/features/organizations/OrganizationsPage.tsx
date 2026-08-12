@@ -404,12 +404,12 @@ export function OrganizationsPage() {
       <div className="px-6 -mt-4 relative z-10">
         {/* Filters */}
         <div
-          className="bg-white rounded-2xl p-4 mb-5"
+          className="bg-card rounded-2xl p-4 mb-5"
           style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
         >
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1 min-w-48 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 value={search}
@@ -422,8 +422,7 @@ export function OrganizationsPage() {
                     ? "Tìm kiếm tổ chức..."
                     : "Search organizations..."
                 }
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none"
-                style={{ background: "#F8FAF8" }}
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
               />
               {search && (
                 <button
@@ -431,7 +430,7 @@ export function OrganizationsPage() {
                     setSearch("");
                     setPage(1);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -439,7 +438,7 @@ export function OrganizationsPage() {
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-muted-foreground border-border hover:bg-muted"}`}
               style={
                 showFilters
                   ? { background: "#2E7D32", border: "1px solid #2E7D32" }
@@ -475,10 +474,10 @@ export function OrganizationsPage() {
           </div>
 
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-4 pt-4 border-t border-border">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
                     Type
                   </label>
                   <select
@@ -487,7 +486,7 @@ export function OrganizationsPage() {
                       setTypeFilter(e.target.value);
                       setPage(1);
                     }}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                    className="w-full px-3 py-2 rounded-lg border border-border text-sm outline-none bg-input-background"
                   >
                     <option value="All">All</option>
                     {orgTypes.map((t) => (
@@ -498,7 +497,7 @@ export function OrganizationsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-600 mb-1.5 block">
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
                     Status
                   </label>
                   <select
@@ -507,7 +506,7 @@ export function OrganizationsPage() {
                       setStatusFilter(e.target.value);
                       setPage(1);
                     }}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                    className="w-full px-3 py-2 rounded-lg border border-border text-sm outline-none bg-input-background"
                   >
                     {["All", "ACTIVE", "INACTIVE"].map((s) => (
                       <option key={s}>{s}</option>
@@ -517,7 +516,7 @@ export function OrganizationsPage() {
                 <div className="flex items-end">
                   <button
                     onClick={handleResetFilters}
-                    className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                   >
                     <RotateCcw className="w-4 h-4" /> Reset Filters
                   </button>
@@ -529,18 +528,18 @@ export function OrganizationsPage() {
 
         {/* Table */}
         <div
-          className="bg-white rounded-2xl overflow-hidden"
+          className="bg-card rounded-2xl overflow-hidden"
           style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
         >
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <span className="text-sm text-gray-500">
+          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
               {lang === "vi"
                 ? `Hiển thị ${orgs.length} tổ chức`
                 : `Showing ${orgs.length} organizations`}
             </span>
           </div>
           {isLoading ? (
-            <div className="flex items-center justify-center py-16 text-gray-400 text-sm">
+            <div className="flex items-center justify-center py-16 text-muted-foreground text-sm">
               {lang === "vi" ? "Đang tải dữ liệu..." : "Loading..."}
             </div>
           ) : (
@@ -548,41 +547,41 @@ export function OrganizationsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr style={{ background: "#F8FAF8" }}>
+                    <tr className="bg-muted">
                       <SortHeader
                         label={lang === "vi" ? "TỔ CHỨC" : "Organization"}
                         sortKey="name"
                         sort={sort}
                         onSort={toggle}
-                        className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                        className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap"
                       />
                       <SortHeader
                         label={lang === "vi" ? "LOẠI HÌNH" : "Type"}
                         sortKey="type"
                         sort={sort}
                         onSort={toggle}
-                        className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                        className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap"
                       />
                       <SortHeader
                         label={lang === "vi" ? "ĐỊA CHỈ" : "Address"}
                         sortKey="address"
                         sort={sort}
                         onSort={toggle}
-                        className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                        className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap"
                       />
                       <SortHeader
                         label={lang === "vi" ? "TRẠNG THÁI" : "Status"}
                         sortKey="status"
                         sort={sort}
                         onSort={toggle}
-                        className="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                        className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap"
                       />
-                      <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                         {lang === "vi" ? "THAO TÁC" : "Actions"}
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-border">
                     {sortedOrgs.map((org) => {
                       const typeCfg = TYPE_COLORS[org.type] || {
                         bg: "#F5F5F5",
@@ -606,10 +605,10 @@ export function OrganizationsPage() {
                                 />
                               </div>
                               <div>
-                                <div className="text-sm font-semibold text-gray-900">
+                                <div className="text-sm font-semibold text-foreground">
                                   {org.name}
                                 </div>
-                                <div className="text-xs text-gray-400">
+                                <div className="text-xs text-muted-foreground">
                                   ID: {org.organizationId}
                                 </div>
                               </div>
@@ -627,7 +626,7 @@ export function OrganizationsPage() {
                             </span>
                           </td>
                           <td className="px-5 py-4">
-                            <span className="text-sm text-gray-700">
+                            <span className="text-sm text-muted-foreground">
                               {org.address || "—"}
                             </span>
                           </td>
@@ -683,29 +682,29 @@ export function OrganizationsPage() {
                   </tbody>
                 </table>
                 {orgs.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                  <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
                     <Building2 className="w-10 h-10 mb-3 opacity-30" />
                     <p className="text-sm">No organizations found</p>
                   </div>
                 )}
               </div>
 
-              <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="px-6 py-4 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-muted-foreground">
                     Showing {totalCount === 0 ? 0 : (page - 1) * perPage + 1} to{" "}
                     {Math.min(page * perPage, totalCount)} of {totalCount}{" "}
                     organizations
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-xs text-gray-500">Rows/page</label>
+                    <label className="text-xs text-muted-foreground">Rows/page</label>
                     <select
                       value={perPage}
                       onChange={(e) => {
                         setPerPage(Number(e.target.value));
                         setPage(1);
                       }}
-                      className="px-2 py-1 rounded-lg border border-gray-200 text-sm outline-none bg-white"
+                      className="px-2 py-1 rounded-lg border border-border text-sm outline-none bg-input-background"
                     >
                       {[5, 10, 20, 50].map((n) => (
                         <option key={n} value={n}>
@@ -719,7 +718,7 @@ export function OrganizationsPage() {
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
                     title="Previous"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -728,7 +727,7 @@ export function OrganizationsPage() {
                     <>
                       <button
                         onClick={() => setPage(1)}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === 1 ? "text-white" : "text-muted-foreground hover:bg-muted border-border"}`}
                         style={
                           page === 1
                             ? { background: "#2E7D32", borderColor: "#2E7D32" }
@@ -738,7 +737,7 @@ export function OrganizationsPage() {
                         1
                       </button>
                       {page > 2 && (
-                        <span className="px-1 text-gray-400 text-sm">…</span>
+                        <span className="px-1 text-muted-foreground text-sm">…</span>
                       )}
                     </>
                   )}
@@ -748,7 +747,7 @@ export function OrganizationsPage() {
                       <button
                         key={p}
                         onClick={() => setPage(p)}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${p === page ? "text-white" : "text-muted-foreground hover:bg-muted border-border"}`}
                         style={
                           p === page
                             ? { background: "#2E7D32", borderColor: "#2E7D32" }
@@ -761,11 +760,11 @@ export function OrganizationsPage() {
                   {page < totalPages && (
                     <>
                       {page < totalPages - 1 && (
-                        <span className="px-1 text-gray-400 text-sm">…</span>
+                        <span className="px-1 text-muted-foreground text-sm">…</span>
                       )}
                       <button
                         onClick={() => setPage(totalPages)}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-gray-600 hover:bg-gray-50 border-gray-200"}`}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg border ${page === totalPages ? "text-white" : "text-muted-foreground hover:bg-muted border-border"}`}
                         style={
                           page === totalPages
                             ? { background: "#2E7D32", borderColor: "#2E7D32" }
@@ -779,7 +778,7 @@ export function OrganizationsPage() {
                   <button
                     onClick={() => setPage(Math.min(totalPages, page + 1))}
                     disabled={page === totalPages}
-                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="p-2 rounded-lg border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
                     title="Next"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -795,35 +794,34 @@ export function OrganizationsPage() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div
-            className="bg-white rounded-2xl p-6 max-w-md w-full"
+            className="bg-card rounded-2xl p-6 max-w-md w-full"
             style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-bold text-gray-900">
+              <h3 className="font-bold text-foreground">
                 {editing ? "Edit Organization" : "Add Organization"}
               </h3>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100"
+                className="p-1.5 rounded-lg hover:bg-muted"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Organization Name
                 </label>
                 <input
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400"
-                  style={{ background: "#F8FAF8" }}
+                  className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none focus:border-green-400 bg-input-background"
                   placeholder="Organization Name"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Type
                 </label>
                 <select
@@ -838,7 +836,7 @@ export function OrganizationsPage() {
                       type: matched?.code || "FARM",
                     });
                   }}
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white focus:border-green-400"
+                  className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background focus:border-green-400"
                 >
                   {ORG_TYPE_OPTIONS.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -848,7 +846,7 @@ export function OrganizationsPage() {
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Address
                 </label>
                 <input
@@ -856,16 +854,15 @@ export function OrganizationsPage() {
                   onChange={(e) =>
                     setForm({ ...form, address: e.target.value })
                   }
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400"
-                  style={{ background: "#F8FAF8" }}
+                  className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none focus:border-green-400 bg-input-background"
                   placeholder="Address"
                 />
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {error && <p className="text-sm text-destructive">{error}</p>}
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-muted"
                 >
                   Cancel
                 </button>
@@ -904,7 +901,7 @@ export function OrganizationsPage() {
       {showInviteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div
-            className="bg-white rounded-2xl p-6 max-w-md w-full"
+            className="bg-card rounded-2xl p-6 max-w-md w-full"
             style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}
           >
             <div className="flex items-center justify-between mb-5">
@@ -915,22 +912,22 @@ export function OrganizationsPage() {
                 >
                   <Mail className="w-4 h-4 text-blue-600" />
                 </div>
-                <h3 className="font-bold text-gray-900">Invite Staff</h3>
+                <h3 className="font-bold text-foreground">Invite Staff</h3>
               </div>
               <button
                 onClick={() => setShowInviteModal(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100"
+                className="p-1.5 rounded-lg hover:bg-muted"
               >
-                <X className="w-4 h-4 text-gray-500" />
+                <X className="w-4 h-4 text-muted-foreground" />
               </button>
             </div>
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Send an invitation to a new staff member for{" "}
                 <strong>{detail?.name}</strong>.
               </p>
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
                   Email Address
                 </label>
                 <input
@@ -938,18 +935,17 @@ export function OrganizationsPage() {
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="staff@example.com"
-                  className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-green-400"
-                  style={{ background: "#F8FAF8" }}
+                  className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none focus:border-green-400 bg-input-background"
                 />
               </div>
-              {error && <p className="text-sm text-red-500">{error}</p>}
+              {error && <p className="text-sm text-destructive">{error}</p>}
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => {
                     setShowInviteModal(false);
                     setError("");
                   }}
-                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-muted"
                 >
                   Cancel
                 </button>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X, Upload, Trash2, Star } from "lucide-react";
 import { useProductImages, useUploadProductImage, useDeleteProductImage } from "./products.queries";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface ProductImageModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface ProductImageModalProps {
 }
 
 export function ProductImageModal({ isOpen, onClose, productId }: ProductImageModalProps) {
+  const { lang } = useLanguage();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
@@ -55,19 +57,19 @@ export function ProductImageModal({ isOpen, onClose, productId }: ProductImageMo
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-2xl p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900">Manage Product Images</h3>
+          <h3 className="text-lg font-semibold text-foreground">{lang === "vi" ? "Quản Lý Hình Ảnh Sản Phẩm" : "Manage Product Images"}</h3>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+            className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Upload Section */}
-        <div className="mb-6 p-4 rounded-xl border-2 border-dashed border-gray-200" style={{ background: "#F8FAF8" }}>
+        <div className="mb-6 p-4 rounded-xl border-2 border-dashed border-border bg-muted">
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <input
@@ -79,9 +81,9 @@ export function ProductImageModal({ isOpen, onClose, productId }: ProductImageMo
               />
               <label
                 htmlFor="image-upload"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted cursor-pointer"
               >
-                <Upload className="w-4 h-4" /> Choose Image
+                <Upload className="w-4 h-4" /> {lang === "vi" ? "Chọn Hình Ảnh" : "Choose Image"}
               </label>
             </div>
             {previewUrl && (
@@ -97,7 +99,7 @@ export function ProductImageModal({ isOpen, onClose, productId }: ProductImageMo
                   className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
                   style={{ background: "#2E7D32" }}
                 >
-                  {uploadImage.isPending ? "Uploading..." : "Upload"}
+                  {uploadImage.isPending ? (lang === "vi" ? "Đang tải lên..." : "Uploading...") : (lang === "vi" ? "Tải lên" : "Upload")}
                 </button>
               </div>
             )}
@@ -106,14 +108,14 @@ export function ProductImageModal({ isOpen, onClose, productId }: ProductImageMo
 
         {/* Images Grid */}
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-3">Current Images ({images.length})</h4>
+          <h4 className="text-sm font-medium text-foreground mb-3">{lang === "vi" ? `Hình Ảnh Hiện Có (${images.length})` : `Current Images (${images.length})`}</h4>
           {images.length === 0 ? (
-            <div className="text-center py-8 text-gray-400 text-sm">No images uploaded yet</div>
+            <div className="text-center py-8 text-muted-foreground text-sm">{lang === "vi" ? "Chưa có hình ảnh nào được tải lên" : "No images uploaded yet"}</div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {images.map((image: any) => (
                 <div key={image.imageId} className="relative group">
-                  <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                  <div className="aspect-square rounded-lg overflow-hidden bg-muted">
                     <img
                       src={image.imageUrl}
                       alt="Product"
@@ -122,7 +124,7 @@ export function ProductImageModal({ isOpen, onClose, productId }: ProductImageMo
                   </div>
                   {image.isPrimary && (
                     <div className="absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium text-white" style={{ background: "#2E7D32" }}>
-                      <Star className="w-3 h-3 inline mr-1" /> Primary
+                      <Star className="w-3 h-3 inline mr-1" /> {lang === "vi" ? "Chính" : "Primary"}
                     </div>
                   )}
                   <button
@@ -137,12 +139,12 @@ export function ProductImageModal({ isOpen, onClose, productId }: ProductImageMo
           )}
         </div>
 
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
+            className="px-4 py-2 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted"
           >
-            Close
+            {lang === "vi" ? "Đóng" : "Close"}
           </button>
         </div>
       </div>

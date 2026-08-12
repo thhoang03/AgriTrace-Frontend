@@ -114,18 +114,18 @@ export function BatchInspectionRequestModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150 border border-gray-100">
+      <div className="bg-card rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150 border border-border">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+        <div className="flex items-center justify-between border-b border-border pb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
               <FlaskConical className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 text-base">
+              <h3 className="font-bold text-foreground text-base">
                 {lang === "vi" ? "Gửi Yêu Cầu Kiểm Định Lô Hàng" : "Submit Quality Inspection Request"}
               </h3>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {lang === "vi"
                   ? "Mời Đơn vị Kiểm định QA/QC bên thứ 3 đến lấy mẫu & nghiệm thu"
                   : "Invite 3rd-party QA/QC Inspection organization to sample & inspect"}
@@ -134,7 +134,7 @@ export function BatchInspectionRequestModal({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -143,12 +143,12 @@ export function BatchInspectionRequestModal({
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Target Batch Info Card */}
-          <div className="bg-gray-50/80 p-3.5 rounded-2xl border border-gray-100 flex items-center justify-between">
+          <div className="bg-muted/80 p-3.5 rounded-2xl border border-border flex items-center justify-between">
             <div>
-              <span className="text-xs text-gray-400 font-semibold uppercase tracking-wider">
+              <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
                 {lang === "vi" ? "Lô hàng đăng ký" : "Registered Batch"}
               </span>
-              <div className="font-bold text-gray-900 text-sm mt-0.5">{batchCode}</div>
+              <div className="font-bold text-foreground text-sm mt-0.5">{batchCode}</div>
               {productName && <div className="text-xs text-emerald-700 font-medium">{productName}</div>}
             </div>
             <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-xs">
@@ -158,7 +158,7 @@ export function BatchInspectionRequestModal({
 
           {/* Event / Inspection Type Selection */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-foreground mb-1.5">
               {lang === "vi"
                 ? "Loại hình / Tiêu chuẩn Kiểm định cần yêu cầu *"
                 : "Inspection Type / Quality Standard Required *"}
@@ -167,7 +167,7 @@ export function BatchInspectionRequestModal({
               value={inspectionType}
               onChange={(e) => setInspectionType(e.target.value ? Number(e.target.value) : "")}
               required
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-white text-sm font-medium text-gray-800"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-input-background text-sm font-medium text-foreground"
             >
               <option value="">
                 {lang === "vi" ? "-- Chọn loại hình kiểm định --" : "-- Select inspection type --"}
@@ -182,7 +182,7 @@ export function BatchInspectionRequestModal({
 
           {/* Target Organization Selection */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-foreground mb-1.5">
               {lang === "vi"
                 ? "Đơn vị Kiểm định QA/QC (Inspection) *"
                 : "QA/QC Inspection Organization *"}
@@ -195,7 +195,7 @@ export function BatchInspectionRequestModal({
                 value={targetOrganizationId}
                 onChange={(e) => setTargetOrganizationId(e.target.value)}
                 required
-                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-white text-sm font-medium text-gray-800"
+                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 bg-input-background text-sm font-medium text-foreground"
               >
                 <option value="">
                   {isLoadingOrgs ? (lang === "vi" ? "-- Đang tải --" : "-- Loading --") : (lang === "vi" ? "-- Chọn tổ chức kiểm định --" : "-- Select inspection organization --")}
@@ -212,7 +212,7 @@ export function BatchInspectionRequestModal({
           {/* Facility Location */}
           <div>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-1.5">
-              <label className="text-sm font-semibold text-gray-700">
+              <label className="text-sm font-semibold text-foreground">
                 {lang === "vi"
                   ? "Địa điểm kho / Nông trại hẹn kiểm tra *"
                   : "Inspection Location / Farm Address *"}
@@ -252,13 +252,13 @@ export function BatchInspectionRequestModal({
               }
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-sm font-medium text-gray-800"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-sm font-medium text-foreground"
             />
           </div>
 
           {/* Business Justification / Notes */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-foreground mb-1.5">
               {lang === "vi"
                 ? "Nội dung / Ghi chú cho Đơn vị Kiểm định *"
                 : "Request Content / Notes for Inspection Unit *"}
@@ -273,16 +273,16 @@ export function BatchInspectionRequestModal({
               }
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-sm font-medium text-gray-800"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 text-sm font-medium text-foreground"
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-gray-100">
+          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-border">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+              className="px-4 py-2.5 text-sm font-semibold text-muted-foreground hover:bg-muted rounded-xl transition-colors"
             >
               {lang === "vi" ? "Hủy bỏ" : "Cancel"}
             </button>

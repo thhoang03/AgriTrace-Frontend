@@ -157,10 +157,10 @@ export function BatchManagementPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: "#E8F5E9" }}>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-primary/10">
           <Package className="w-5 h-5 animate-pulse" style={{ color: "#2E7D32" }} />
         </div>
-        <div className="text-sm text-gray-500">{lang === "vi" ? "Đang tải dữ liệu lô hàng..." : "Loading batches..."}</div>
+        <div className="text-sm text-muted-foreground">{lang === "vi" ? "Đang tải dữ liệu lô hàng..." : "Loading batches..."}</div>
       </div>
     );
   }
@@ -168,7 +168,7 @@ export function BatchManagementPage() {
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
-        <div className="text-red-500 text-sm">{lang === "vi" ? "Lỗi khi tải dữ liệu. Vui lòng thử lại." : "Error loading batches. Please refresh."}</div>
+        <div className="text-destructive text-sm">{lang === "vi" ? "Lỗi khi tải dữ liệu. Vui lòng thử lại." : "Error loading batches. Please refresh."}</div>
       </div>
     );
   }
@@ -213,7 +213,7 @@ export function BatchManagementPage() {
 
       {/* Status distribution bar */}
       <div className="px-6 -mt-4 relative z-10 mb-4">
-        <div className="bg-white rounded-2xl p-3 flex flex-wrap gap-2" style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.07)" }}>
+        <div className="bg-card rounded-2xl p-3 flex flex-wrap gap-2" style={{ boxShadow: "0 2px 16px rgba(0,0,0,0.07)" }}>
           {statusCounts.filter((s) => s.count > 0).map(({ status, count }) => {
             const cfg = statusConfig[status] ?? { bg: "#F3F4F6", color: "#6B7280", label: status };
             const statusLabelMap: Record<string, string> = {
@@ -244,7 +244,7 @@ export function BatchManagementPage() {
           {statusFilter !== "All" && (
             <button
               onClick={() => { setStatusFilter("All"); setPage(1); }}
-              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 ml-auto"
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground ml-auto"
             >
               <X className="w-3 h-3" /> {lang === "vi" ? "Xóa bộ lọc" : "Clear filter"}
             </button>
@@ -254,27 +254,26 @@ export function BatchManagementPage() {
 
       <div className="px-6">
         {/* Search & Actions */}
-        <div className="bg-white rounded-2xl p-4 mb-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <div className="bg-card rounded-2xl p-4 mb-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1 min-w-56 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 placeholder={lang === "vi" ? "Tìm kiếm theo Mã Lô, sản phẩm, trang trại, nông dân..." : "Search by ID, product, farm, farmer..."}
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all"
-                style={{ background: "#F8FAF8" }}
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm outline-none transition-all bg-input-background"
               />
               {search && (
-                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-gray-600 border-gray-200 hover:bg-gray-50"}`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? "text-white" : "text-muted-foreground border-border hover:bg-muted"}`}
               style={showFilters ? { background: "#2E7D32", border: "1px solid #2E7D32" } : {}}
             >
               <SlidersHorizontal className="w-4 h-4" />
@@ -286,7 +285,7 @@ export function BatchManagementPage() {
             <div className="ml-auto flex items-center gap-2">
               <button 
                 onClick={handleExport}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
               >
                 <Download className="w-4 h-4" /> {lang === "vi" ? "Xuất dữ liệu" : "Export"}
               </button>
@@ -301,11 +300,11 @@ export function BatchManagementPage() {
           </div>
 
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-4 pt-4 border-t border-border">
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => { setStatusFilter("All"); setPage(1); }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${statusFilter === "All" ? "text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${statusFilter === "All" ? "text-white" : "bg-muted text-muted-foreground hover:bg-muted/70"}`}
                   style={statusFilter === "All" ? { background: "#2E7D32" } : {}}
                 >
                   {lang === "vi" ? "Tất cả" : "All"} ({normalizedBatches.length})
@@ -345,14 +344,14 @@ export function BatchManagementPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <span className="text-sm text-gray-500">
+        <div className="bg-card rounded-2xl overflow-hidden" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+            <span className="text-sm text-muted-foreground">
               {lang === "vi"
-                ? <>Hiển thị <span className="font-semibold text-gray-800">{paginated.length}</span> / <span className="font-semibold text-gray-800">{sorted.length}</span> lô hàng</>
-                : <>Showing <span className="font-semibold text-gray-800">{paginated.length}</span> of <span className="font-semibold text-gray-800">{sorted.length}</span> batches</>}
+                ? <>Hiển thị <span className="font-semibold text-foreground">{paginated.length}</span> / <span className="font-semibold text-foreground">{sorted.length}</span> lô hàng</>
+                : <>Showing <span className="font-semibold text-foreground">{paginated.length}</span> of <span className="font-semibold text-foreground">{sorted.length}</span> batches</>}
             </span>
-            <div className="flex items-center gap-2 text-xs text-gray-400">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
               {lang === "vi" ? "Dữ liệu trực tiếp" : "Live data"}
             </div>
@@ -360,12 +359,12 @@ export function BatchManagementPage() {
 
           {sorted.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
-              <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: "#F0F9F0" }}>
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-primary/10">
                 <Package className="w-8 h-8" style={{ color: "#A5D6A7" }} />
               </div>
               <div className="text-center">
-                <div className="font-semibold text-gray-700 mb-1">{lang === "vi" ? "Không tìm thấy lô hàng nào" : "No batches found"}</div>
-                <div className="text-sm text-gray-400">
+                <div className="font-semibold text-foreground mb-1">{lang === "vi" ? "Không tìm thấy lô hàng nào" : "No batches found"}</div>
+                <div className="text-sm text-muted-foreground">
                   {search || statusFilter !== "All"
                     ? (lang === "vi" ? "Thử điều chỉnh từ khóa tìm kiếm hoặc bộ lọc" : "Try adjusting your search or filter criteria")
                     : (lang === "vi" ? "Tạo lô hàng đầu tiên để bắt đầu" : "Create your first batch to get started")}
@@ -386,46 +385,46 @@ export function BatchManagementPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr style={{ background: "#F8FAF8" }}>
+                    <tr className="bg-muted">
                       <th
-                        className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
+                        className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("product")}
                       >
                         <div className="flex items-center gap-1.5">{lang === "vi" ? "Sản Phẩm" : "Product"} <SortIcon field="product" /></div>
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                         {lang === "vi" ? "Mã Lô Hàng" : "Batch Code"}
                       </th>
                       <th
-                        className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
+                        className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("harvestDate")}
                       >
                         <div className="flex items-center gap-1.5">{lang === "vi" ? "Ngày Thu Hoạch" : "Harvest Date"} <SortIcon field="harvestDate" /></div>
                       </th>
                       <th
-                        className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
+                        className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("quantity")}
                       >
                         <div className="flex items-center gap-1.5">{lang === "vi" ? "Sản Lượng" : "Quantity"} <SortIcon field="quantity" /></div>
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                         {lang === "vi" ? "Số Lượng Còn" : "Remaining Qty"}
                       </th>
                       <th
-                        className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
+                        className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("status")}
                       >
                         <div className="flex items-center gap-1.5">{lang === "vi" ? "Trạng Thái" : "Status"} <SortIcon field="status" /></div>
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                         {lang === "vi" ? "Tình Trạng" : "State"}
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                         {lang === "vi" ? "Thao Tác" : "Actions"}
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-border">
                     {paginated.map((batch) => {
                       const cfg = statusConfig[batch.status] ?? { bg: "#F3F4F6", color: "#6B7280", label: batch.status };
                       const statusLabelMap: Record<string, string> = {
@@ -446,18 +445,18 @@ export function BatchManagementPage() {
                         >
                           <td className="px-4 py-3.5">
                             <div>
-                              <div className="text-sm font-semibold text-gray-900">{batch.productName ?? batch.product}</div>
-                              <div className="text-xs text-gray-400">{batch.category}</div>
+                              <div className="text-sm font-semibold text-foreground">{batch.productName ?? batch.product}</div>
+                              <div className="text-xs text-muted-foreground">{batch.category}</div>
                             </div>
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="flex items-center gap-2">
-                              <code className="text-xs font-mono font-semibold px-2 py-1 rounded-lg" style={{ background: "#E8F5E9", color: "#2E7D32" }}>
+                              <code className="text-xs font-mono font-semibold px-2 py-1 rounded-lg bg-primary/10" style={{ color: "#2E7D32" }}>
                                 {batch.batchCode ?? batch.id}
                               </code>
                               <button
                                 onClick={(e) => { e.stopPropagation(); setShowQRBatch(batch); }}
-                                className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
                                 title="View QR Code"
                               >
                                 <QrCode className="w-3.5 h-3.5" />
@@ -465,11 +464,11 @@ export function BatchManagementPage() {
                             </div>
                           </td>
                           <td className="px-4 py-3.5">
-                            <div className="text-sm text-gray-700">{batch.harvestDate}</div>
-                            <div className="text-xs text-gray-400">{batch.location}</div>
+                            <div className="text-sm text-foreground">{batch.harvestDate}</div>
+                            <div className="text-xs text-muted-foreground">{batch.location}</div>
                           </td>
                           <td className="px-4 py-3.5">
-                            <div className="text-sm font-semibold text-gray-900">{batch.quantity.toLocaleString()}</div>
+                            <div className="text-sm font-semibold text-foreground">{batch.quantity.toLocaleString()}</div>
                           </td>
                           <td className="px-4 py-3.5">
                             <div className="text-sm font-bold text-green-700">
@@ -493,7 +492,7 @@ export function BatchManagementPage() {
                             <div className="flex items-center gap-1 relative">
                               <button
                                 onClick={() => navigate(`/app/batches/${batch.id}`)}
-                                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-green-600 transition-colors"
+                                className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-green-600 transition-colors"
                                 title="View details"
                               >
                                 <Eye className="w-4 h-4" />
@@ -505,27 +504,27 @@ export function BatchManagementPage() {
                                     e.stopPropagation();
                                     setOpenMenuId(openMenuId === batch.id ? null : batch.id);
                                   }}
-                                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+                                  className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground transition-colors"
                                 >
                                   <MoreVertical className="w-4 h-4" />
                                 </button>
                                 {openMenuId === batch.id && (
                                   <>
                                     <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 z-50 py-1" onClick={(e) => e.stopPropagation()}>
+                                    <div className="absolute right-0 mt-2 w-48 bg-card rounded-xl shadow-lg border border-border z-50 py-1" onClick={(e) => e.stopPropagation()}>
                                       <button
                                         onClick={() => { setSplitTarget(batch); setOpenMenuId(null); }}
-                                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                        className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center gap-2"
                                       >
                                         <Scissors className="w-4 h-4 text-blue-500" /> Split Batch
                                       </button>
                                       <button
                                         onClick={() => { setMergeTarget(batch); setOpenMenuId(null); }}
-                                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                        className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center gap-2"
                                       >
                                         <Merge className="w-4 h-4 text-purple-500" /> Merge Batches
                                       </button>
-                                      <div className="border-t border-gray-100 my-1"></div>
+                                      <div className="border-t border-border my-1"></div>
                                       <button
                                         onClick={() => {
                                           setDeleteTarget({
@@ -557,17 +556,17 @@ export function BatchManagementPage() {
               </div>
 
               {/* Pagination */}
-              <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
-                <span className="text-sm text-gray-400">
+              <div className="flex items-center justify-between px-6 py-4 border-t border-border">
+                <span className="text-sm text-muted-foreground">
                   Page {page} of {totalPages || 1} · {sorted.length} results
                 </span>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}
-                    className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    <ChevronLeft className="w-4 h-4 text-gray-600" />
+                    <ChevronLeft className="w-4 h-4 text-muted-foreground" />
                   </button>
                   {Array.from({ length: Math.min(totalPages || 1, 7) }, (_, i) => {
                     const pageNum = i + 1;
@@ -585,9 +584,9 @@ export function BatchManagementPage() {
                   <button
                     onClick={() => setPage(Math.min(totalPages || 1, page + 1))}
                     disabled={page === (totalPages || 1)}
-                    className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                   >
-                    <ChevronRight className="w-4 h-4 text-gray-600" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
                   </button>
                 </div>
               </div>
@@ -599,20 +598,20 @@ export function BatchManagementPage() {
       {/* QR Modal */}
       {showQRBatch && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowQRBatch(null)}>
-          <div className="bg-white rounded-2xl p-8 max-w-xs w-full mx-4" onClick={(e) => e.stopPropagation()} style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+          <div className="bg-card rounded-2xl p-8 max-w-xs w-full mx-4" onClick={(e) => e.stopPropagation()} style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">QR Code</h3>
-              <button onClick={() => setShowQRBatch(null)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"><X className="w-4 h-4" /></button>
+              <h3 className="font-semibold text-foreground">QR Code</h3>
+              <button onClick={() => setShowQRBatch(null)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
             </div>
             <div className="flex flex-col items-center gap-4">
-              <div className="w-48 h-48 rounded-2xl overflow-hidden flex items-center justify-center p-2" style={{ background: "#F8FAF8", border: "2px dashed #E0E0E0" }}>
+              <div className="w-48 h-48 rounded-2xl overflow-hidden flex items-center justify-center p-2 bg-white" style={{ border: "2px dashed #E0E0E0" }}>
                 <img
                   src={showQRBatch.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(window.location.origin + "/trace/" + (showQRBatch.batchCode ?? showQRBatch.id))}`}
                   alt="QR Code"
                   className="w-full h-full object-contain"
                 />
               </div>
-              <code className="text-sm font-mono font-semibold px-3 py-1.5 rounded-lg" style={{ background: "#E8F5E9", color: "#2E7D32" }}>
+              <code className="text-sm font-mono font-semibold px-3 py-1.5 rounded-lg bg-primary/10" style={{ color: "#2E7D32" }}>
                 {showQRBatch.batchCode ?? showQRBatch.id}
               </code>
               <div className="flex gap-2 w-full">
@@ -634,7 +633,7 @@ export function BatchManagementPage() {
                       window.open(qrUrl, "_blank");
                     }
                   }}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-border text-foreground hover:bg-muted flex items-center justify-center gap-1.5"
                 >
                   <Download className="w-3.5 h-3.5" /> Download
                 </button>

@@ -129,16 +129,16 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
   
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-        <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl relative">
-          <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
-              {isEdit 
-                ? (lang === "vi" ? "Chỉnh sửa sản phẩm" : "Edit Product") 
+        <div className="bg-card rounded-2xl max-w-lg w-full p-6 shadow-xl relative">
+          <div className="flex items-center justify-between pb-4 border-b border-border mb-6">
+            <h2 className="text-xl font-bold text-foreground">
+              {isEdit
+                ? (lang === "vi" ? "Chỉnh sửa sản phẩm" : "Edit Product")
                 : (lang === "vi" ? "Thêm sản phẩm mới" : "Create New Product")}
             </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors"
+            className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -152,7 +152,7 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-foreground mb-1.5">
               Product Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -160,14 +160,14 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g. Organic Jasmine Rice"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100"
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm outline-none transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100 bg-input-background"
             />
-            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
+            {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-sm font-semibold text-gray-700">
+              <label className="block text-sm font-semibold text-foreground">
                 GTIN (GS1 Standard)
               </label>
               <button
@@ -192,18 +192,18 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
               value={formData.gtin}
               onChange={(e) => setFormData({ ...formData, gtin: e.target.value.replace(/\D/g, '').slice(0, 14) })}
               placeholder="e.g. 8934567890123 (Leave blank for auto-generation)"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100 font-mono"
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm outline-none transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100 font-mono bg-input-background"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-foreground mb-1.5">
               Category
             </label>
             <select
               value={formData.categoryId}
               onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100"
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100"
             >
               <option value="">-- Select Category --</option>
               {categories.map((cat: any) => {
@@ -218,13 +218,13 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            <label className="block text-sm font-semibold text-foreground mb-1.5">
               Unit of Measurement <span className="text-red-500">*</span>
             </label>
             <select
               value={formData.unit}
               onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100"
+              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100"
             >
               <option value="40000000-0000-0000-0000-000000000001">kg (Kilogram)</option>
               <option value="40000000-0000-0000-0000-000000000008">ton (Metric Ton)</option>
@@ -233,14 +233,14 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
               <option value="40000000-0000-0000-0000-000000000007">bag / pack (Piece)</option>
               <option value="40000000-0000-0000-0000-000000000003">liter (Liter)</option>
             </select>
-            {errors.unit && <p className="text-xs text-red-500 mt-1">{errors.unit}</p>}
+            {errors.unit && <p className="text-xs text-destructive mt-1">{errors.unit}</p>}
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 mt-6">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border mt-6">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+              className="px-5 py-2.5 rounded-xl border border-border text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors"
             >
               Cancel
             </button>

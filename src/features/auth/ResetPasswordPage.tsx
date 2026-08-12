@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, KeyRound, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Leaf } from "lucide-react";
 import { authApi } from "./auth.api";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const BG_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1200&q=80";
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
+  const { lang } = useLanguage();
   const [form, setForm] = useState({ token: "", newPassword: "", confirmPassword: "" });
   const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -19,11 +21,11 @@ export function ResetPasswordPage() {
     setError("");
 
     if (form.newPassword !== form.confirmPassword) {
-      setError("Passwords do not match.");
+      setError(lang === "vi" ? "Mật khẩu không khớp." : "Passwords do not match.");
       return;
     }
     if (form.newPassword.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setError(lang === "vi" ? "Mật khẩu phải có ít nhất 8 ký tự." : "Password must be at least 8 characters.");
       return;
     }
 
@@ -34,7 +36,9 @@ export function ResetPasswordPage() {
       setTimeout(() => navigate("/login"), 3000);
     } catch (err: any) {
       setError(
-        err?.response?.data?.message || err?.message || "An error occurred. Please try again."
+        err?.response?.data?.message ||
+          err?.message ||
+          (lang === "vi" ? "Đã xảy ra lỗi. Vui lòng thử lại." : "An error occurred. Please try again.")
       );
     } finally {
       setLoading(false);
@@ -59,11 +63,22 @@ export function ResetPasswordPage() {
           </div>
           <div className="flex-1 flex flex-col items-start justify-center max-w-md">
             <h1 className="text-white mb-4 text-4xl font-extrabold leading-tight">
-              Create New<br />
-              <span className="text-green-300">Password</span>
+              {lang === "vi" ? (
+                <>
+                  Tạo Mật Khẩu<br />
+                  <span className="text-green-300">Mới</span>
+                </>
+              ) : (
+                <>
+                  Create New<br />
+                  <span className="text-green-300">Password</span>
+                </>
+              )}
             </h1>
             <p className="text-green-100 leading-relaxed text-sm">
-              Enter the reset code from your email and set a new secure password for your account.
+              {lang === "vi"
+                ? "Nhập mã đặt lại từ email của bạn và thiết lập mật khẩu mới an toàn cho tài khoản."
+                : "Enter the reset code from your email and set a new secure password for your account."}
             </p>
           </div>
           <div className="text-green-300 text-xs font-semibold">
@@ -78,37 +93,39 @@ export function ResetPasswordPage() {
           onClick={() => navigate("/login")}
           className="flex items-center gap-2 text-gray-500 hover:text-green-800 text-xs font-semibold mb-6 transition-colors self-start"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Login
+          <ArrowLeft className="w-4 h-4" /> {lang === "vi" ? "Quay lại Đăng nhập" : "Back to Login"}
         </button>
 
         <div className="mb-6">
-          <h2 className="text-gray-900 text-2xl font-extrabold">Reset Password</h2>
+          <h2 className="text-gray-900 text-2xl font-extrabold">{lang === "vi" ? "Đặt Lại Mật Khẩu" : "Reset Password"}</h2>
           <p className="text-gray-500 text-xs mt-1">
-            Enter the code you received via email and your new password
+            {lang === "vi" ? "Nhập mã bạn đã nhận qua email và mật khẩu mới của bạn" : "Enter the code you received via email and your new password"}
           </p>
         </div>
 
         {success ? (
           <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center space-y-3">
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto" />
-            <h3 className="font-bold text-green-800">Password Reset Successful!</h3>
+            <h3 className="font-bold text-green-800">{lang === "vi" ? "Đặt Lại Mật Khẩu Thành Công!" : "Password Reset Successful!"}</h3>
             <p className="text-sm text-gray-600">
-              Your password has been updated. You can now sign in with your new password.
+              {lang === "vi"
+                ? "Mật khẩu của bạn đã được cập nhật. Bạn có thể đăng nhập ngay bằng mật khẩu mới."
+                : "Your password has been updated. You can now sign in with your new password."}
             </p>
-            <p className="text-xs text-gray-400 italic">Redirecting to login in 3 seconds...</p>
+            <p className="text-xs text-gray-400 italic">{lang === "vi" ? "Đang chuyển hướng đến trang đăng nhập sau 3 giây..." : "Redirecting to login in 3 seconds..."}</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Reset Code */}
             <div>
-              <label className="text-xs font-semibold text-gray-700 mb-1 block">Reset Code</label>
+              <label className="text-xs font-semibold text-gray-700 mb-1 block">{lang === "vi" ? "Mã Đặt Lại" : "Reset Code"}</label>
               <div className="relative">
                 <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
                   value={form.token}
                   onChange={(e) => setForm({ ...form, token: e.target.value })}
-                  placeholder="Enter the code from your email"
+                  placeholder={lang === "vi" ? "Nhập mã từ email của bạn" : "Enter the code from your email"}
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-600 bg-gray-50/50 tracking-widest"
                   required
                 />
@@ -117,14 +134,14 @@ export function ResetPasswordPage() {
 
             {/* New Password */}
             <div>
-              <label className="text-xs font-semibold text-gray-700 mb-1 block">New Password</label>
+              <label className="text-xs font-semibold text-gray-700 mb-1 block">{lang === "vi" ? "Mật Khẩu Mới" : "New Password"}</label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type={showPass ? "text" : "password"}
                   value={form.newPassword}
                   onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
-                  placeholder="Min. 8 characters"
+                  placeholder={lang === "vi" ? "Tối thiểu 8 ký tự" : "Min. 8 characters"}
                   className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-600 bg-gray-50/50"
                   required
                 />
@@ -140,14 +157,14 @@ export function ResetPasswordPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="text-xs font-semibold text-gray-700 mb-1 block">Confirm Password</label>
+              <label className="text-xs font-semibold text-gray-700 mb-1 block">{lang === "vi" ? "Xác Nhận Mật Khẩu" : "Confirm Password"}</label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type={showConfirm ? "text" : "password"}
                   value={form.confirmPassword}
                   onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-                  placeholder="Re-enter new password"
+                  placeholder={lang === "vi" ? "Nhập lại mật khẩu mới" : "Re-enter new password"}
                   className="w-full pl-10 pr-10 py-3 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-600 bg-gray-50/50"
                   required
                 />
@@ -177,10 +194,10 @@ export function ResetPasswordPage() {
               {loading ? (
                 <>
                   <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  <span>Resetting...</span>
+                  <span>{lang === "vi" ? "Đang đặt lại..." : "Resetting..."}</span>
                 </>
               ) : (
-                <span>Reset Password</span>
+                <span>{lang === "vi" ? "Đặt Lại Mật Khẩu" : "Reset Password"}</span>
               )}
             </button>
           </form>

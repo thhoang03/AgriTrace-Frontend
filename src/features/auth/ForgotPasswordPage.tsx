@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Mail, CheckCircle, AlertCircle, Leaf } from "lucide-react";
 import { authApi } from "./auth.api";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const BG_IMG = "https://images.unsplash.com/photo-1777058019293-73d54d4c4cae?w=1200&q=80";
 
 export function ForgotPasswordPage() {
   const navigate = useNavigate();
+  const { lang } = useLanguage();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -22,7 +24,9 @@ export function ForgotPasswordPage() {
       setTimeout(() => navigate("/reset-password"), 2000);
     } catch (err: any) {
       setError(
-        err?.response?.data?.message || err?.message || "An error occurred. Please try again."
+        err?.response?.data?.message ||
+          err?.message ||
+          (lang === "vi" ? "Đã xảy ra lỗi. Vui lòng thử lại." : "An error occurred. Please try again.")
       );
     } finally {
       setLoading(false);
@@ -47,11 +51,22 @@ export function ForgotPasswordPage() {
           </div>
           <div className="flex-1 flex flex-col items-start justify-center max-w-md">
             <h1 className="text-white mb-4 text-4xl font-extrabold leading-tight">
-              Reset Your<br />
-              <span className="text-green-300">Password</span>
+              {lang === "vi" ? (
+                <>
+                  Đặt Lại<br />
+                  <span className="text-green-300">Mật Khẩu</span>
+                </>
+              ) : (
+                <>
+                  Reset Your<br />
+                  <span className="text-green-300">Password</span>
+                </>
+              )}
             </h1>
             <p className="text-green-100 leading-relaxed text-sm">
-              Enter your registered email and we'll send you a link to reset your password securely.
+              {lang === "vi"
+                ? "Nhập email đã đăng ký và chúng tôi sẽ gửi cho bạn liên kết để đặt lại mật khẩu một cách an toàn."
+                : "Enter your registered email and we'll send you a link to reset your password securely."}
             </p>
           </div>
           <div className="text-green-300 text-xs font-semibold">
@@ -66,29 +81,33 @@ export function ForgotPasswordPage() {
           onClick={() => navigate("/login")}
           className="flex items-center gap-2 text-gray-500 hover:text-green-800 text-xs font-semibold mb-6 transition-colors self-start"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Login
+          <ArrowLeft className="w-4 h-4" /> {lang === "vi" ? "Quay lại Đăng nhập" : "Back to Login"}
         </button>
 
         <div className="mb-6">
-          <h2 className="text-gray-900 text-2xl font-extrabold">Forgot Password</h2>
+          <h2 className="text-gray-900 text-2xl font-extrabold">{lang === "vi" ? "Quên Mật Khẩu" : "Forgot Password"}</h2>
           <p className="text-gray-500 text-xs mt-1">
-            We'll send a reset link to your email address
+            {lang === "vi" ? "Chúng tôi sẽ gửi liên kết đặt lại mật khẩu đến email của bạn" : "We'll send a reset link to your email address"}
           </p>
         </div>
 
         {success ? (
           <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center space-y-3">
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto" />
-            <h3 className="font-bold text-green-800">Check Your Email</h3>
+            <h3 className="font-bold text-green-800">{lang === "vi" ? "Kiểm Tra Email Của Bạn" : "Check Your Email"}</h3>
             <p className="text-sm text-gray-600">
-              We've sent a reset link to <strong>{email}</strong>. Please check your inbox.
+              {lang === "vi" ? (
+                <>Chúng tôi đã gửi liên kết đặt lại mật khẩu đến <strong>{email}</strong>. Vui lòng kiểm tra hộp thư của bạn.</>
+              ) : (
+                <>We've sent a reset link to <strong>{email}</strong>. Please check your inbox.</>
+              )}
             </p>
-            <p className="text-xs text-gray-400 italic">Redirecting to login in 3 seconds...</p>
+            <p className="text-xs text-gray-400 italic">{lang === "vi" ? "Đang chuyển hướng đến trang đăng nhập sau 3 giây..." : "Redirecting to login in 3 seconds..."}</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-xs font-semibold text-gray-700 mb-1 block">Email Address</label>
+              <label className="text-xs font-semibold text-gray-700 mb-1 block">{lang === "vi" ? "Địa Chỉ Email" : "Email Address"}</label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -118,10 +137,10 @@ export function ForgotPasswordPage() {
               {loading ? (
                 <>
                   <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  <span>Sending...</span>
+                  <span>{lang === "vi" ? "Đang gửi..." : "Sending..."}</span>
                 </>
               ) : (
-                <span>Send Reset Link</span>
+                <span>{lang === "vi" ? "Gửi Liên Kết Đặt Lại" : "Send Reset Link"}</span>
               )}
             </button>
           </form>

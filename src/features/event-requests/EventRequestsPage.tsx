@@ -166,13 +166,13 @@ export function EventRequestsPage() {
       </div>
 
       {/* Control Bar & Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card p-4 rounded-2xl shadow-sm border border-border">
+        <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
           {user?.role !== "ADMIN" && (
             <button
               onClick={() => setActiveTab("mine")}
               className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                activeTab === "mine" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                activeTab === "mine" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {lang === "vi" ? "Yêu Cầu Của Tôi" : "My Requests"}
@@ -182,7 +182,7 @@ export function EventRequestsPage() {
             <button
               onClick={() => setActiveTab("pending")}
               className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                activeTab === "pending" ? "bg-white text-emerald-800 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                activeTab === "pending" ? "bg-card text-emerald-800 shadow-sm" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {lang === "vi" ? "Chờ Xét Duyệt" : "Pending Approvals"}
@@ -194,7 +194,7 @@ export function EventRequestsPage() {
           <button
             onClick={() => setActiveTab("all")}
             className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-              activeTab === "all" ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+              activeTab === "all" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {lang === "vi" ? "Tất Cả Yêu Cầu" : "All Requests"}
@@ -202,42 +202,42 @@ export function EventRequestsPage() {
         </div>
 
         <div className="relative min-w-[240px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder={lang === "vi" ? "Tìm theo mã lô, vị trí..." : "Search by batch code, location..."}
             value={searchBatch}
             onChange={(e) => setSearchBatch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-gray-50/50"
+            className="w-full pl-9 pr-4 py-2 rounded-xl text-xs border border-border focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-input-background"
           />
         </div>
       </div>
 
       {/* Requests List Grid */}
       {isLoading ? (
-        <div className="text-center py-12 text-gray-500 text-sm">{lang === "vi" ? "Đang tải yêu cầu..." : "Loading event requests..."}</div>
+        <div className="text-center py-12 text-muted-foreground text-sm">{lang === "vi" ? "Đang tải yêu cầu..." : "Loading event requests..."}</div>
       ) : filteredRequests.length === 0 ? (
-        <div className="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm">
+        <div className="bg-card rounded-2xl p-12 text-center border border-border shadow-sm">
           <Clock className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-gray-800 text-base">{lang === "vi" ? "Không Tìm Thấy Yêu Cầu Sự Kiện" : "No Event Requests Found"}</h3>
-          <p className="text-gray-500 text-xs mt-1 max-w-md mx-auto">
+          <h3 className="font-semibold text-foreground text-base">{lang === "vi" ? "Không Tìm Thấy Yêu Cầu Sự Kiện" : "No Event Requests Found"}</h3>
+          <p className="text-muted-foreground text-xs mt-1 max-w-md mx-auto">
             {lang === "vi" ? "Không có yêu cầu sự kiện nào khớp với bộ lọc của bạn. Nhấp vào \"+ Yêu Cầu Mới\" để gửi yêu cầu đầu tiên của bạn." : "No event requests match your current filter. Click \"+ New Request\" to submit your first request."}
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredRequests.map((item) => (
-            <div key={item.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-5 flex flex-col justify-between space-y-4">
+            <div key={item.id} className="bg-card rounded-2xl border border-border shadow-sm hover:shadow-md transition-all p-5 flex flex-col justify-between space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold text-gray-700 bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg border border-emerald-100">
+                  <span className="text-xs font-semibold text-foreground bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-lg border border-emerald-100">
                     {item.organizationName || "Organization"}
                   </span>
                   {getStatusBadge(item.status)}
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <span className="px-2 py-0.5 rounded bg-green-50 text-green-700 text-xs font-mono">
                       {item.eventTypeCode || "EVENT"}
                     </span>
@@ -245,26 +245,26 @@ export function EventRequestsPage() {
                   </div>
 
                   {item.location && (
-                    <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                      <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <MapPin className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                       <span className="truncate">{item.location}</span>
                     </div>
                   )}
 
                   {item.description && (
-                    <p className="text-xs text-gray-500 bg-gray-50 p-2.5 rounded-xl line-clamp-2 italic">
+                    <p className="text-xs text-muted-foreground bg-muted p-2.5 rounded-xl line-clamp-2 italic">
                       "{item.description}"
                     </p>
                   )}
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-gray-100 text-[11px] text-gray-500 space-y-1">
+                <div className="mt-4 pt-3 border-t border-border text-[11px] text-muted-foreground space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1"><User className="w-3 h-3" /> {item.requestedByUserName || "User"}</span>
                     <span>{new Date(item.createdAt).toLocaleDateString("en-US")}</span>
                   </div>
                   {item.organizationName && (
-                    <div className="flex items-center gap-1 text-gray-400">
+                    <div className="flex items-center gap-1 text-muted-foreground">
                       <Building2 className="w-3 h-3" /> {item.organizationName}
                     </div>
                   )}
@@ -303,27 +303,27 @@ export function EventRequestsPage() {
       {/* Modal Create Request */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+          <div className="bg-card rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
-                <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                <h3 className="font-bold text-foreground text-lg flex items-center gap-2">
                   <Plus className="w-5 h-5 text-green-600" /> {lang === "vi" ? "Yêu Cầu Mở Rộng Loại Sự Kiện" : "Request Event Type Expansion"}
                 </h3>
-                <p className="text-xs text-gray-500 mt-0.5">{lang === "vi" ? "Gửi yêu cầu để cấp quyền cho tổ chức của bạn đối với một loại sự kiện mới" : "Submit a request to grant your organization authorization for a new event type"}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{lang === "vi" ? "Gửi yêu cầu để cấp quyền cho tổ chức của bạn đối với một loại sự kiện mới" : "Submit a request to grant your organization authorization for a new event type"}</p>
               </div>
-              <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowCreateModal(false)} className="text-muted-foreground hover:text-muted-foreground">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">{lang === "vi" ? "Loại Sự Kiện Muốn Mở Rộng *" : "Requested Event Type to Expand *"}</label>
+                <label className="block text-xs font-semibold text-foreground mb-1">{lang === "vi" ? "Loại Sự Kiện Muốn Mở Rộng *" : "Requested Event Type to Expand *"}</label>
                 <select
                   value={form.eventTypeId}
                   onChange={(e) => setForm({ ...form, eventTypeId: e.target.value })}
                   required
-                  className="w-full px-3.5 py-2.5 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-gray-50 font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-xl text-xs border border-border focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 bg-input-background font-medium"
                 >
                   <option value="">{lang === "vi" ? "-- Chọn loại sự kiện để mở rộng --" : "-- Select event type to expand --"}</option>
                   {eventTypes
@@ -338,7 +338,7 @@ export function EventRequestsPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-gray-700">{lang === "vi" ? "Vị Trí Cơ Sở / Chi Nhánh (Tùy chọn)" : "Facility / Branch Location (Optional)"}</label>
+                  <label className="text-xs font-semibold text-foreground">{lang === "vi" ? "Vị Trí Cơ Sở / Chi Nhánh (Tùy chọn)" : "Facility / Branch Location (Optional)"}</label>
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
@@ -365,19 +365,19 @@ export function EventRequestsPage() {
                   placeholder={lang === "vi" ? "VD: Trung Tâm Vận Chuyển - Chi nhánh A, Đà Lạt hoặc chọn trên bản đồ..." : "e.g. Logistics Center - Branch A, Da Lat or select on map..."}
                   value={form.location}
                   onChange={(e) => setForm({ ...form, location: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                  className="w-full px-3 py-2 rounded-xl text-xs border border-border focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">{lang === "vi" ? "Lý Do Mở Rộng / Ghi Chú *" : "Business Justification / Expansion Notes *"}</label>
+                <label className="block text-xs font-semibold text-foreground mb-1">{lang === "vi" ? "Lý Do Mở Rộng / Ghi Chú *" : "Business Justification / Expansion Notes *"}</label>
                 <textarea
                   rows={3}
                   required
                   placeholder={lang === "vi" ? "Mô tả lý do mở rộng tổ chức của bạn (VD: Đã thêm giấy phép đội xe cho dịch vụ vận chuyển)..." : "Describe your organization expansion reason (e.g. Added new fleet license for transport services)..."}
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                  className="w-full px-3 py-2 rounded-xl text-xs border border-border focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
                 />
               </div>
 
@@ -385,7 +385,7 @@ export function EventRequestsPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
+                  className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted rounded-xl"
                 >
                   {lang === "vi" ? "Hủy" : "Cancel"}
                 </button>
@@ -405,19 +405,19 @@ export function EventRequestsPage() {
       {/* Modal Reject Request */}
       {rejectingItem && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <h3 className="font-bold text-gray-900 text-base flex items-center gap-2 text-rose-600">
+          <div className="bg-card rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <h3 className="font-bold text-foreground text-base flex items-center gap-2 text-rose-600">
                 <ShieldAlert className="w-5 h-5" /> {lang === "vi" ? "Từ Chối Yêu Cầu Sự Kiện" : "Reject Event Request"}
               </h3>
-              <button onClick={() => setRejectingItem(null)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setRejectingItem(null)} className="text-muted-foreground hover:text-muted-foreground">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleRejectSubmit} className="space-y-4">
-              <p className="text-xs text-gray-600">
-                {lang === "vi" ? "Vui lòng nhập lý do từ chối yêu cầu từ" : "Please enter the reason for rejecting expansion request from"} <span className="font-semibold text-gray-800">{rejectingItem.organizationName || rejectingItem.requestedByUserName || (lang === "vi" ? "tổ chức này" : "this organization")}</span>:
+              <p className="text-xs text-muted-foreground">
+                {lang === "vi" ? "Vui lòng nhập lý do từ chối yêu cầu từ" : "Please enter the reason for rejecting expansion request from"} <span className="font-semibold text-foreground">{rejectingItem.organizationName || rejectingItem.requestedByUserName || (lang === "vi" ? "tổ chức này" : "this organization")}</span>:
               </p>
               <textarea
                 rows={3}
@@ -425,14 +425,14 @@ export function EventRequestsPage() {
                 placeholder={lang === "vi" ? "VD: Thiếu tài liệu vận chuyển, định dạng vị trí không hợp lệ..." : "e.g. Missing transport documents, invalid location format..."}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl text-xs border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                className="w-full px-3 py-2 rounded-xl text-xs border border-border focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
               />
 
               <div className="pt-2 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setRejectingItem(null)}
-                  className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl"
+                  className="px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-muted rounded-xl"
                 >
                   {lang === "vi" ? "Hủy" : "Cancel"}
                 </button>

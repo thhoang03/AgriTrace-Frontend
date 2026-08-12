@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Leaf, Eye, EyeOff, Shield, Lock, User, ArrowLeft } from "lucide-react";
 import { useAuth } from "./auth.store";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { toast } from "sonner";
 
 const BG_IMG =
@@ -15,7 +16,7 @@ export function LoginPage() {
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [lang, setLang] = useState("en");
+  const { lang, setLang } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,7 +121,7 @@ export function LoginPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-gray-900 text-2xl font-extrabold">
-              {lang === "vi" ? "Đăng Nhập Hàng" : "Welcome Back"}
+              {lang === "vi" ? "Chào Mừng Trở Lại" : "Welcome Back"}
             </h2>
             <p className="text-gray-500 text-xs mt-1">
               {lang === "vi"
@@ -131,7 +132,7 @@ export function LoginPage() {
 
           <select
             value={lang}
-            onChange={(e) => setLang(e.target.value)}
+            onChange={(e) => setLang(e.target.value as "vi" | "en")}
             className="text-xs font-semibold border border-gray-200 rounded-xl px-2.5 py-1.5 outline-none bg-white cursor-pointer"
           >
             <option value="en">🇬🇧 EN</option>
@@ -208,7 +209,7 @@ export function LoginPage() {
                 </span>
               </>
             ) : (
-              <span>{lang === "vi" ? "Đăng Nhập Hàng" : "Sign In"}</span>
+              <span>{lang === "vi" ? "Đăng Nhập" : "Sign In"}</span>
             )}
           </button>
         </form>
@@ -225,14 +226,16 @@ export function LoginPage() {
 
         <div className="mt-4 p-4 rounded-xl border border-green-200 bg-green-50/60 text-center space-y-2">
           <p className="text-xs text-gray-600">
-            Don't have an account or want to register a new Organization?
+            {lang === "vi"
+              ? "Chưa có tài khoản hoặc muốn đăng ký một Tổ chức mới?"
+              : "Don't have an account or want to register a new Organization?"}
           </p>
           <button
             type="button"
             onClick={() => navigate("/register")}
             className="w-full py-2.5 rounded-lg border border-green-700 text-green-800 font-semibold text-xs bg-white hover:bg-green-700 hover:text-white transition-all shadow-sm flex items-center justify-center gap-1.5"
           >
-            🌱 Register Account / New Organization
+            🌱 {lang === "vi" ? "Đăng Ký Tài Khoản / Tổ Chức Mới" : "Register Account / New Organization"}
           </button>
         </div>
 

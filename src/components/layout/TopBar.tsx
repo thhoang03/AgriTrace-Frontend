@@ -1,8 +1,19 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { Search, Bell, ChevronDown, Menu, X, Settings, LogOut, User, Home, Globe } from "lucide-react";
+import { Search, Bell, ChevronDown, Menu, X, LogOut, User, Home, Globe, AlertTriangle, FlaskConical, Package, ShieldAlert, BadgeCheck, Inbox } from "lucide-react";
 import { useAuth } from "../../features/auth/auth.store";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useNotifications, useUnreadNotificationCount, useMarkNotificationRead } from "../../features/notifications/notifications.queries";
+import { formatRelativeTime, parseLocalizedText, notificationTypeRoute } from "../../features/notifications/notifications.utils";
+
+const NOTIF_ICON: Record<string, { icon: React.ElementType; className: string }> = {
+  RECALL: { icon: AlertTriangle, className: "text-destructive bg-destructive/10" },
+  INSPECTION: { icon: FlaskConical, className: "text-blue-600 bg-blue-500/10 dark:text-blue-400" },
+  BATCH: { icon: Package, className: "text-primary bg-primary/10" },
+  SYSTEM: { icon: ShieldAlert, className: "text-purple-600 bg-purple-500/10 dark:text-purple-400" },
+  CERTIFICATE: { icon: BadgeCheck, className: "text-teal-600 bg-teal-500/10 dark:text-teal-400" },
+};
+const DEFAULT_NOTIF_ICON = { icon: Bell, className: "text-muted-foreground bg-muted" };
 
 interface TopBarProps {
   onToggleSidebar?: () => void;
@@ -86,11 +97,17 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
 
   const breadcrumbs = getBreadcrumbs();
 
-  const notifications = [
-    { id: 1, text: lang === "vi" ? "Cảnh báo thu hồi: BTH-2024-006 (Sầu riêng)" : "Recall alert: BTH-2024-006 (Durian)", type: "recall", time: lang === "vi" ? "1 giờ trước" : "1h ago" },
-    { id: 2, text: lang === "vi" ? "Kiểm định đạt chuẩn: RICE-20260112-001" : "Inspection passed: RICE-20260112-001", type: "pass", time: lang === "vi" ? "2 giờ trước" : "2h ago" },
-    { id: 3, text: lang === "vi" ? "Lô hàng mới khởi tạo: BTH-2024-008" : "New batch created: BTH-2024-008", type: "info", time: lang === "vi" ? "3 giờ trước" : "3h ago" },
-  ];
+  const { data: unreadData } = useUnreadNotificationCount();
+  const { data: notifData } = useNotifications({ page: 1, pageSize: 6 });
+  const markReadMutation = useMarkNotificationRead();
+  const unreadCount = unreadData?.data?.unreadCount ?? 0;
+  const recentNotifications = notifData?.data?.items ?? [];
+
+  const handleNotifClick = (n: (typeof recentNotifications)[number]) => {
+    if (!n.isRead) markReadMutation.mutate(n.notificationId);
+    setShowNotif(false);
+    navigate(notificationTypeRoute((n as any).type));
+  };
 
   const roleDisplay = user?.role === "STAFF" && user.organizationType
     ? `${user.role} — ${user.organizationType}`
@@ -101,20 +118,21 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
   const apiUrl = `https://ui-avatars.com/api/?name=${encodedName}&background=random&color=fff&rounded=true&size=128`;
 
   return (
-    <header className="h-16 bg-white border-b border-gray-100 flex items-center px-6 gap-4 relative z-30" style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-      <button onClick={onToggleSidebar} className="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden">
-        {sidebarOpen ? <X className="w-5 h-5 text-gray-500" /> : <Menu className="w-5 h-5 text-gray-500" />}
+    <header className="h-16 bg-card border-b border-border flex items-center px-6 gap-4 relative z-30 shadow-sm transition-colors">
+      <button onClick={onToggleSidebar} className="p-2 rounded-lg hover:bg-muted transition-colors lg:hidden">
+        {sidebarOpen ? <X className="w-5 h-5 text-muted-foreground" /> : <Menu className="w-5 h-5 text-muted-foreground" />}
       </button>
 
       {/* Breadcrumbs */}
       <nav className="hidden md:flex items-center gap-2">
         {breadcrumbs.map((crumb, index) => (
           <div key={crumb.path} className="flex items-center gap-2">
-            {index > 0 && <span className="text-gray-300">/</span>}
+            {index > 0 && <span className="text-muted-foreground/50">/</span>}
             <button
               onClick={() => navigate(crumb.path)}
-              className="flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-green-600"
-              style={{ color: index === breadcrumbs.length - 1 ? "#2E7D32" : "#6B7280" }}
+              className={`flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-primary ${
+                index === breadcrumbs.length - 1 ? "text-primary" : "text-muted-foreground"
+              }`}
             >
               {crumb.icon && <crumb.icon className="w-4 h-4" />}
               {crumb.label}
@@ -125,15 +143,15 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
 
       {/* Search Input */}
       <div className="flex-1 max-w-md relative ml-auto md:ml-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
         <input
           type="text"
-          placeholder={lang === "vi" ? "Nhập Mã Lô để tra cứu... (Enter)" : "Enter Batch ID to trace... (Enter)"}
+          placeholder={lang === "vi" ? "Nhập Mã Lô để tra cứu..." : "Enter Batch ID to trace... "}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") handleSearch(); }}
-          className="w-full pl-9 pr-10 py-2 rounded-xl border border-gray-200 text-sm outline-none transition-all focus:border-green-400 focus:ring-2 focus:ring-green-100"
-          style={{ background: "#F8FAF8", fontSize: 13 }}
+          className="w-full pl-9 pr-10 py-2 rounded-xl border border-border bg-input-background text-foreground text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
+          style={{ fontSize: 13 }}
         />
         {searchQuery && (
           <button
@@ -150,10 +168,10 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
         {/* Language Switcher Button */}
         <button
           onClick={() => setLang(lang === "vi" ? "en" : "vi")}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-gray-200 hover:border-green-500 hover:bg-green-50/50 text-xs font-bold text-gray-700 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-border hover:border-primary hover:bg-primary/10 text-xs font-bold text-foreground transition-all cursor-pointer"
           title={lang === "vi" ? "Switch to English" : "Đổi sang Tiếng Việt"}
         >
-          <Globe className="w-3.5 h-3.5 text-green-700" />
+          <Globe className="w-3.5 h-3.5 text-primary" />
           <span>{lang === "vi" ? "VN Tiếng Việt" : "EN English"}</span>
         </button>
 
@@ -161,33 +179,57 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
         <div className="relative">
           <button
             onClick={() => { setShowNotif(!showNotif); setShowUser(false); }}
-            className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors"
+            className="relative p-2 rounded-xl hover:bg-muted transition-colors"
           >
-            <Bell className="w-5 h-5 text-gray-500" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />
+            <Bell className="w-5 h-5 text-muted-foreground" />
+            {unreadCount > 0 && (
+              <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center leading-none ring-2 ring-card">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
           {showNotif && (
-            <div className="absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
-              <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
-                <span className="font-semibold text-gray-800">{lang === "vi" ? "Thông báo" : "Notifications"}</span>
-                <span className="text-xs text-white px-2 py-0.5 rounded-full" style={{ background: "#E53935" }}>
-                  {lang === "vi" ? "3 mới" : "3 new"}
-                </span>
+            <div className="absolute right-0 top-12 w-80 bg-card rounded-2xl shadow-xl border border-border overflow-hidden z-50">
+              <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+                <span className="font-semibold text-foreground">{lang === "vi" ? "Thông báo" : "Notifications"}</span>
+                {unreadCount > 0 && (
+                  <span className="text-xs text-destructive-foreground bg-destructive px-2 py-0.5 rounded-full">
+                    {unreadCount} {lang === "vi" ? "mới" : "new"}
+                  </span>
+                )}
               </div>
-              {notifications.map((n) => (
-                <div key={n.id} className="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer flex gap-3">
-                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${n.type === "recall" ? "bg-red-500" : n.type === "pass" ? "bg-green-500" : "bg-blue-500"}`} />
-                  <div>
-                    <p className="text-sm text-gray-700">{n.text}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{n.time}</p>
-                  </div>
+              {recentNotifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+                  <Inbox className="w-8 h-8 mb-2 text-muted-foreground/50" />
+                  <p className="text-sm">{lang === "vi" ? "Không có thông báo" : "No notifications"}</p>
                 </div>
-              ))}
+              ) : (
+                recentNotifications.map((n: any) => {
+                  const cfg = NOTIF_ICON[(n.type ?? "").toUpperCase()] ?? DEFAULT_NOTIF_ICON;
+                  const Icon = cfg.icon;
+                  return (
+                    <button
+                      key={n.notificationId}
+                      onClick={() => handleNotifClick(n)}
+                      className={`w-full flex items-start gap-3 px-4 py-3 border-b border-border hover:bg-muted/60 cursor-pointer text-left transition-colors ${!n.isRead ? "bg-primary/5" : ""}`}
+                    >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${cfg.className}`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-foreground font-medium truncate">{parseLocalizedText(n.title, lang) || (lang === "vi" ? "Thông báo hệ thống" : "System notification")}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{parseLocalizedText(n.message, lang)}</p>
+                        <p className="text-[11px] text-muted-foreground/70 mt-0.5">{formatRelativeTime(n.createdAt, lang)}</p>
+                      </div>
+                      {!n.isRead && <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-1.5" />}
+                    </button>
+                  );
+                })
+              )}
               <div className="px-4 py-2 text-center">
                 <button
                   onClick={() => { setShowNotif(false); navigate("/app/notifications"); }}
-                  className="text-sm font-medium hover:underline transition-colors"
-                  style={{ color: "#2E7D32" }}
+                  className="text-sm font-medium text-primary hover:underline transition-colors"
                 >
                   {lang === "vi" ? "Xem tất cả thông báo" : "View all notifications"}
                 </button>
@@ -200,37 +242,31 @@ export function TopBar({ onToggleSidebar, sidebarOpen }: TopBarProps) {
         <div className="relative">
           <button
             onClick={() => { setShowUser(!showUser); setShowNotif(false); }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-muted transition-colors"
           >
             <img src={apiUrl} alt={user?.name} className="w-7 h-7 rounded-full object-cover" />
             <div className="hidden md:block text-left">
-              <div className="text-sm font-medium text-gray-800">{user?.name}</div>
-              <div className="text-xs text-gray-400">{roleDisplay}</div>
+              <div className="text-sm font-medium text-foreground">{user?.name}</div>
+              <div className="text-xs text-muted-foreground">{roleDisplay}</div>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+            <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
           {showUser && (
-            <div className="absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50">
-              <div className="px-4 py-3 border-b border-gray-100">
-                <div className="font-semibold text-gray-800">{user?.name}</div>
-                <div className="text-xs text-gray-500">{emailDisplay}</div>
+            <div className="absolute right-0 top-12 w-56 bg-card rounded-2xl shadow-xl border border-border overflow-hidden z-50">
+              <div className="px-4 py-3 border-b border-border">
+                <div className="font-semibold text-foreground">{user?.name}</div>
+                <div className="text-xs text-muted-foreground">{emailDisplay}</div>
               </div>
               <button
                 onClick={() => { navigate("/app/profile"); setShowUser(false); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/60"
               >
                 <User className="w-4 h-4" /> {lang === "vi" ? "Hồ Sơ Cá Nhân" : "My Profile"}
               </button>
-              <button
-                onClick={() => { navigate("/app/profile"); setShowUser(false); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-              >
-                <Settings className="w-4 h-4" /> {lang === "vi" ? "Cài Đặt Hệ Thống" : "Settings"}
-              </button>
-              <div className="border-t border-gray-100" />
+              <div className="border-t border-border" />
               <button
                 onClick={() => { logout(); navigate("/login"); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10"
               >
                 <LogOut className="w-4 h-4" /> {lang === "vi" ? "Đăng Xuất" : "Sign Out"}
               </button>
