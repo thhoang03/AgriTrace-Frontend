@@ -816,12 +816,12 @@ const handleResetPassword = async (user: UserItem) => {
                   <label className="text-sm font-medium text-foreground mb-1.5 block">
                     Role
                   </label>
-                  {selectedUser.role.toUpperCase() === "ADMIN" ? (
+                  {!isAdmin || selectedUser.role.toUpperCase() === "ADMIN" ? (
                     <div
                       className="w-full px-3 py-2.5 rounded-xl border border-border text-sm bg-muted text-muted-foreground cursor-not-allowed"
-                      title={lang === "vi" ? "Không thể thay đổi vai trò Admin" : "Cannot change Admin role"}
+                      title={!isAdmin ? (lang === "vi" ? "Chỉ Admin mới có quyền thay đổi vai trò" : "Only Admin can change roles") : (lang === "vi" ? "Không thể thay đổi vai trò Admin" : "Cannot change Admin role")}
                     >
-                      ADMIN
+                      {selectedUser.role.toUpperCase()}
                       <span className="ml-2 text-xs opacity-60">🔒</span>
                     </div>
                   ) : (
