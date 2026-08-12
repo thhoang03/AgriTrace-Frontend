@@ -5,6 +5,7 @@ import { useCreateProduct, useUpdateProduct } from "./products.queries";
 import { useAuth } from "../auth/auth.store";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { toast } from "sonner";
+import { translateApiError } from "../../utils/error-translator";
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -119,7 +120,8 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
         ? errData.errorMessages.join(", ")
         : null;
         const fallbackMsg = lang === "vi" ? "Lưu sản phẩm thất bại" : "Failed to save product";
-        const errMsg = errorList || errData?.detail || errData?.data || errData?.message || error?.message || fallbackMsg;
+        const rawMsg = errorList || errData?.detail || errData?.data || errData?.message || error?.message || fallbackMsg;
+        const errMsg = translateApiError(rawMsg, lang);
         setErrors({ submit: errMsg });
         toast.error(errMsg);
       }

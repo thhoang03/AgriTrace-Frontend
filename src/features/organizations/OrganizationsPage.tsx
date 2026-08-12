@@ -23,6 +23,8 @@ import { organizationsApi } from "./organizations.api";
 import { useOrganizationsList } from "./organizations.queries";
 import { useAuth } from "../../features/auth/auth.store";
 import { useOrganizationTypes } from "../../features/organizationTypes/organizationType.queries";
+import { useProductsList } from "../products/products.queries";
+import { useUsers } from "../users/users.queries";
 import type { Organization } from "./organizations.types";
 import { useLanguage } from "../../contexts/LanguageContext";
 import {
@@ -86,6 +88,7 @@ interface Alert {
 export function OrganizationsPage() {
   const { user } = useAuth();
   const { lang } = useLanguage();
+  const isAdmin = user?.role === "ADMIN";
   const isManager = user?.role === "MANAGER";
   const { data: orgTypes = [], isLoading: typesLoading } =
     useOrganizationTypes();
@@ -628,22 +631,15 @@ export function OrganizationsPage() {
                             </span>
                           </td>
                           <td className="px-5 py-4">
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="w-1.5 h-1.5 rounded-full"
-                                style={{
-                                  background: isActive ? "#4CAF50" : "#9E9E9E",
-                                }}
-                              />
-                              <span
-                                className="text-sm"
-                                style={{
-                                  color: isActive ? "#2E7D32" : "#757575",
-                                }}
-                              >
-                                {org.status}
-                              </span>
-                            </div>
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-xs font-semibold ${isActive
+                                ? "text-green-700"
+                                : "text-gray-600"
+                                }`}
+                              style={{ background: isActive ? "#E8F5E9" : "#F5F5F5" }}
+                            >
+                              {isActive ? (lang === "vi" ? "Hoạt động" : "Active") : (lang === "vi" ? "Ngưng hoạt động" : "Inactive")}
+                            </span>
                           </td>
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-1 transition-opacity">
@@ -890,149 +886,17 @@ export function OrganizationsPage() {
 
       {/* Detail Modal */}
       {detail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div
-            className="bg-card rounded-2xl max-w-md w-full overflow-hidden"
-            style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}
-          >
-            <div
-              className="p-5"
-              style={{
-                background: "linear-gradient(135deg, #1B5E20, #2E7D32)",
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ background: "rgba(255,255,255,0.15)" }}
-                  >
-                    <Building2 className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white">{detail.name}</h3>
-                    <p className="text-green-200 text-xs">
-                      ID: {detail.organizationId}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setDetail(null)}
-                  className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            <div className="p-5 space-y-4">
-              {[
-                { label: "Type", value: detail.type },
-                { label: "Address", value: detail.address },
-                { label: "Status", value: detail.status },
-              ].map(({ label, value }) => {
-                const isStatus = label === "Status";
-                const isActive = value === "ACTIVE";
-                const typeCfg = TYPE_COLORS[value] || null;
-                return (
-                  <div
-                    key={label}
-                    className="flex justify-between items-center py-2 border-b border-border last:border-0"
-                  >
-                    <span className="text-sm text-muted-foreground">{label}</span>
-                    {isStatus ? (
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-1.5 h-1.5 rounded-full"
-                          style={{
-                            background: isActive ? "#4CAF50" : "#9E9E9E",
-                          }}
-                        />
-                        <span
-                          className="text-sm font-medium"
-                          style={{ color: isActive ? "#2E7D32" : "#757575" }}
-                        >
-                          {value}
-                        </span>
-                      </div>
-                    ) : typeCfg ? (
-                      <span
-                        className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                        style={{ background: typeCfg.bg, color: typeCfg.color }}
-                      >
-                        {value}
-                      </span>
-                    ) : (
-                      <span className="text-sm font-medium text-foreground">
-                        {value}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <div
-                  className="rounded-xl p-3 flex items-center gap-3 bg-muted"
-                >
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <div>
-                    <div className="text-xs text-muted-foreground">Members</div>
-                    <div className="text-sm font-semibold text-foreground">—</div>
-                  </div>
-                  {isManager && (
-                    <button
-                      onClick={() => setShowInviteModal(true)}
-                      className="ml-auto text-xs font-semibold text-green-600 hover:text-green-800 flex items-center gap-1"
-                      title="Invite Staff"
-                    >
-                      <Mail className="w-3.5 h-3.5" /> Invite
-                    </button>
-                  )}
-                </div>
-                <div
-                  className="rounded-xl p-3 flex items-center gap-3 bg-muted"
-                >
-                  <Package className="w-4 h-4 text-muted-foreground" />
-                  <div>
-                    <div className="text-xs text-muted-foreground">Products</div>
-                    <div className="text-sm font-semibold text-foreground">—</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-1">
-                <button
-                  onClick={() => {
-                    setDetail(null);
-                    openEdit(detail);
-                  }}
-                  className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-muted flex items-center justify-center gap-2"
-                >
-                  <Edit2 className="w-3.5 h-3.5" /> Edit
-                </button>
-                <button
-                  onClick={() => handleToggleStatus(detail)}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 ${detail.status === "ACTIVE" ? "bg-red-50 text-red-600 hover:bg-red-100" : "text-white hover:opacity-90"}`}
-                  style={
-                    detail.status !== "ACTIVE" ? { background: "#2E7D32" } : {}
-                  }
-                >
-                  {detail.status === "ACTIVE" ? (
-                    <>
-                      <ToggleRight className="w-3.5 h-3.5" /> Deactivate
-                    </>
-                  ) : (
-                    <>
-                      <ToggleLeft className="w-3.5 h-3.5" /> Activate
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <OrganizationDetailModal
+          detail={detail}
+          onClose={() => setDetail(null)}
+          onEdit={(org) => openEdit(org)}
+          onToggleStatus={(org) => handleToggleStatus(org)}
+          onInvite={() => setShowInviteModal(true)}
+          isManager={isManager}
+          isAdmin={isAdmin}
+        />
       )}
+
       {/* Invite Staff Modal */}
       {showInviteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -1098,6 +962,179 @@ export function OrganizationsPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function OrganizationDetailModal({
+  detail,
+  onClose,
+  onEdit,
+  onToggleStatus,
+  onInvite,
+  isManager,
+  isAdmin,
+}: {
+  detail: any;
+  onClose: () => void;
+  onEdit: (org: any) => void;
+  onToggleStatus: (org: any) => void;
+  onInvite: () => void;
+  isManager: boolean;
+  isAdmin: boolean;
+}) {
+  const orgIdStr = String(detail.organizationId || detail.id || "");
+  const { data: productsData, isLoading: loadingProducts } = useProductsList({
+    organizationId: orgIdStr,
+    pageSize: 100,
+  });
+  const { data: usersData, isLoading: loadingUsers } = useUsers({ limit: 100 });
+
+  const rawProducts = productsData?.data?.items ?? [];
+  const matchingProducts = rawProducts.filter(
+    (p) =>
+      p.organizationId === orgIdStr ||
+      (p.organizationName && p.organizationName.toLowerCase() === detail.name.toLowerCase())
+  );
+  const productCount = productsData?.data?.totalCount ?? matchingProducts.length;
+
+  const rawUsers = usersData?.data?.items ?? [];
+  const matchingMembers = rawUsers.filter(
+    (u: any) =>
+      u.organizationId === orgIdStr ||
+      (u.organization && u.organization.toLowerCase() === detail.name.toLowerCase())
+  );
+  const memberCount = matchingMembers.length;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl">
+        <div className="p-5" style={{ background: "linear-gradient(135deg, #1B5E20, #2E7D32)" }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/15">
+                <Building2 className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white text-base">{detail.name}</h3>
+                <p className="text-green-200 text-xs font-mono">ID: {detail.organizationId || detail.id}</p>
+              </div>
+            </div>
+            <button onClick={onClose} className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+          {[
+            { label: "Type", value: detail.type },
+            { label: "Address", value: detail.address || "N/A" },
+            { label: "Status", value: detail.status },
+          ].map(({ label, value }) => {
+            const isStatus = label === "Status";
+            const isActive = value === "ACTIVE";
+            const typeCfg = TYPE_COLORS[value] || null;
+            return (
+              <div key={label} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
+                <span className="text-sm text-gray-400">{label}</span>
+                {isStatus ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? "#4CAF50" : "#9E9E9E" }} />
+                    <span className="text-sm font-medium" style={{ color: isActive ? "#2E7D32" : "#757575" }}>{value}</span>
+                  </div>
+                ) : typeCfg ? (
+                  <span className="px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: typeCfg.bg, color: typeCfg.color }}>
+                    {value}
+                  </span>
+                ) : (
+                  <span className="text-sm font-medium text-gray-800">{value}</span>
+                )}
+              </div>
+            );
+          })}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+            {/* Members Section */}
+            <div className="rounded-xl p-3.5 bg-gray-50 border border-gray-100 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Users className="w-4 h-4 text-blue-600" />
+                  <span className="text-xs font-semibold">Members</span>
+                </div>
+                <span className="text-xs font-bold text-blue-700 px-2 py-0.5 bg-blue-100 rounded-full">
+                  {loadingUsers ? "..." : memberCount}
+                </span>
+              </div>
+              {loadingUsers ? (
+                <p className="text-xs text-gray-400 animate-pulse">Loading members...</p>
+              ) : matchingMembers.length > 0 ? (
+                <div className="flex flex-wrap gap-1 max-h-28 overflow-y-auto pr-1">
+                  {matchingMembers.map((m: any) => (
+                    <span key={m.id} className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-white text-gray-800 border border-gray-200 shadow-2xs">
+                      {m.fullName || m.email}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 italic">No members assigned.</p>
+              )}
+              {isManager && (
+                <button
+                  onClick={onInvite}
+                  className="w-full mt-1.5 text-xs font-semibold text-green-700 hover:text-green-900 bg-white border border-green-200 py-1.5 rounded-lg flex items-center justify-center gap-1 shadow-2xs"
+                >
+                  <Mail className="w-3.5 h-3.5" /> Invite Staff
+                </button>
+              )}
+            </div>
+
+            {/* Products Section */}
+            <div className="rounded-xl p-3.5 bg-gray-50 border border-gray-100 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Package className="w-4 h-4 text-green-600" />
+                  <span className="text-xs font-semibold">Products</span>
+                </div>
+                <span className="text-xs font-bold text-green-700 px-2 py-0.5 bg-green-100 rounded-full">
+                  {loadingProducts ? "..." : productCount}
+                </span>
+              </div>
+              {loadingProducts ? (
+                <p className="text-xs text-gray-400 animate-pulse">Loading products...</p>
+              ) : matchingProducts.length > 0 ? (
+                <div className="flex flex-wrap gap-1 max-h-28 overflow-y-auto pr-1">
+                  {matchingProducts.map((p) => (
+                    <span key={p.id} className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-white text-gray-800 border border-gray-200 shadow-2xs">
+                      {p.name}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 italic">No products registered.</p>
+              )}
+            </div>
+          </div>
+
+          {(isAdmin || isManager) && (
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => { onClose(); onEdit(detail); }}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2"
+              >
+                <Edit2 className="w-3.5 h-3.5" /> Edit
+              </button>
+              <button
+                onClick={() => onToggleStatus(detail)}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 ${detail.status === "ACTIVE" ? "bg-red-50 text-red-600 hover:bg-red-100" : "text-white hover:opacity-90"}`}
+                style={detail.status !== "ACTIVE" ? { background: "#2E7D32" } : {}}
+              >
+                {detail.status === "ACTIVE" ? <><ToggleRight className="w-4 h-4" /> Deactivate</> : <><ToggleLeft className="w-4 h-4" /> Activate</>}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

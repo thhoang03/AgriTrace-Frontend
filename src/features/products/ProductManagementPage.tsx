@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   Search, Plus, Eye, Edit2, Trash2, RotateCcw, ToggleLeft, ToggleRight,
-  ChevronLeft, ChevronRight, X, SlidersHorizontal,
+  ChevronLeft, ChevronRight, X, SlidersHorizontal, Package,
 } from "lucide-react";
 import { useProductsList, useDeleteProduct, useUpdateProductStatus } from "./products.queries";
 import { useCategoriesList } from "../categories/categories.queries";
@@ -10,6 +10,7 @@ import { useOrganizationsList } from "../organizations/organizations.queries";
 import { ProductFormModal } from "./ProductFormModal";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { toast } from "sonner";
+import { translateApiError } from "../../utils/error-translator";
 import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
 import { useAuth } from "../auth/auth.store";
 
@@ -98,7 +99,8 @@ export function ProductManagementPage() {
     } catch (error: any) {
       console.error("Error toggling product status:", error);
       const backendError = error?.response?.data?.message || error?.response?.data?.detail;
-      toast.error(backendError || (lang === "vi" ? "Cập nhật trạng thái thất bại" : "Failed to update status"));
+      const rawMsg = backendError || (lang === "vi" ? "Cập nhật trạng thái thất bại" : "Failed to update status");
+      toast.error(translateApiError(rawMsg, lang));
     }
   };
 
@@ -113,7 +115,8 @@ export function ProductManagementPage() {
     } catch (error: any) {
       console.error("Error deactivating product:", error);
       const backendError = error?.response?.data?.message || error?.response?.data?.detail;
-      toast.error(backendError || (lang === "vi" ? "Xóa sản phẩm thất bại" : "Failed to delete product"));
+      const rawMsg = backendError || (lang === "vi" ? "Xóa sản phẩm thất bại" : "Failed to delete product");
+      toast.error(translateApiError(rawMsg, lang));
     }
   };
 
@@ -260,24 +263,30 @@ export function ProductManagementPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border">
-                      <SortHeader label="ID" sortKey="id" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                      <SortHeader label={lang === "vi" ? "Tên Sản Phẩm" : "Name"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider" />
-                      <SortHeader label={lang === "vi" ? "Danh Mục" : "Category"} sortKey="category" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider" />
-                      <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider" />
-                      <SortHeader label={lang === "vi" ? "Đơn Vị Tính" : "Unit"} sortKey="unit" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider" />
-                      <SortHeader label={lang === "vi" ? "Trạng Thái" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider" />
-                      <th className="text-right px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
+                    <tr className="border-b border-gray-100">
+                      <SortHeader label={lang === "vi" ? "Sản Phẩm" : "Product"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Danh Mục" : "Category"} sortKey="category" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Đơn Vị Tính" : "Unit"} sortKey="unit" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <SortHeader label={lang === "vi" ? "Trạng Thái" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider" />
+                      <th className="text-right px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {sortedProducts.map((product: any) => {
                       const prodId = product.id || product.productId;
                       return (
-                        <tr key={prodId} className="border-b border-border hover:bg-muted transition-colors">
-                          <td className="px-6 py-4 text-xs font-medium text-muted-foreground font-mono">{String(prodId).slice(0, 8)}...</td>
+                        <tr key={prodId} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                           <td className="px-6 py-4">
-                            <span className="text-sm font-semibold text-foreground">{product.name}</span>
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#E8F5E9" }}>
+                                <Package className="w-4 h-4" style={{ color: "#1B5E20" }} />
+                              </div>
+                              <div>
+                                <div className="text-sm font-semibold text-gray-900">{product.name}</div>
+                                <div className="text-xs text-gray-400 font-mono">ID: {String(prodId).slice(0, 8)}...</div>
+                              </div>
+                            </div>
                           </td>
                           <td className="px-6 py-4 text-sm text-muted-foreground">{product.categoryName}</td>
                           <td className="px-6 py-4 text-sm text-muted-foreground">{product.organizationName || "—"}</td>
@@ -293,13 +302,13 @@ export function ProductManagementPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex items-center justify-end gap-1">
+                            <div className="flex items-center justify-end gap-1 transition-opacity">
                               <button
                                 onClick={() => navigate(`/app/products/${prodId}`)}
-                                className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-                                title={lang === "vi" ? "Xem chi tiết" : "View"}
+                                className="p-1.5 rounded-lg hover:bg-green-50 text-green-600 transition-colors"
+                                title={lang === "vi" ? "Xem chi tiết" : "View Detail"}
                               >
-                                <Eye className="w-4 h-4" />
+                                <Eye className="w-3.5 h-3.5" />
                               </button>
 
                               {/* Only allow edit/deactivate/delete if ADMIN or belongs to user's org */}
@@ -307,26 +316,26 @@ export function ProductManagementPage() {
                                 <>
                                   <button
                                     onClick={() => setShowEditModal(prodId)}
-                                    className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                                    className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"
                                     title={lang === "vi" ? "Chỉnh sửa" : "Edit"}
                                   >
-                                    <Edit2 className="w-4 h-4" />
+                                    <Edit2 className="w-3.5 h-3.5" />
                                   </button>
                                   {product.isActive ? (
                                     <button
                                       onClick={() => setShowDeleteModal(prodId)}
-                                      className="p-2 rounded-lg hover:bg-red-50 transition-colors text-red-500 hover:text-red-700"
+                                      className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 transition-colors"
                                       title={lang === "vi" ? "Xóa" : "Delete"}
                                     >
-                                      <Trash2 className="w-4 h-4" />
+                                      <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                   ) : (
                                     <button
                                       onClick={() => handleToggleStatus(product)}
-                                      className="p-2 rounded-lg hover:bg-green-50 transition-colors text-green-600 hover:text-green-800"
+                                      className="p-1.5 rounded-lg hover:bg-green-50 text-green-500 transition-colors"
                                       title={lang === "vi" ? "Khôi phục" : "Restore"}
                                     >
-                                      <RotateCcw className="w-4 h-4" />
+                                      <RotateCcw className="w-3.5 h-3.5" />
                                     </button>
                                   )}
                                 </>

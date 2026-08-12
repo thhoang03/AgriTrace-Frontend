@@ -300,160 +300,146 @@ export function HomePage() {
       </nav>
 
       {/* 2. Hero Section with Background Shimmer & Smart Search */}
-      <section className="relative min-h-[640px] flex items-center justify-center">
-        {/* Background Image & Overlay Container with isolated overflow */}
+      <section className="relative min-h-[640px] flex items-center justify-center z-20">
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${HERO_IMG})` }} />
           <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(27,94,32,0.90) 0%, rgba(46,125,50,0.80) 50%, rgba(0,0,0,0.65) 100%)" }} />
-
-          {/* Ambient floating glows */}
-          <div className="absolute top-10 left-10 w-72 h-72 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-green-500/20 rounded-full blur-3xl pointer-events-none" />
         </div>
 
         <div className="relative z-10 text-center px-6 max-w-4xl mx-auto py-20">
-          <RevealOnScroll direction="scale" delayMs={0}>
-            {/* Government Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold mb-6 shadow-lg border border-white/20" style={{ background: "rgba(255,255,255,0.18)", color: "#ffffff", backdropFilter: "blur(12px)" }}>
-              <Shield className="w-4 h-4 text-emerald-300 animate-pulse" />
-              <span>{lang === "vi" ? "Cổng Thông Tin Truy Xuất Nông Sản Quốc Gia Việt Nam" : "Official Government Agricultural Traceability System"}</span>
-            </div>
-          </RevealOnScroll>
+          {/* Government Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold mb-6 shadow-lg border border-white/20" style={{ background: "rgba(255,255,255,0.18)", color: "#ffffff", backdropFilter: "blur(12px)" }}>
+            <Shield className="w-4 h-4 text-emerald-300" />
+            <span>{lang === "vi" ? "Cổng Thông Tin Truy Xuất Nông Sản Quốc Gia Việt Nam" : "Official Government Agricultural Traceability System"}</span>
+          </div>
 
-          <RevealOnScroll direction="up" delayMs={100}>
-            {/* Hero Title */}
-            <h1 className="text-white mb-5" style={{ fontSize: "clamp(30px, 5.5vw, 56px)", fontWeight: 800, lineHeight: 1.15, letterSpacing: "-0.02em" }}>
-              {lang === "vi" ? "Truy Xuất Nguồn Gốc Nông Sản" : "Vietnam Agricultural"}
-              <br />
-              <span style={{ color: "#A5D6A7" }}>
-                {lang === "vi" ? "Tốt Nhất & Minh Bạch Từ Nông Trại" : "Supply Chain Traceability"}
-              </span>
-            </h1>
-          </RevealOnScroll>
+          {/* Hero Title */}
+          <h1 className="text-white mb-5" style={{ fontSize: "clamp(30px, 5.5vw, 56px)", fontWeight: 800, lineHeight: 1.15, letterSpacing: "-0.02em" }}>
+            {lang === "vi" ? "Truy Xuất Nguồn Gốc Nông Sản" : "Vietnam Agricultural"}
+            <br />
+            <span style={{ color: "#A5D6A7" }}>
+              {lang === "vi" ? "Tốt Nhất & Minh Bạch Từ Nông Trại" : "Supply Chain Traceability"}
+            </span>
+          </h1>
           
-          <RevealOnScroll direction="up" delayMs={200}>
-            <p className="text-green-100 mb-10 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-              {lang === "vi"
-                ? "Xác thực nông sản Việt Nam từ Trang trại đến Bàn ăn. Bảo chứng dữ liệu bất biến bằng công nghệ Blockchain."
-                : "Verify agricultural products from Farm to Table. Powered by blockchain, trusted by the government."}
-            </p>
-          </RevealOnScroll>
+          <p className="text-green-100 mb-10 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+            {lang === "vi"
+              ? "Xác thực nông sản Việt Nam từ Trang trại đến Bàn ăn. Bảo chứng dữ liệu bất biến bằng công nghệ Blockchain."
+              : "Verify agricultural products from Farm to Table. Powered by blockchain, trusted by the government."}
+          </p>
 
-          <RevealOnScroll direction="up" delayMs={300}>
-            {/* Smart Search Bar */}
-            <div ref={searchWrapperRef} className="max-w-2xl mx-auto relative z-30">
-              <div className="flex flex-col sm:flex-row gap-2 p-2 rounded-2xl bg-white/95 backdrop-blur-md shadow-2xl border border-white/40">
-                <div className="flex-1 relative flex items-center">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={query}
-                    onChange={(e) => {
-                      setQuery(e.target.value);
-                      setShowSuggestions(true);
-                    }}
-                    onFocus={() => setShowSuggestions(true)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        setShowSuggestions(false);
-                        handleSearch();
-                      }
-                      if (e.key === "Escape") {
-                        setShowSuggestions(false);
-                      }
-                    }}
-                    placeholder={lang === "vi" ? "Nhập Mã QR hoặc Mã Lô (VD: RICE-20260112-001)... [Nhấn / để tìm]" : "Enter QR Code or Batch ID (e.g. RICE-20260112-001)..."}
-                    className="w-full pl-10 pr-9 py-3 text-sm outline-none rounded-xl bg-transparent text-gray-900 placeholder-gray-400 font-medium"
-                  />
-                  {query && (
-                    <button
-                      onClick={() => setQuery("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-
-                {/* Search Action Buttons */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
+          {/* Smart Search Bar */}
+          <div className="max-w-2xl mx-auto relative z-30">
+            <div className="flex flex-col sm:flex-row gap-2 p-2 rounded-2xl bg-white/95 backdrop-blur-md shadow-2xl border border-white/40">
+              <div className="flex-1 relative flex items-center">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
                       setShowSuggestions(false);
                       handleSearch();
-                    }}
-                    className="px-6 py-3 rounded-xl text-white text-sm font-bold transition-all hover:opacity-90 flex items-center justify-center gap-2 shadow-md hover:shadow-lg active:scale-95"
-                    style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)", whiteSpace: "nowrap" }}
-                  >
-                    <Search className="w-4 h-4" /> {lang === "vi" ? "Tra cứu" : "Search"}
-                  </button>
+                    }
+                  }}
+                  placeholder={lang === "vi" ? "Nhập Mã QR hoặc Mã Lô (VD: RICE-20260112-001)... [Nhấn / để tìm]" : "Enter QR Code or Batch ID (e.g. RICE-20260112-001)..."}
+                  className="w-full pl-10 pr-9 py-3 text-sm outline-none rounded-xl bg-transparent text-gray-900 placeholder-gray-400 font-medium"
+                />
+                {query && (
                   <button
-                    onClick={() => setIsQRModalOpen(true)}
-                    className="px-5 py-3 rounded-xl text-sm font-bold border flex items-center justify-center gap-2 transition-all hover:bg-gray-100 bg-gray-50 text-gray-800 active:scale-95"
-                    style={{ border: "1px solid #e0e0e0", whiteSpace: "nowrap" }}
+                    onClick={() => setQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    <QrCode className="w-4 h-4 text-green-700" /> {lang === "vi" ? "Quét QR" : "Scan QR"}
+                    <X className="w-4 h-4" />
                   </button>
-                </div>
+                )}
               </div>
+
+              {/* Search Action Buttons */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setShowSuggestions(false);
+                    handleSearch();
+                  }}
+                  className="px-6 py-3 rounded-xl text-white text-sm font-bold transition-all hover:opacity-90 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                  style={{ background: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 100%)", whiteSpace: "nowrap" }}
+                >
+                  <Search className="w-4 h-4" /> {lang === "vi" ? "Tra cứu" : "Search"}
+                </button>
+                <button
+                  onClick={() => setIsQRModalOpen(true)}
+                  className="px-5 py-3 rounded-xl text-sm font-bold border flex items-center justify-center gap-2 transition-all hover:bg-gray-100 bg-gray-50 text-gray-800"
+                  style={{ border: "1px solid #e0e0e0", whiteSpace: "nowrap" }}
+                >
+                  <QrCode className="w-4 h-4 text-green-700" /> {lang === "vi" ? "Quét QR" : "Scan QR"}
+                </button>
+              </div>
+            </div>
 
               {/* Live Real-Data Preview / Direct Search Hint */}
               {showSuggestions && query.trim() && (
-                <div className="absolute left-0 right-0 top-full mt-2.5 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden text-left z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                  {previewCode && isPreviewLoading ? (
-                    <div className="p-4 flex items-center justify-center gap-2 text-xs text-gray-500 font-medium">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      {lang === "vi" ? "Đang tra cứu dữ liệu thật..." : "Looking up real data..."}
-                    </div>
-                  ) : previewCode && previewBatch ? (
-                    <div
-                      onClick={() => {
-                        setShowSuggestions(false);
-                        handleSearch(previewCode);
-                      }}
-                      className="p-3.5 hover:bg-emerald-50/80 cursor-pointer flex items-center justify-between gap-3 transition-colors group"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-9 h-9 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-700 group-hover:text-white transition-colors shadow-xs">
-                          <Leaf className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="font-bold text-gray-900 text-xs truncate">{previewBatch.productName || previewBatch.batchCode}</div>
-                          <div className="text-[11px] text-gray-500 mt-0.5 truncate">
-                            {previewBatch.currentOrganizationName || (lang === "vi" ? "Chưa cập nhật đơn vị" : "No organization on record")}
-                            {" • "}
-                            {previewBatch.status === 7 ? (
-                              <span className="text-red-600 font-semibold">{lang === "vi" ? "Đã thu hồi" : "Recalled"}</span>
-                            ) : (
-                              <span className="text-emerald-700 font-semibold">{lang === "vi" ? "Đã xác thực" : "Verified"}</span>
-                            )}
+                <>
+                  <div className="absolute left-0 right-0 top-full mt-2.5 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden text-left z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {previewCode && isPreviewLoading ? (
+                      <div className="p-4 flex items-center justify-center gap-2 text-xs text-gray-500 font-medium">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        {lang === "vi" ? "Đang tra cứu dữ liệu thật..." : "Looking up real data..."}
+                      </div>
+                    ) : previewCode && previewBatch ? (
+                      <div
+                        onClick={() => {
+                          setShowSuggestions(false);
+                          handleSearch(previewCode);
+                        }}
+                        className="p-3.5 hover:bg-emerald-50/80 cursor-pointer flex items-center justify-between gap-3 transition-colors group"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-700 group-hover:text-white transition-colors shadow-xs">
+                            <Leaf className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-gray-900 text-xs truncate">{previewBatch.productName || previewBatch.batchCode}</div>
+                            <div className="text-[11px] text-gray-500 mt-0.5 truncate">
+                              {previewBatch.currentOrganizationName || (lang === "vi" ? "Chưa cập nhật đơn vị" : "No organization on record")}
+                              {" • "}
+                              {previewBatch.status === 7 ? (
+                                <span className="text-red-600 font-semibold">{lang === "vi" ? "Đã thu hồi" : "Recalled"}</span>
+                              ) : (
+                                <span className="text-emerald-700 font-semibold">{lang === "vi" ? "Đã xác thực" : "Verified"}</span>
+                              )}
+                            </div>
                           </div>
                         </div>
+                        <code className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-100/80 px-2 py-1 rounded-lg border border-emerald-200/60 flex-shrink-0">
+                          {previewBatch.batchCode}
+                        </code>
                       </div>
-                      <code className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-100/80 px-2 py-1 rounded-lg border border-emerald-200/60 flex-shrink-0">
-                        {previewBatch.batchCode}
-                      </code>
-                    </div>
-                  ) : previewCode && isPreviewError ? (
-                    <div className="p-4 text-xs text-center text-gray-500 font-medium">
-                      {lang === "vi" ? `Không tìm thấy lô hàng với mã "${query}"` : `No batch found for "${query}"`}
-                    </div>
-                  ) : (
-                    <div
-                      onClick={() => {
-                        setShowSuggestions(false);
-                        handleSearch();
-                      }}
-                      className="p-4 text-xs text-center text-gray-600 hover:bg-emerald-50/50 cursor-pointer font-medium"
-                    >
-                      {lang === "vi" ? `Tra cứu trực tiếp mã "${query}" →` : `Search directly for "${query}" →`}
-                    </div>
-                  )}
-                </div>
+                    ) : previewCode && isPreviewError ? (
+                      <div className="p-4 text-xs text-center text-gray-500 font-medium">
+                        {lang === "vi" ? `Không tìm thấy lô hàng với mã "${query}"` : `No batch found for "${query}"`}
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => {
+                          setShowSuggestions(false);
+                          handleSearch();
+                        }}
+                        className="p-4 text-xs text-center text-gray-600 hover:bg-emerald-50/50 cursor-pointer font-medium"
+                      >
+                        {lang === "vi" ? `Tra cứu trực tiếp mã "${query}" →` : `Search directly for "${query}" →`}
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
-          </RevealOnScroll>
         </div>
       </section>
 

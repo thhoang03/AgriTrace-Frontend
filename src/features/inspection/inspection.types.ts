@@ -72,6 +72,7 @@ export interface CreateInspectionRequest {
   inspectionDate: string;
   notes?: string;
   organizationId?: string;
+  location?: string;
 }
 
 export interface RequestInspectionRequest {

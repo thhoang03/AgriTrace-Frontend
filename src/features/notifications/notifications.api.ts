@@ -12,6 +12,7 @@ export interface Notification {
   message?: string;
   type?: string;
   isRead?: boolean;
+  type?: string;
   createdAt?: string;
 }
 
@@ -34,6 +35,7 @@ function adaptNotificationFromItem(item: any): Notification {
     message: item.message ?? "",
     type: item.type ?? "",
     isRead: item.isRead ?? false,
+    type: item.type ?? "SYSTEM",
     createdAt: item.createdAt ?? "",
   };
 }

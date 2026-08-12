@@ -139,7 +139,7 @@ export function InspectionPage() {
   const failedCount = allInspections.filter((i) => i.status === "Failed").length;
   const pendingCount = allInspections.filter((i) => i.status === "Pending").length;
 
-  const handleCreate = async (data: { batchId: string; inspectionType: number; inspectionDate: string; notes: string }) => {
+  const handleCreate = async (data: { batchId: string; inspectionType: number; inspectionDate: string; notes: string; organizationId?: string; location?: string }) => {
     try {
       const result = await createMutation.mutateAsync(data);
       setShowCreate(false);

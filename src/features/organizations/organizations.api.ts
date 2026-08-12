@@ -117,7 +117,7 @@ export const organizationsApi = {
   },
 
   updateStatus: async (id: number | string, data: { status: string }) => {
-    const statusValue = data.status === "ACTIVE" ? "Active" : "Inactive";
+    const statusValue = data.status.toUpperCase() === "ACTIVE" ? "ACTIVE" : "INACTIVE";
     return patch<void>(`/organizations/${id}/status`, {
       status: statusValue,
     } as StatusRequest);
