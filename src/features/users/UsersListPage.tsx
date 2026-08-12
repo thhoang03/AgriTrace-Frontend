@@ -412,24 +412,24 @@ const handleResetPassword = async (user: UserItem) => {
                 {lang === "vi" ? "Không thể tải dữ liệu người dùng." : "Unable to load users right now."}
               </div>
             ) : (
-              <table className="w-full">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-muted">
-                    <SortHeader label={lang === "vi" ? "NGƯỜI DÙNG" : "User"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "TỔ CHỨC" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "LOẠI ĐƠN VỊ" : "Org. Type"} sortKey="orgType" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "VAI TRÒ" : "Role"} sortKey="role" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "LIÊN HỆ" : "Contact"} sortKey="contact" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
+                  <tr className="bg-muted/60 border-b border-border">
+                    <SortHeader label={lang === "vi" ? "NGƯỜI DÙNG" : "User"} sortKey="name" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[220px]" />
+                    <SortHeader label={lang === "vi" ? "TỔ CHỨC" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[140px]" />
+                    <SortHeader label={lang === "vi" ? "LOẠI ĐƠN VỊ" : "Org. Type"} sortKey="orgType" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[110px]" />
+                    <SortHeader label={lang === "vi" ? "VAI TRÒ" : "Role"} sortKey="role" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[100px]" />
+                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[110px]" />
+                    <SortHeader label={lang === "vi" ? "LIÊN HỆ" : "Contact"} sortKey="contact" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[180px]" />
+                    <th className="text-right px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[110px]">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {sortedUsers.map((user) => {
-const roleCfg = roleColors[user.role.toUpperCase()] || {
-                       bg: "#F5F5F5",
-                       color: "#666",
-                     };
+                    const roleCfg = roleColors[user.role.toUpperCase()] || {
+                      bg: "#F5F5F5",
+                      color: "#666",
+                    };
                     const staCfg = statusConfig[user.status];
                     const encodedName = encodeURIComponent(user.fullName);
                     const apiUrl = `https://ui-avatars.com/api/?name=${encodedName}&background=random&color=fff&rounded=true&size=128`;
@@ -438,7 +438,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                         key={user.id}
                         className="hover:bg-green-50/20 transition-colors group"
                       >
-                        <td className="px-5 py-4">
+                        <td className="px-4 py-3.5">
                           <div className="flex items-center gap-3">
                             <img
                               src={apiUrl}
@@ -455,14 +455,14 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                             </div>
                           </div>
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="px-4 py-3.5">
                           <div className="text-sm text-muted-foreground max-w-40 truncate">
                             {user.organization || "—"}
                           </div>
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="px-4 py-3.5">
                            <span
-                             className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                             className="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                              style={{
                                backgroundColor: (orgTypeColors[user.organizationType.toUpperCase()] || { bg: "#F5F5F5", color: "#666" }).bg,
                                color: (orgTypeColors[user.organizationType.toUpperCase()] || { bg: "#F5F5F5", color: "#666" }).color,
@@ -471,9 +471,9 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                              {user.organizationType || "—"}
                            </span>
                          </td>
-                         <td className="px-5 py-4">
+                         <td className="px-4 py-3.5">
                            <span
-                             className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                             className="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                              style={{
                                backgroundColor: roleCfg.bg,
                                color: roleCfg.color,
@@ -482,10 +482,10 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                              {user.role}
                            </span>
                          </td>
-                        <td className="px-5 py-4">
+                        <td className="px-4 py-3.5">
                           <button
                             onClick={() => handleStatusToggle(user)}
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 whitespace-nowrap"
                             title="Toggle account status"
                           >
                             <div
@@ -493,23 +493,23 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                               style={{ background: staCfg.dot }}
                             />
                             <span
-                              className="text-sm"
+                              className="text-sm font-medium"
                               style={{ color: staCfg.color }}
                             >
                               {user.status}
                             </span>
                           </button>
                         </td>
-                        <td className="px-5 py-4">
-                          <div className="text-sm text-muted-foreground">
-                            {user.phone}
+                        <td className="px-4 py-3.5">
+                          <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                            {user.phone || "—"}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground truncate max-w-[200px]">
                             {user.email}
                           </div>
                         </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-1 opacity-100 transition-opacity">
+                        <td className="px-4 py-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity">
                              <button
                                onClick={() => setSelectedUser(user)}
                                className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"
@@ -524,7 +524,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                              >
                                <Key className="w-3.5 h-3.5" />
                              </button>
-<button
+                              <button
                                 onClick={() => handleStatusToggle(user)}
                                 className={`p-1.5 rounded-lg transition-colors ${
                                    user.status === "Active" 
