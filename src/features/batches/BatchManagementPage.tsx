@@ -261,8 +261,8 @@ export function BatchManagementPage() {
               <input
                 type="text"
                 value={search}
-                maxLength={200}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                maxLength={199}
+                onChange={(e) => { setSearch(e.target.value.slice(0, 199)); setPage(1); }}
                 placeholder={lang === "vi" ? "Tìm kiếm theo Mã Lô, sản phẩm, trang trại, nông dân..." : "Search by ID, product, farm, farmer..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm outline-none transition-all bg-input-background"
               />

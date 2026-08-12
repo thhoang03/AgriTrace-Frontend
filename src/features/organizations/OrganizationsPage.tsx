@@ -416,9 +416,9 @@ export function OrganizationsPage() {
               <input
                 type="text"
                 value={search}
-                maxLength={200}
+                maxLength={199}
                 onChange={(e) => {
-                  setSearch(e.target.value);
+                  setSearch(e.target.value.slice(0, 199));
                   setPage(1);
                 }}
                 placeholder={

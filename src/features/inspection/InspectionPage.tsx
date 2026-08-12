@@ -277,8 +277,8 @@ export function InspectionPage() {
               <input
                 type="text"
                 value={search}
-                maxLength={200}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                maxLength={199}
+                onChange={(e) => { setSearch(e.target.value.slice(0, 199)); setPage(1); }}
                 placeholder={lang === "vi" ? "Tìm kiếm theo mã lô hàng, chuyên viên QC..." : "Search by batch code, inspector..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm outline-none transition-all bg-muted"
               />
