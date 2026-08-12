@@ -71,7 +71,7 @@ export function SortHeader({
     >
       <button
         onClick={() => onSort(sortKey)}
-        className="inline-flex items-center gap-1 hover:text-gray-800 transition-colors group font-inherit text-inherit uppercase tracking-inherit"
+        className="inline-flex items-center gap-1 hover:text-gray-800 transition-colors group font-medium text-[11px] uppercase tracking-widest w-full"
         title={`Sort by ${label}`}
       >
         {label}
