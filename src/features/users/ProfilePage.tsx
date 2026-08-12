@@ -38,6 +38,7 @@ export function ProfilePage() {
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
   // Password State
   const [currentPwd, setCurrentPwd] = useState("");
@@ -91,6 +92,17 @@ export function ProfilePage() {
   // Save Profile Handler
   const handleSave = async () => {
     setSaveError("");
+    setPhoneError("");
+    // Validate phone number (Vietnam: 10-11 digits, start with 0 or +84)
+    const phoneDigits = phone.replace(/\D/g, "");
+    const phoneValid = /^(0|84)\d{9}$/.test(phoneDigits) || phone === "";
+    if (!phoneValid && phone) {
+      setPhoneError(lang === "vi"
+        ? "Số điện thoại không hợp lệ. Định dạng: 0xxxxxxxxx hoặc +84xxxxxxxxx"
+        : "Invalid phone number. Format: 0xxxxxxxxx or +84xxxxxxxxx"
+      );
+      return;
+    }
     setIsSaving(true);
     try {
       if (bio !== undefined) {
@@ -350,10 +362,21 @@ export function ProfilePage() {
                   <input
                     type="tel"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder={lang === "vi" ? "Nhập số điện thoại" : "Enter phone number"}
-                    className="w-full px-4 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-primary/20 bg-input-background"
+                    onChange={(e) => {
+                      // Allow digits, +, spaces, dashes only
+                      const raw = e.target.value.replace(/[^\d\+\-\s]/g, "");
+                      setPhone(raw);
+                      setPhoneError("");
+                    }}
+                    placeholder={lang === "vi" ? "0xxxxxxxxx hoặc +84xxxxxxxxx" : "0xxxxxxxxx or +84xxxxxxxxx"}
+                    maxLength={15}
+                    className={`w-full px-4 py-2.5 rounded-xl border text-sm font-semibold text-foreground outline-none transition-all focus:border-green-500 focus:ring-2 focus:ring-primary/20 bg-input-background ${
+                      phoneError ? "border-red-400" : "border-border"
+                    }`}
                   />
+                  {phoneError && (
+                    <p className="text-xs text-red-500 mt-1">{phoneError}</p>
+                  )}
                 </div>
 
                 {/* Email Address (READ-ONLY) */}

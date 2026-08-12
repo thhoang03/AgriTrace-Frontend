@@ -195,13 +195,15 @@ export function ProductManagementPage() {
             <div className="mt-4 pt-4 border-t border-border">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Organization</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                    {lang === "vi" ? "Tổ Chức" : "Organization"}
+                  </label>
                   <select
                     value={organizationFilter}
                     onChange={(e) => { setOrganizationFilter(e.target.value); setPage(1); }}
                     className="w-full px-3 py-2 rounded-lg border border-border text-sm outline-none bg-input-background"
                   >
-                    <option value="">All Organizations</option>
+                    <option value="">{lang === "vi" ? "Tất cả tổ chức" : "All Organizations"}</option>
                     {organizations.map((org: any) => {
                       const orgId = String(org.id || org.organizationId || "");
                       return (
@@ -211,13 +213,15 @@ export function ProductManagementPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Category</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                    {lang === "vi" ? "Danh Mục" : "Category"}
+                  </label>
                   <select
                     value={categoryFilter}
                     onChange={(e) => { setCategoryFilter(e.target.value); setPage(1); }}
                     className="w-full px-3 py-2 rounded-lg border border-border text-sm outline-none bg-input-background"
                   >
-                    <option value="">All Categories</option>
+                    <option value="">{lang === "vi" ? "Tất cả danh mục" : "All Categories"}</option>
                     {categories.map((cat: any) => {
                       const catId = String(cat.id || cat.categoryId || "");
                       return (
@@ -243,7 +247,8 @@ export function ProductManagementPage() {
                     onClick={handleResetFilters}
                     className="flex items-center gap-2 w-full justify-center px-4 py-2 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
                   >
-                    <RotateCcw className="w-4 h-4" /> Reset Filters
+                    <RotateCcw className="w-4 h-4" />
+                    {lang === "vi" ? "Xóa Bộ Lọc" : "Reset Filters"}
                   </button>
                 </div>
               </div>
@@ -357,7 +362,9 @@ export function ProductManagementPage() {
                       : `Showing ${((page - 1) * perPage) + 1} to ${Math.min(page * perPage, totalCount)} of ${totalCount} products`}
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-xs text-muted-foreground">Rows/page</label>
+                    <label className="text-xs text-muted-foreground">
+                    {lang === "vi" ? "Dòng/trang" : "Rows/page"}
+                  </label>
                     <select
                       value={perPage}
                       onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}

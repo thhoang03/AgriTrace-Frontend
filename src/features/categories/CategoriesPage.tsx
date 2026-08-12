@@ -430,18 +430,28 @@ export function CategoriesPage() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Category Name</label>
-                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none focus:border-green-400 bg-input-background" placeholder="Tên danh mục" />
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  {lang === "vi" ? "Tên Danh Mục" : "Category Name"}
+                </label>
+                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none focus:border-green-400 bg-input-background" placeholder={lang === "vi" ? "Tên danh mục" : "Category name"} />
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Description</label>
-                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none focus:border-green-400 resize-none bg-input-background" placeholder="Mô tả danh mục" />
+                <label className="text-sm font-medium text-foreground mb-1.5 block">
+                  {lang === "vi" ? "Mô Tả" : "Description"}
+                </label>
+                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none focus:border-green-400 resize-none bg-input-background" placeholder={lang === "vi" ? "Mô tả danh mục" : "Category description"} />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <div className="flex gap-3 pt-2">
-                <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-muted">Cancel</button>
+                <button onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:bg-muted">
+                  {lang === "vi" ? "Hủy" : "Cancel"}
+                </button>
                 <button onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60" style={{ background: "#2E7D32" }}>
-                  {saving ? "Saving..." : editing ? "Save Changes" : "Add Category"}
+                  {saving
+                    ? (lang === "vi" ? "Đang lưu..." : "Saving...")
+                    : editing
+                    ? (lang === "vi" ? "Lưu Thay Đổi" : "Save Changes")
+                    : (lang === "vi" ? "Thêm Danh Mục" : "Add Category")}
                 </button>
               </div>
             </div>
@@ -477,6 +487,7 @@ function CategoryDetailModal({
   isAdmin: boolean;
 }) {
   const catIdStr = String(detail.categoryId || detail.id || "");
+  const { lang } = useLanguage();
   const { data: productsData, isLoading } = useProductsList({
     categoryId: catIdStr,
     pageSize: 100,
@@ -512,10 +523,10 @@ function CategoryDetailModal({
 
         <div className="p-5 space-y-4">
           {[
-            { label: "Description", value: detail.description || "—" },
-            { label: "Status", value: detail.isActive ? "ACTIVE" : "INACTIVE" },
+            { label: lang === "vi" ? "Mô Tả" : "Description", value: detail.description || "—" },
+            { label: lang === "vi" ? "Trạng Thái" : "Status", value: detail.isActive ? "ACTIVE" : "INACTIVE" },
           ].map(({ label, value }) => {
-            const isStatus = label === "Status";
+            const isStatus = label === (lang === "vi" ? "Trạng Thái" : "Status");
             const isActive = value === "ACTIVE";
             return (
               <div key={label} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
@@ -536,15 +547,19 @@ function CategoryDetailModal({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-green-600" />
-                <span className="text-xs font-semibold text-gray-700">Associated Products</span>
+                <span className="text-xs font-semibold text-gray-700">
+                {lang === "vi" ? "Sản Phẩm Liên Quan" : "Associated Products"}
+              </span>
               </div>
               <span className="text-xs font-bold text-green-700 px-2.5 py-0.5 bg-green-100 rounded-full">
-                {isLoading ? "..." : `${count} product${count !== 1 ? "s" : ""}`}
+                {isLoading ? "..." : lang === "vi" ? `${count} sản phẩm` : `${count} product${count !== 1 ? "s" : ""}`}
               </span>
             </div>
 
             {isLoading ? (
-              <p className="text-xs text-gray-400 animate-pulse">Loading products...</p>
+              <p className="text-xs text-gray-400 animate-pulse">
+                {lang === "vi" ? "Đang tải sản phẩm..." : "Loading products..."}
+              </p>
             ) : matchingProducts.length > 0 ? (
               <div className="flex flex-wrap gap-1.5 pt-1 max-h-36 overflow-y-auto pr-1">
                 {matchingProducts.map((p) => (
@@ -554,21 +569,26 @@ function CategoryDetailModal({
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-400 italic">No products registered under this category.</p>
+              <p className="text-xs text-gray-400 italic">
+                {lang === "vi" ? "Chưa có sản phẩm nào trong danh mục này." : "No products registered under this category."}
+              </p>
             )}
           </div>
 
           {isAdmin && (
             <div className="flex gap-3 pt-1">
               <button onClick={() => { onClose(); onEdit(detail); }} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2">
-                <Edit2 className="w-3.5 h-3.5" /> Edit
+                <Edit2 className="w-3.5 h-3.5" />
+                {lang === "vi" ? "Chỉnh SỮa" : "Edit"}
               </button>
               <button
                 onClick={() => onToggleStatus(detail)}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 ${detail.isActive ? "bg-red-50 text-red-600 hover:bg-red-100" : "text-white hover:opacity-90"}`}
                 style={!detail.isActive ? { background: "#2E7D32" } : {}}
               >
-                {detail.isActive ? <><PowerOff className="w-3.5 h-3.5" /> Deactivate</> : <><Power className="w-3.5 h-3.5" /> Activate</>}
+                {detail.isActive
+                  ? <><PowerOff className="w-3.5 h-3.5" />{lang === "vi" ? "Vô Hiệu Hóa" : "Deactivate"}</>
+                  : <><Power className="w-3.5 h-3.5" />{lang === "vi" ? "Kích Hoạt" : "Activate"}</>}
               </button>
             </div>
           )}
