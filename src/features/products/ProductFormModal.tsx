@@ -73,10 +73,13 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) {
-      newErrors.name = "Product name is required";
+      newErrors.name = lang === "vi" ? "Vui lòng nhập tên sản phẩm" : "Product name is required";
+    }
+    if (!formData.categoryId) {
+      newErrors.categoryId = lang === "vi" ? "Vui lòng chọn danh mục" : "Please select a category";
     }
     if (!formData.unit.trim()) {
-      newErrors.unit = "Unit is required";
+      newErrors.unit = lang === "vi" ? "Vui lòng chọn đơn vị tính" : "Unit is required";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -153,13 +156,13 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-semibold text-foreground mb-1.5">
-              Product Name <span className="text-red-500">*</span>
+              {lang === "vi" ? "Tên Sản Phẩm" : "Product Name"} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g. Organic Jasmine Rice"
+              placeholder={lang === "vi" ? "VD: Gạo Jasmine Hữу Cơ" : "e.g. Organic Jasmine Rice"}
               className="w-full px-4 py-2.5 rounded-xl border border-border text-sm outline-none transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100 bg-input-background"
             />
             {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
@@ -198,14 +201,16 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
 
           <div>
             <label className="block text-sm font-semibold text-foreground mb-1.5">
-              Category
+              {lang === "vi" ? "Danh Mục" : "Category"} <span className="text-red-500">*</span>
             </label>
             <select
               value={formData.categoryId}
               onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100"
+              className={`w-full px-4 py-2.5 rounded-xl border text-sm outline-none bg-input-background transition-all focus:border-green-600 focus:ring-2 focus:ring-green-100 ${
+                errors.categoryId ? "border-red-400" : "border-border"
+              }`}
             >
-              <option value="">-- Select Category --</option>
+              <option value="">{lang === "vi" ? "-- Chọn danh mục --" : "-- Select Category --"}</option>
               {categories.map((cat: any) => {
                 const catId = String(cat.id || cat.categoryId || "");
                 return (
@@ -215,11 +220,12 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
                 );
               })}
             </select>
+            {errors.categoryId && <p className="text-xs text-destructive mt-1">{errors.categoryId}</p>}
           </div>
 
           <div>
             <label className="block text-sm font-semibold text-foreground mb-1.5">
-              Unit of Measurement <span className="text-red-500">*</span>
+              {lang === "vi" ? "Đơn Vị Tính" : "Unit of Measurement"} <span className="text-red-500">*</span>
             </label>
             <select
               value={formData.unit}
@@ -242,7 +248,7 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
               onClick={onClose}
               className="px-5 py-2.5 rounded-xl border border-border text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors"
             >
-              Cancel
+              {lang === "vi" ? "Hủy" : "Cancel"}
             </button>
             <button
               type="submit"
@@ -251,10 +257,10 @@ export function ProductFormModal({ isOpen, onClose, productId, initialData }: Pr
               style={{ background: "#2E7D32" }}
             >
               {createProduct.isPending || updateProduct.isPending
-                ? "Saving..."
+                ? (lang === "vi" ? "Đang lưu..." : "Saving...")
                 : isEdit
-                ? "Update Product"
-                : "Create Product"}
+                ? (lang === "vi" ? "Cập Nhật Sản Phẩm" : "Update Product")
+                : (lang === "vi" ? "Tạo Sản Phẩm" : "Create Product")}
             </button>
           </div>
         </form>
