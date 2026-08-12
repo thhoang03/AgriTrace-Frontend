@@ -269,12 +269,12 @@ export function ProductManagementPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-100">
-                      <SortHeader label={lang === "vi" ? "Sản Phẩm" : "Product"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest" />
-                      <SortHeader label={lang === "vi" ? "Danh Mục" : "Category"} sortKey="category" sort={sort} onSort={toggle} className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest" />
-                      <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest" />
-                      <SortHeader label={lang === "vi" ? "Đơn Vị Tính" : "Unit"} sortKey="unit" sort={sort} onSort={toggle} className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest" />
-                      <SortHeader label={lang === "vi" ? "Trạng Thái" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest" />
-                      <th className="text-right px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
+                      <SortHeader label={lang === "vi" ? "Sản Phẩm" : "Product"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-6 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest" />
+                      <SortHeader label={lang === "vi" ? "Danh Mục" : "Category"} sortKey="category" sort={sort} onSort={toggle} className="text-left px-6 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest" />
+                      <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-6 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest" />
+                      <SortHeader label={lang === "vi" ? "Đơn Vị Tính" : "Unit"} sortKey="unit" sort={sort} onSort={toggle} className="text-left px-6 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest" />
+                      <SortHeader label={lang === "vi" ? "Trạng Thái" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-6 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest" />
+                      <th className="text-right px-6 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
                     </tr>
                   </thead>
                   <tbody>

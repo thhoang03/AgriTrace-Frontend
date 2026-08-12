@@ -556,30 +556,30 @@ export function OrganizationsPage() {
                         sortKey="name"
                         sort={sort}
                         onSort={toggle}
-                        className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
+                        className="px-5 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
                       />
                       <SortHeader
                         label={lang === "vi" ? "Loại Hình" : "Type"}
                         sortKey="type"
                         sort={sort}
                         onSort={toggle}
-                        className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
+                        className="px-5 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
                       />
                       <SortHeader
                         label={lang === "vi" ? "Địa Chỉ" : "Address"}
                         sortKey="address"
                         sort={sort}
                         onSort={toggle}
-                        className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
+                        className="px-5 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
                       />
                       <SortHeader
                         label={lang === "vi" ? "Trạng Thái" : "Status"}
                         sortKey="status"
                         sort={sort}
                         onSort={toggle}
-                        className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
+                        className="px-5 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
                       />
-                      <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap">
+                      <th className="text-left px-5 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap">
                         {lang === "vi" ? "Thao Tác" : "Actions"}
                       </th>
                     </tr>
