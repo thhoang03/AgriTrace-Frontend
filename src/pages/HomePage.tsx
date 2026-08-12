@@ -385,57 +385,59 @@ export function HomePage() {
 
               {/* Live Real-Data Preview / Direct Search Hint */}
               {showSuggestions && query.trim() && (
-                <div className="absolute left-0 right-0 top-full mt-2.5 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden text-left z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                  {previewCode && isPreviewLoading ? (
-                    <div className="p-4 flex items-center justify-center gap-2 text-xs text-gray-500 font-medium">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      {lang === "vi" ? "Đang tra cứu dữ liệu thật..." : "Looking up real data..."}
-                    </div>
-                  ) : previewCode && previewBatch ? (
-                    <div
-                      onClick={() => {
-                        setShowSuggestions(false);
-                        handleSearch(previewCode);
-                      }}
-                      className="p-3.5 hover:bg-emerald-50/80 cursor-pointer flex items-center justify-between gap-3 transition-colors group"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-9 h-9 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-700 group-hover:text-white transition-colors shadow-xs">
-                          <Leaf className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="font-bold text-gray-900 text-xs truncate">{previewBatch.productName || previewBatch.batchCode}</div>
-                          <div className="text-[11px] text-gray-500 mt-0.5 truncate">
-                            {previewBatch.currentOrganizationName || (lang === "vi" ? "Chưa cập nhật đơn vị" : "No organization on record")}
-                            {" • "}
-                            {previewBatch.status === 7 ? (
-                              <span className="text-red-600 font-semibold">{lang === "vi" ? "Đã thu hồi" : "Recalled"}</span>
-                            ) : (
-                              <span className="text-emerald-700 font-semibold">{lang === "vi" ? "Đã xác thực" : "Verified"}</span>
-                            )}
+                <>
+                  <div className="absolute left-0 right-0 top-full mt-2.5 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden text-left z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    {previewCode && isPreviewLoading ? (
+                      <div className="p-4 flex items-center justify-center gap-2 text-xs text-gray-500 font-medium">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        {lang === "vi" ? "Đang tra cứu dữ liệu thật..." : "Looking up real data..."}
+                      </div>
+                    ) : previewCode && previewBatch ? (
+                      <div
+                        onClick={() => {
+                          setShowSuggestions(false);
+                          handleSearch(previewCode);
+                        }}
+                        className="p-3.5 hover:bg-emerald-50/80 cursor-pointer flex items-center justify-between gap-3 transition-colors group"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-xl bg-emerald-100/70 text-emerald-800 flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-700 group-hover:text-white transition-colors shadow-xs">
+                            <Leaf className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-bold text-gray-900 text-xs truncate">{previewBatch.productName || previewBatch.batchCode}</div>
+                            <div className="text-[11px] text-gray-500 mt-0.5 truncate">
+                              {previewBatch.currentOrganizationName || (lang === "vi" ? "Chưa cập nhật đơn vị" : "No organization on record")}
+                              {" • "}
+                              {previewBatch.status === 7 ? (
+                                <span className="text-red-600 font-semibold">{lang === "vi" ? "Đã thu hồi" : "Recalled"}</span>
+                              ) : (
+                                <span className="text-emerald-700 font-semibold">{lang === "vi" ? "Đã xác thực" : "Verified"}</span>
+                              )}
+                            </div>
                           </div>
                         </div>
+                        <code className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-100/80 px-2 py-1 rounded-lg border border-emerald-200/60 flex-shrink-0">
+                          {previewBatch.batchCode}
+                        </code>
                       </div>
-                      <code className="text-[11px] font-mono font-bold text-emerald-800 bg-emerald-100/80 px-2 py-1 rounded-lg border border-emerald-200/60 flex-shrink-0">
-                        {previewBatch.batchCode}
-                      </code>
-                    </div>
-                  ) : previewCode && isPreviewError ? (
-                    <div className="p-4 text-xs text-center text-gray-500 font-medium">
-                      {lang === "vi" ? `Không tìm thấy lô hàng với mã "${query}"` : `No batch found for "${query}"`}
-                    </div>
-                  ) : (
-                    <div
-                      onClick={() => {
-                        setShowSuggestions(false);
-                        handleSearch();
-                      }}
-                      className="p-4 text-xs text-center text-gray-600 hover:bg-emerald-50/50 cursor-pointer font-medium"
-                    >
-                      {lang === "vi" ? `Tra cứu trực tiếp mã "${query}" →` : `Search directly for "${query}" →`}
-                    </div>
-                  )}
-                </div>
+                    ) : previewCode && isPreviewError ? (
+                      <div className="p-4 text-xs text-center text-gray-500 font-medium">
+                        {lang === "vi" ? `Không tìm thấy lô hàng với mã "${query}"` : `No batch found for "${query}"`}
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => {
+                          setShowSuggestions(false);
+                          handleSearch();
+                        }}
+                        className="p-4 text-xs text-center text-gray-600 hover:bg-emerald-50/50 cursor-pointer font-medium"
+                      >
+                        {lang === "vi" ? `Tra cứu trực tiếp mã "${query}" →` : `Search directly for "${query}" →`}
+                      </div>
+                    )}
+                  </div>
+                </>
               )}
             </div>
         </div>
