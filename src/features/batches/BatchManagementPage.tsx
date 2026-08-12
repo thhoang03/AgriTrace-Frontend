@@ -385,7 +385,7 @@ export function BatchManagementPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className=bg-muted border-b border-border>
+                    <tr className="bg-muted border-b border-border">
                       <th
                         className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("product")}
