@@ -333,13 +333,13 @@ export function ReportsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Report</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Format</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Generated</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">By</th>
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Size</th>
-                    <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Action</th>
+                    <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest">Report</th>
+                    <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest">Type</th>
+                    <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest">Format</th>
+                    <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest">Generated</th>
+                    <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest">By</th>
+                    <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest">Size</th>
+                    <th className="text-right px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest">Action</th>
                   </tr>
                 </thead>
                 <tbody>
