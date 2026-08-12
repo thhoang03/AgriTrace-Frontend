@@ -434,6 +434,7 @@ export function HomePage() {
                     >
                       {lang === "vi" ? `Tra cứu trực tiếp mã "${query}" →` : `Search directly for "${query}" →`}
                     </div>
+                  )}
                 </div>
               )}
             </div>
