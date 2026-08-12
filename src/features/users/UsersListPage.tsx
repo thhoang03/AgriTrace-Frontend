@@ -42,6 +42,7 @@ import type {
 import type { Organization } from "../organizations/organizations.types";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
+import { translateApiError } from "../../utils/error-translator";
 
 const BANNER_IMG =
   "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=1400&q=80";
@@ -117,8 +118,10 @@ export function UsersListPage() {
     setTimeout(() => setAlert(null), 3000);
   };
 
-  const getApiErrorMessage = (err: unknown) =>
-    (err as any)?.response?.data?.message || (err as any)?.message || "An error occurred";
+  const getApiErrorMessage = (err: unknown) => {
+    const raw = (err as any)?.response?.data?.message || (err as any)?.message || "An error occurred";
+    return translateApiError(raw, lang);
+  };
 
   const { data, isLoading, isError } = useUsers({
     search,
@@ -196,7 +199,7 @@ export function UsersListPage() {
       qc.invalidateQueries({ queryKey: ["users"] });
       setForm(emptyUserForm);
       setShowAdd(false);
-      showAlert("success", `User "${form.fullName}" created successfully`);
+      showAlert("success", lang === "vi" ? `Tạo người dùng "${form.fullName}" thành công` : `User "${form.fullName}" created successfully`);
     } catch (e: any) {
       showAlert("error", getApiErrorMessage(e));
     } finally {
@@ -210,12 +213,12 @@ export function UsersListPage() {
 
 const handleResetPassword = async (user: UserItem) => {
   const password = window.prompt(
-    `Set a new password for ${user.fullName}`
+    lang === "vi" ? `Đặt mật khẩu mới cho ${user.fullName}` : `Set a new password for ${user.fullName}`
   );
   if (!password) return;
   try {
     await resetPassword.mutateAsync({ id: user.id, newPassword: password });
-    showAlert("success", `Password reset for "${user.fullName}" successfully`);
+    showAlert("success", lang === "vi" ? `Đặt lại mật khẩu cho "${user.fullName}" thành công` : `Password reset for "${user.fullName}" successfully`);
   } catch (e: any) {
     showAlert("error", getApiErrorMessage(e));
   }
@@ -223,13 +226,17 @@ const handleResetPassword = async (user: UserItem) => {
 
   const handleStatusToggle = async (user: UserItem) => {
     const nextStatus = user.status === "Active" ? "Inactive" : "Active";
-    const action = nextStatus === "Active" ? "activate" : "deactivate";
-    if (!confirm(`Are you sure you want to ${action} user "${user.fullName}"?`)) return;
+    const confirmMsg = lang === "vi"
+      ? `Bạn có chắc muốn ${nextStatus === "Active" ? "kích hoạt" : "vô hiệu hóa"} người dùng "${user.fullName}"?`
+      : `Are you sure you want to ${nextStatus === "Active" ? "activate" : "deactivate"} user "${user.fullName}"?`;
+    if (!confirm(confirmMsg)) return;
     try {
       await toggleStatus.mutateAsync({ id: user.id, isActive: nextStatus === "Active" });
       showAlert(
         "success",
-        `"${user.fullName}" has been ${nextStatus === "Active" ? "activated" : "deactivated"}`
+        lang === "vi"
+          ? `"${user.fullName}" đã được ${nextStatus === "Active" ? "kích hoạt" : "vô hiệu hóa"}`
+          : `"${user.fullName}" has been ${nextStatus === "Active" ? "activated" : "deactivated"}`
       );
     } catch (e: any) {
       showAlert("error", getApiErrorMessage(e));

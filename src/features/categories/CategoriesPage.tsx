@@ -11,6 +11,7 @@ import type { Category } from "./categories.types";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
 import { useProductsList } from "../products/products.queries";
+import { translateApiError } from "../../utils/error-translator";
 
 const EMPTY_FORM = { name: "", description: "" };
 
@@ -59,8 +60,10 @@ export function CategoriesPage() {
     setTimeout(() => setAlert(null), 3000);
   };
 
-  const getApiErrorMessage = (err: unknown) =>
-    (err as any)?.response?.data?.message || (err as any)?.message || "An error occurred";
+  const getApiErrorMessage = (err: unknown) => {
+    const raw = (err as any)?.response?.data?.message || (err as any)?.message || "An error occurred";
+    return translateApiError(raw, lang);
+  };
 
   const categorySortValue = (c: Category, key: string): string | number | boolean => {
     switch (key) {
@@ -103,20 +106,26 @@ export function CategoriesPage() {
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) { setError("Please enter category name"); return; }
+    if (!form.name.trim()) {
+      setError(lang === "vi" ? "Vui lòng nhập tên danh mục" : "Please enter category name");
+      return;
+    }
     const duplicate = categories.find(
       (c) => c.name.trim().toLowerCase() === form.name.trim().toLowerCase() &&
         c.categoryId !== editing?.categoryId,
     );
-    if (duplicate) { setError("Category name already exists"); return; }
+    if (duplicate) {
+      setError(lang === "vi" ? "Tên danh mục đã tồn tại" : "Category name already exists");
+      return;
+    }
     setError("");
     try {
       if (editing) {
         await updateMutation.mutateAsync({ id: editing.categoryId, data: form });
-        showAlert("success", `"${form.name}" updated successfully`);
+        showAlert("success", lang === "vi" ? `Cập nhật "${form.name}" thành công` : `"${form.name}" updated successfully`);
       } else {
         await createMutation.mutateAsync(form);
-        showAlert("success", `"${form.name}" added successfully`);
+        showAlert("success", lang === "vi" ? `Thêm "${form.name}" thành công` : `"${form.name}" added successfully`);
       }
       setShowModal(false);
     } catch (e: any) {
@@ -126,13 +135,17 @@ export function CategoriesPage() {
 
   const handleToggleStatus = async (cat: Category) => {
     const newStatus = !cat.isActive;
-    const action = newStatus ? "activate" : "deactivate";
-    if (!confirm(`Are you sure you want to ${action} category "${cat.name}"?`)) return;
+    const confirmMsg = lang === "vi"
+      ? `Bạn có chắc muốn ${newStatus ? "kích hoạt" : "vô hiệu hóa"} danh mục "${cat.name}"?`
+      : `Are you sure you want to ${newStatus ? "activate" : "deactivate"} category "${cat.name}"?`;
+    if (!confirm(confirmMsg)) return;
     try {
       await statusMutation.mutateAsync({ id: cat.categoryId, data: { isActive: newStatus } });
       showAlert(
         "success",
-        `"${cat.name}" has been ${newStatus ? "activated" : "deactivated"}`
+        lang === "vi"
+          ? `"${cat.name}" đã được ${newStatus ? "kích hoạt" : "vô hiệu hóa"}`
+          : `"${cat.name}" has been ${newStatus ? "activated" : "deactivated"}`
       );
     } catch (e: any) {
       showAlert("error", getApiErrorMessage(e));
