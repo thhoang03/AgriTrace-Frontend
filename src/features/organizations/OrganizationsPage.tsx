@@ -88,6 +88,7 @@ interface Alert {
 export function OrganizationsPage() {
   const { user } = useAuth();
   const { lang } = useLanguage();
+  const isAdmin = user?.role === "ADMIN";
   const isManager = user?.role === "MANAGER";
   const { data: orgTypes = [], isLoading: typesLoading } =
     useOrganizationTypes();

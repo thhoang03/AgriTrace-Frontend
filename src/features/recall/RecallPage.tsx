@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { AlertTriangle, Bell, CheckCircle, Clock, Plus, X, Eye, QrCode, Search, Box, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, Bell, CheckCircle, Clock, Plus, X, Eye, QrCode, Search, Box, CheckCircle2, MapPin, LocateFixed } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useRecalls, useCreateRecall, useResolveRecall } from "./recalls.queries";
 import { useAuth } from "../auth/auth.store";
@@ -10,6 +10,8 @@ import { batchesApi, type Batch } from "../batches/batches.api";
 import { QrScannerModal } from "./QrScannerModal";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { toast } from "sonner";
+import { fetchDeviceLocation } from "../../utils/locationUtils";
+import { MapPickerModal } from "../../components/common/MapPickerModal";
 
 const getSeverityName = (severity: number): RecallSeverity => {
   switch (severity) {
@@ -55,7 +57,30 @@ export function RecallPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [showResolveModal, setShowResolveModal] = useState<string | null>(null);
-  const [form, setForm] = useState({ batchId: "", reason: "", severity: 2 as number, notes: "" });
+  const [form, setForm] = useState({ batchId: "", reason: "", severity: 2 as number, notes: "", location: "" });
+  const [locatingDevice, setLocatingDevice] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
+
+  const handleGetDeviceLocation = async () => {
+    setLocatingDevice(true);
+    try {
+      const res = await fetchDeviceLocation();
+      setForm((prev) => ({ ...prev, location: res.locationString }));
+      toast.success(
+        lang === "vi"
+          ? "Đã lấy vị trí GPS thiết bị thành công!"
+          : "Device GPS location fetched successfully!"
+      );
+    } catch (err: any) {
+      toast.error(
+        err?.message ||
+          (lang === "vi" ? "Không thể lấy vị trí thiết bị" : "Failed to get device location")
+      );
+    } finally {
+      setLocatingDevice(false);
+    }
+  };
+
   const [filters, setFilters] = useState({ status: "All" as RecallStatus | "All", severity: "All" as RecallSeverity | "All", search: "" });
 
   const { data: recallsData, isLoading, error } = useRecalls({ page: 1, pageSize: 20 });
@@ -126,10 +151,11 @@ export function RecallPage() {
       await createRecall.mutateAsync({ 
         batchId: actualBatchId, 
         reason: form.reason, 
-        severity: form.severity 
+        severity: form.severity,
+        location: form.location,
       } as CreateRecallRequest);
       setShowCreate(false);
-      setForm({ batchId: "", reason: "", severity: 2, notes: "" });
+      setForm({ batchId: "", reason: "", severity: 2, notes: "", location: "" });
       toast.success(lang === "vi" ? "Đã phát lệnh thu hồi lô hàng thành công!" : "Recall order issued successfully!");
     } catch (error: any) {
       console.error("Failed to create recall:", error);
@@ -411,6 +437,41 @@ export function RecallPage() {
               </div>
 
               <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                    {lang === "vi" ? "Địa Điểm Thu Hồi / Cách Ly" : "Recall / Isolation Location"}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleGetDeviceLocation}
+                      disabled={locatingDevice}
+                      className="text-xs text-red-700 hover:text-red-800 font-semibold flex items-center gap-1 bg-red-50 px-2 py-1 rounded-lg border border-red-200 transition-colors disabled:opacity-50"
+                      title={lang === "vi" ? "Lấy vị trí hiện tại của thiết bị" : "Get current device location"}
+                    >
+                      <LocateFixed className={`w-3.5 h-3.5 ${locatingDevice ? "animate-spin" : ""}`} />
+                      {lang === "vi" ? "Vị trí GPS" : "GPS Location"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowMapPicker(true)}
+                      className="text-xs text-blue-700 hover:text-blue-800 font-semibold flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg border border-blue-200 transition-colors"
+                      title={lang === "vi" ? "Chọn vị trí trên bản đồ" : "Pick location on map"}
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      {lang === "vi" ? "Bản đồ" : "Map"}
+                    </button>
+                  </div>
+                </div>
+                <input
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  placeholder={lang === "vi" ? "Ví dụ: Kho cách ly số 3, Cảng Tân Cảng HCM..." : "e.g. Isolation Warehouse #3, HCMC Port..."}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-red-500 bg-white"
+                />
+              </div>
+
+              <div>
                 <label className="text-xs font-semibold text-gray-700 mb-1.5 block uppercase tracking-wide">{lang === "vi" ? "Ghi Chú Bổ Sung" : "Additional Notes"}</label>
                 <textarea
                   value={form.notes}
@@ -437,10 +498,9 @@ export function RecallPage() {
                 <button
                   onClick={handleCreate}
                   disabled={createRecall.isPending || !form.batchId || !form.reason}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 shadow-md"
-                  style={{ background: "linear-gradient(135deg, #B71C1C 0%, #E53935 100%)" }}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-all disabled:opacity-50 shadow-md shadow-red-600/20"
                 >
-                  {createRecall.isPending ? (lang === "vi" ? "Đang tạo..." : "Creating...") : (lang === "vi" ? "Xác Nhận Thu Hồi" : "Confirm Recall")}
+                  {createRecall.isPending ? (lang === "vi" ? "Đang xử lý..." : "Processing...") : (lang === "vi" ? "Xác Nhận Thu Hồi" : "Confirm Recall")}
                 </button>
               </div>
             </div>
@@ -450,17 +510,17 @@ export function RecallPage() {
 
       {/* Resolve Confirmation Modal */}
       {showResolveModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full" style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-green-100 text-green-700">
-                  <CheckCircle className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-gray-900">{lang === "vi" ? "Hoàn Tất Thu Hồi Lô Hàng" : "Complete Batch Recall"}</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowResolveModal(null)}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()} style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle className="w-5 h-5 text-green-600" />
+                <h3 className="font-bold text-gray-900 text-base">
+                  {lang === "vi" ? "Xác Nhận Hoàn Tất Thu Hồi" : "Confirm Resolve Recall"}
+                </h3>
               </div>
-              <button onClick={() => setShowResolveModal(null)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                <X className="w-4 h-4 text-gray-500" />
+              <button onClick={() => setShowResolveModal(null)} className="p-1 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600">
+                <X className="w-4 h-4" />
               </button>
             </div>
             <div className="space-y-4">
@@ -498,6 +558,19 @@ export function RecallPage() {
         onClose={() => setShowQrModal(false)}
         onScanSuccess={handleScanSuccess}
       />
+
+      {/* Interactive Map Picker Modal */}
+      {showMapPicker && (
+        <MapPickerModal
+          isOpen={showMapPicker}
+          onClose={() => setShowMapPicker(false)}
+          onSelectLocation={(locStr) => {
+            setForm((prev) => ({ ...prev, location: locStr }));
+            setShowMapPicker(false);
+          }}
+          initialLocation={form.location}
+        />
+      )}
     </div>
   );
 }

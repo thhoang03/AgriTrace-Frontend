@@ -25,6 +25,7 @@ export interface CreateRecallRequest {
   batchId: string;
   reason: string;
   severity: number;
+  location?: string;
 }
 
 export interface RecallFilters {
@@ -69,10 +70,11 @@ export const recallsApi = {
   },
 
   create: async (data: CreateRecallRequest) => {
-    const newRequest: NewCreateRecallRequest = {
+    const newRequest: any = {
       batchId: data.batchId,
       reason: data.reason,
       severity: data.severity,
+      location: data.location,
     };
     const response = await post<{ recallId: string }>("/recalls", newRequest);
     const createdData = response.data as any;

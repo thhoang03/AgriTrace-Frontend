@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { X, FlaskConical, Search, ListFilter, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { X, FlaskConical, Search, ListFilter, CheckCircle, AlertCircle, Loader2, MapPin, LocateFixed } from "lucide-react";
+import { toast } from "sonner";
 import { useBatches } from "../batches/batches.queries";
 import { batchesApi } from "../batches/batches.api";
 import { QrScannerButton } from "../supply-chain/QrScannerButton";
@@ -7,6 +8,8 @@ import { InspectionTypeValues, type InspectionType } from "./inspection.types";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useAuth } from "../auth/auth.store";
 import { useOrganizationsList } from "../organizations/organizations.queries";
+import { fetchDeviceLocation } from "../../utils/locationUtils";
+import { MapPickerModal } from "../../components/common/MapPickerModal";
 
 interface InspectionCreateModalProps {
   onClose: () => void;
@@ -16,6 +19,7 @@ interface InspectionCreateModalProps {
     inspectionDate: string;
     notes: string;
     organizationId?: string;
+    location?: string;
   }) => void;
   isSubmitting?: boolean;
 }
@@ -38,7 +42,31 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
     inspectionDate: new Date().toISOString().split("T")[0],
     notes: "",
     organizationId: "",
+    location: "",
   });
+
+  const [locatingDevice, setLocatingDevice] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
+
+  const handleGetDeviceLocation = async () => {
+    setLocatingDevice(true);
+    try {
+      const res = await fetchDeviceLocation();
+      setForm((prev) => ({ ...prev, location: res.locationString }));
+      toast.success(
+        lang === "vi"
+          ? "Đã lấy vị trí GPS thiết bị thành công!"
+          : "Device GPS location fetched successfully!"
+      );
+    } catch (err: any) {
+      toast.error(
+        err?.message ||
+          (lang === "vi" ? "Không thể lấy vị trí thiết bị" : "Failed to get device location")
+      );
+    } finally {
+      setLocatingDevice(false);
+    }
+  };
 
   const { user } = useAuth();
   const isAdmin = user?.role === "ADMIN" || user?.role === "Admin";
@@ -321,6 +349,42 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
           )}
 
           <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-sm font-semibold text-gray-700">
+                {lang === "vi" ? "Địa điểm kiểm định / Lấy mẫu" : "Inspection Location / Test Site"}
+              </label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleGetDeviceLocation}
+                  disabled={locatingDevice}
+                  className="text-xs text-emerald-700 hover:text-emerald-800 font-semibold flex items-center gap-1 bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-200 transition-colors disabled:opacity-50"
+                  title={lang === "vi" ? "Lấy vị trí hiện tại của thiết bị" : "Get current device location"}
+                >
+                  <LocateFixed className={`w-3.5 h-3.5 ${locatingDevice ? "animate-spin" : ""}`} />
+                  {lang === "vi" ? "Vị trí GPS" : "GPS Location"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowMapPicker(true)}
+                  className="text-xs text-blue-700 hover:text-blue-800 font-semibold flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-lg border border-blue-200 transition-colors"
+                  title={lang === "vi" ? "Chọn vị trí trên bản đồ" : "Pick location on map"}
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  {lang === "vi" ? "Bản đồ" : "Map"}
+                </button>
+              </div>
+            </div>
+            <input
+              type="text"
+              value={form.location}
+              onChange={(e) => setForm({ ...form, location: e.target.value })}
+              placeholder={lang === "vi" ? "Ví dụ: Phòng lab A2, Trung tâm Kiểm định Hà Nội..." : "e.g. Lab A2, Hanoi Inspection Center..."}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none bg-white transition-all focus:border-green-500 font-medium text-gray-800"
+            />
+          </div>
+
+          <div>
             <label className="text-sm font-semibold text-gray-700 mb-1.5 block">
               {lang === "vi" ? "Ngày lấy mẫu / Kiểm tra" : "Inspection Date"} <span className="text-red-500">*</span>
             </label>
@@ -370,6 +434,18 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
           </div>
         </form>
       </div>
+
+      {showMapPicker && (
+        <MapPickerModal
+          isOpen={showMapPicker}
+          onClose={() => setShowMapPicker(false)}
+          onSelectLocation={(locStr) => {
+            setForm((prev) => ({ ...prev, location: locStr }));
+            setShowMapPicker(false);
+          }}
+          initialLocation={form.location}
+        />
+      )}
     </div>
   );
 }

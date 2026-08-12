@@ -54,11 +54,13 @@ export function RegisterPage() {
         else if (Array.isArray(res?.items)) rawList = res.items;
 
         if (rawList.length > 0) {
-          const parsed = rawList.map((item: any) => ({
-            id: String(item.id || item.value || item.code || ""),
-            code: String(item.code || item.value || item.id || ""),
-            name: String(item.name || item.label || item.code || ""),
-          }));
+          const parsed = rawList
+            .map((item: any) => ({
+              id: String(item.id || item.value || item.code || ""),
+              code: String(item.code || item.value || item.id || ""),
+              name: String(item.name || item.label || item.code || ""),
+            }))
+            .filter((t) => t.code.toUpperCase() !== "SYSTEM");
           setOrgTypes(parsed);
           setForm((prev) => ({ ...prev, organizationTypeId: parsed[0].id }));
         }

@@ -113,6 +113,8 @@ export const inspectionApi = {
         inspectionType: data.inspectionType,
         inspectionDate: data.inspectionDate,
         notes: data.notes,
+        organizationId: data.organizationId,
+        location: data.location,
       }
     );
     const result = response.data as any;
