@@ -264,11 +264,11 @@ export function CategoriesPage() {
               <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-muted">
-                    <SortHeader label={lang === "vi" ? "DANH MỤC" : "Category"} sortKey="name" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "MÔ TẢ" : "Description"} sortKey="description" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
+                  <tr className="bg-muted border-b border-border">
+                    <SortHeader label={lang === "vi" ? "Danh Mục" : "Category"} sortKey="name" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "Mô Tả" : "Description"} sortKey="description" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap" />
+                    <SortHeader label={lang === "vi" ? "Trạng Thái" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap" />
+                    <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">

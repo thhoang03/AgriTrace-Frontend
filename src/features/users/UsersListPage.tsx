@@ -415,13 +415,13 @@ const handleResetPassword = async (user: UserItem) => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-muted/60 border-b border-border">
-                    <SortHeader label={lang === "vi" ? "NGƯỜI DÙNG" : "User"} sortKey="name" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[220px]" />
-                    <SortHeader label={lang === "vi" ? "TỔ CHỨC" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[140px]" />
-                    <SortHeader label={lang === "vi" ? "LOẠI ĐƠN VỊ" : "Org. Type"} sortKey="orgType" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[110px]" />
-                    <SortHeader label={lang === "vi" ? "VAI TRÒ" : "Role"} sortKey="role" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[100px]" />
-                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[110px]" />
-                    <SortHeader label={lang === "vi" ? "LIÊN HỆ" : "Contact"} sortKey="contact" sort={sort} onSort={toggle} className="px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[180px]" />
-                    <th className="text-right px-4 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap min-w-[110px]">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
+                    <SortHeader label={lang === "vi" ? "Người Dùng" : "User"} sortKey="name" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[220px]" />
+                    <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[140px]" />
+                    <SortHeader label={lang === "vi" ? "Loại Đơn Vị" : "Org. Type"} sortKey="orgType" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[110px]" />
+                    <SortHeader label={lang === "vi" ? "Vai Trò" : "Role"} sortKey="role" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[100px]" />
+                    <SortHeader label={lang === "vi" ? "Trạng Thái" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[110px]" />
+                    <SortHeader label={lang === "vi" ? "Liên Hệ" : "Contact"} sortKey="contact" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[180px]" />
+                    <th className="text-right px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[110px]">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
