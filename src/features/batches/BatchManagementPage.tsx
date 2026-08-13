@@ -47,7 +47,7 @@ const normalizeBatchStatus = (status: BatchStatus): BatchStatus => {
   }
 };
 
-type SortField = "product" | "harvestDate" | "quantity" | "status";
+type SortField = "product" | "createdAt" | "quantity" | "status";
 
 export function BatchManagementPage() {
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ export function BatchManagementPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
   const [showQRBatch, setShowQRBatch] = useState<Batch | null>(null);
-  const [sortField, setSortField] = useState<SortField>("harvestDate");
+  const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortAsc, setSortAsc] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; code: string; name: string; isDeleted?: boolean } | null>(null);
   const [editTarget, setEditTarget] = useState<Batch | null>(null);
@@ -92,7 +92,7 @@ export function BatchManagementPage() {
     let valA: string | number = "";
     let valB: string | number = "";
     if (sortField === "product")     { valA = a.productName ?? a.product; valB = b.productName ?? b.product; }
-    if (sortField === "harvestDate") { valA = a.harvestDate; valB = b.harvestDate; }
+    if (sortField === "createdAt") { valA = a.createdAt || a.harvestDate; valB = b.createdAt || b.harvestDate; }
     if (sortField === "quantity")    { valA = a.quantity; valB = b.quantity; }
     if (sortField === "status")      { valA = a.status; valB = b.status; }
     if (valA < valB) return sortAsc ? -1 : 1;
@@ -125,7 +125,7 @@ export function BatchManagementPage() {
   }));
 
   const handleExport = () => {
-    const headers = ["Batch ID", "Product", "Category", "Farm", "Farmer", "Harvest Date", "Quantity", "Status", "Location"];
+    const headers = ["Batch ID", "Product", "Category", "Farm", "Farmer", "Created Date", "Quantity", "Status", "Location"];
     const csvContent = [
       headers.join(","),
       ...normalizedBatches.map(b => 
@@ -135,7 +135,7 @@ export function BatchManagementPage() {
           `"${b.category}"`,
           `"${b.farm}"`,
           `"${b.farmer}"`,
-          b.harvestDate,
+          b.createdAt ? b.createdAt.split('T')[0] : b.harvestDate,
           b.quantity,
           b.status,
           `"${b.location}"`
@@ -400,9 +400,9 @@ export function BatchManagementPage() {
                       </th>
                       <th
                         className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest cursor-pointer select-none whitespace-nowrap"
-                        onClick={() => handleSort("harvestDate")}
+                        onClick={() => handleSort("createdAt")}
                       >
-                        <div className="flex items-center gap-1.5">{lang === "vi" ? "Ngày Thu Hoạch" : "Harvest Date"} <SortIcon field="harvestDate" /></div>
+                        <div className="flex items-center gap-1.5">{lang === "vi" ? "Ngày Tạo" : "Created Date"} <SortIcon field="createdAt" /></div>
                       </th>
                       <th
                         className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest cursor-pointer select-none whitespace-nowrap"
@@ -468,7 +468,7 @@ export function BatchManagementPage() {
                             </div>
                           </td>
                           <td className="px-4 py-3.5">
-                            <div className="text-sm text-foreground">{batch.harvestDate}</div>
+                            <div className="text-sm text-foreground">{batch.createdAt ? batch.createdAt.split('T')[0] : batch.harvestDate}</div>
                             <div className="text-xs text-muted-foreground">{batch.location}</div>
                           </td>
                           <td className="px-4 py-3.5">
