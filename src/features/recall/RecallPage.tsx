@@ -218,23 +218,7 @@ export function RecallPage() {
 
       <div className="px-6 mt-6">
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-          {[
-            { label: lang === "vi" ? "Đang Thu Hồi (PENDING)" : "Pending Recalls", count: activeCount, icon: Clock, bg: "#FFF9C4", color: "#F57F17", desc: lang === "vi" ? "Đang xử lý thu hồi lô hàng" : "Pending recall processing" },
-            { label: lang === "vi" ? "Đã Hoàn Tất (COMPLETED)" : "Completed Recalls", count: resolvedCount, icon: CheckCircle, bg: "#E8F5E9", color: "#2E7D32", desc: lang === "vi" ? "Đã hoàn tất lệnh thu hồi" : "Successfully closed" },
-          ].map(({ label, count, icon: Icon, bg, color, desc }) => (
-            <div key={label} className="bg-card rounded-2xl p-6 flex items-center gap-5" style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: bg }}>
-                <Icon style={{ color, width: 24, height: 24 }} />
-              </div>
-              <div>
-                <div style={{ fontSize: 30, fontWeight: 800, color }} className="leading-none">{count}</div>
-                <div className="font-semibold text-foreground mt-1" style={{ fontSize: 14 }}>{label}</div>
-                <div className="text-muted-foreground text-xs">{desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
+        
 
         {activeCount > 0 && (
           <div className="mb-5 p-5 rounded-2xl flex items-start gap-4 bg-destructive/10 text-destructive border border-destructive/30">
