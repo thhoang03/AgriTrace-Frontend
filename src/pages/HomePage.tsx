@@ -165,8 +165,11 @@ export function HomePage() {
 
   // Smart Search logic
   const handleSearch = (overrideQuery?: string) => {
-    const searchText = (overrideQuery ?? query).trim();
+    let searchText = (overrideQuery ?? query).trim();
     if (!searchText) return;
+    if (searchText.length > 200) {
+      searchText = searchText.substring(0, 200);
+    }
 
     // Check if input is a full URL like http://.../trace/RICE-20260112-001
     if (searchText.includes("/trace/")) {
@@ -336,10 +339,13 @@ export function HomePage() {
                 <input
                   ref={searchInputRef}
                   type="text"
+                  maxLength={200}
                   value={query}
                   onChange={(e) => {
-                    setQuery(e.target.value);
-                    setShowSuggestions(true);
+                    if (e.target.value.length <= 200) {
+                      setQuery(e.target.value);
+                      setShowSuggestions(true);
+                    }
                   }}
                   onFocus={() => setShowSuggestions(true)}
                   onKeyDown={(e) => {
