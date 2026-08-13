@@ -213,8 +213,11 @@ export function MapPickerModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl space-y-4 flex flex-col max-h-[90vh]">
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl space-y-4 flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 pb-3 shrink-0">
           <div className="flex items-center gap-2">
