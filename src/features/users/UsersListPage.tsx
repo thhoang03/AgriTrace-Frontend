@@ -224,7 +224,16 @@ const handleResetPassword = async (user: UserItem) => {
   }
 };
 
+  const canToggle = (targetUser: UserItem) => {
+    if (!currentUser) return false;
+    if (currentUser.id === targetUser.id) return false; // Cannot toggle self
+    if (currentUser.role === "ADMIN") return targetUser.role !== "ADMIN";
+    if (currentUser.role === "MANAGER") return targetUser.role === "STAFF";
+    return false;
+  };
+
   const handleStatusToggle = async (user: UserItem) => {
+    if (!canToggle(user)) return;
     const nextStatus = user.status === "Active" ? "Inactive" : "Active";
     const confirmMsg = lang === "vi"
       ? `Bạn có chắc muốn ${nextStatus === "Active" ? "kích hoạt" : "vô hiệu hóa"} người dùng "${user.fullName}"?`
@@ -493,8 +502,9 @@ const handleResetPassword = async (user: UserItem) => {
                         <td className="px-4 py-3.5">
                           <button
                             onClick={() => handleStatusToggle(user)}
-                            className="flex items-center gap-2 whitespace-nowrap"
-                            title="Toggle account status"
+                            disabled={!canToggle(user)}
+                            className={`flex items-center gap-2 whitespace-nowrap ${canToggle(user) ? "hover:opacity-80 cursor-pointer" : "cursor-default"}`}
+                            title={canToggle(user) ? "Toggle account status" : undefined}
                           >
                             <div
                               className="w-1.5 h-1.5 rounded-full"
@@ -534,12 +544,15 @@ const handleResetPassword = async (user: UserItem) => {
                              </button>
                               <button
                                 onClick={() => handleStatusToggle(user)}
+                                disabled={!canToggle(user)}
                                 className={`p-1.5 rounded-lg transition-colors ${
-                                   user.status === "Active" 
-                                    ? "hover:bg-red-50 text-red-400" 
-                                    : "hover:bg-green-50 text-green-500"
+                                   !canToggle(user)
+                                    ? "opacity-30 cursor-not-allowed text-muted-foreground"
+                                    : user.status === "Active" 
+                                      ? "hover:bg-red-50 text-red-400" 
+                                      : "hover:bg-green-50 text-green-500"
                                 }`}
-                                title={user.status === "Active" ? "Deactivate" : "Activate"}
+                                title={!canToggle(user) ? undefined : (user.status === "Active" ? "Deactivate" : "Activate")}
                               >
                                 {user.status === "Active" ? <ToggleRight className="w-3.5 h-3.5" /> : <ToggleLeft className="w-3.5 h-3.5" />}
                               </button>
