@@ -102,16 +102,16 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
     }
   };
 
-  const handleSearchBatch = async () => {
-    if (!searchQuery.trim()) return;
+  const executeSearch = async (q: string) => {
+    if (!q.trim()) return;
     setIsSearchingBatch(true);
     setSearchError("");
     setSearchedBatch(null);
 
     try {
-      const q = searchQuery.trim();
+      const query = q.trim();
       const matchedLocal = allBatches.find(
-        (b) => b.id.toLowerCase() === q.toLowerCase() || b.batchCode?.toLowerCase() === q.toLowerCase()
+        (b) => b.id.toLowerCase() === query.toLowerCase() || b.batchCode?.toLowerCase() === query.toLowerCase()
       );
 
       if (matchedLocal) {
@@ -120,7 +120,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
         return;
       }
 
-      const res = await batchesApi.getAll({ search: q, limit: 10 });
+      const res = await batchesApi.getAll({ search: query, limit: 10 });
       if (res.data && res.data.length > 0) {
         const match = res.data[0];
         setSearchedBatch(match);
@@ -128,7 +128,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
         setDynamicBatches((prev) => [...prev, match]);
       } else {
         try {
-          const byIdRes = await batchesApi.getById(q);
+          const byIdRes = await batchesApi.getById(query);
           if (byIdRes.data && byIdRes.data.id) {
             setSearchedBatch(byIdRes.data);
             setForm((prev) => ({ ...prev, batchId: byIdRes.data.id }));
@@ -139,7 +139,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
           // Fallback: Resolve globally via public API
           try {
             const { get } = await import("../../lib/api");
-            const publicRes = await get<any>(`/public/trace/code/${q}`);
+            const publicRes = await get<any>(`/public/trace/code/${query}`);
             if (publicRes.data && publicRes.data.batchId) {
               const byIdRes = await batchesApi.getById(publicRes.data.batchId);
               if (byIdRes.data && byIdRes.data.id) {
@@ -153,7 +153,7 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
             // Ignore
           }
         }
-        setSearchError(lang === "vi" ? `Không tìm thấy Lô hàng có mã hoặc ID "${q}" trên nền tảng AgriTrace.` : `Batch with code or ID "${q}" not found on AgriTrace.`);
+        setSearchError(lang === "vi" ? `Không tìm thấy Lô hàng có mã hoặc ID "${query}" trên nền tảng AgriTrace.` : `Batch with code or ID "${query}" not found on AgriTrace.`);
       }
     } catch {
       setSearchError(lang === "vi" ? "Không thể tìm kiếm lô hàng lúc này. Vui lòng thử lại." : "Unable to search for batch at this moment. Please try again.");
@@ -162,26 +162,17 @@ export function InspectionCreateModal({ onClose, onSubmit, isSubmitting = false 
     }
   };
 
+  const handleSearchBatch = () => {
+    executeSearch(searchQuery);
+  };
+
   const handleQrScan = (result: string) => {
     let scannedId = result.trim();
     if (scannedId.includes("/trace/")) {
       scannedId = scannedId.split("/trace/").pop() || scannedId;
     }
     setSearchQuery(scannedId);
-
-    const found = allBatches.find(
-      (b) => b.id.toLowerCase() === scannedId.toLowerCase() || b.batchCode?.toLowerCase() === scannedId.toLowerCase()
-    );
-
-    if (found) {
-      setSearchedBatch(found);
-      setForm((prev) => ({ ...prev, batchId: found.id }));
-    } else {
-      const newOption = { id: scannedId, batchCode: scannedId, product: lang === "vi" ? "Lô hàng quét từ mã QR" : "Batch scanned from QR code" };
-      setSearchedBatch(newOption);
-      setDynamicBatches((prev) => [...prev, newOption]);
-      setForm((prev) => ({ ...prev, batchId: scannedId }));
-    }
+    executeSearch(scannedId);
   };
 
   return (
