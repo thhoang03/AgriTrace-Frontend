@@ -311,7 +311,7 @@ export function RecallPage() {
                       lang === "vi" ? "Mức Độ" : "Severity",
                       lang === "vi" ? "Ngày Tạo" : "Created Date"
                     ].map((h) => (
-                      <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">{h}</th>
+                      <th key={h} className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
                 </thead>

@@ -32,6 +32,7 @@ import {
   sortRows,
   useColumnSort,
 } from "../../components/common/SortableHeader";
+import { translateApiError } from "../../utils/error-translator";
 
 const TYPE_COLORS: Record<string, { bg: string; color: string }> = {
   FARM: { bg: "#E8F5E9", color: "#1B5E20" },
@@ -223,19 +224,19 @@ export function OrganizationsPage() {
           organizationTypeId: form.organizationTypeId,
           address: form.address,
         });
-        showAlert("success", `"${form.name}" updated successfully`);
+        showAlert("success", lang === "vi" ? `Cập nhật "${form.name}" thành công` : `"${form.name}" updated successfully`);
       } else {
         const res = await organizationsApi.create({
           name: form.name,
           organizationTypeId: form.organizationTypeId,
           address: form.address,
         });
-        showAlert("success", `"${form.name}" added successfully`);
+        showAlert("success", lang === "vi" ? `Thêm "${form.name}" thành công` : `"${form.name}" added successfully`);
       }
       refetch();
       setShowModal(false);
     } catch (e: any) {
-      setError(e.message || "An error occurred");
+      setError(translateApiError(e.message || "An error occurred", lang));
     } finally {
       setSaving(false);
     }
@@ -271,7 +272,9 @@ export function OrganizationsPage() {
       });
       showAlert(
         newStatus === "ACTIVE" ? "success" : "error",
-        `"${org.name}" has been ${newStatus === "ACTIVE" ? "activated" : "deactivated"}`,
+        lang === "vi"
+          ? `"${org.name}" đã được ${newStatus === "ACTIVE" ? "kích hoạt" : "vô hiệu hóa"}`
+          : `"${org.name}" has been ${newStatus === "ACTIVE" ? "activated" : "deactivated"}`,
       );
     } catch (e: any) {
       // Rollback nếu API lỗi
@@ -296,14 +299,14 @@ export function OrganizationsPage() {
         setDetail({ ...detail, status: org.status });
       showAlert(
         "error",
-        e?.response?.data?.message || e?.message || "Failed to update status",
+        translateApiError(e?.response?.data?.message || e?.message || "Failed to update status", lang),
       );
     }
   };
 
   const handleInviteStaff = async () => {
     if (!inviteEmail.trim()) {
-      showAlert("error", "Please enter an email address");
+      showAlert("error", lang === "vi" ? "Vui lòng nhập địa chỉ email" : "Please enter an email address");
       return;
     }
     if (!detail) return;
@@ -314,11 +317,11 @@ export function OrganizationsPage() {
         detail.organizationId,
         inviteEmail.trim(),
       );
-      showAlert("success", `Invitation sent to ${inviteEmail}`);
+      showAlert("success", lang === "vi" ? `Gửải lời mời đến ${inviteEmail} thành công` : `Invitation sent to ${inviteEmail}`);
       setInviteEmail("");
       setShowInviteModal(false);
     } catch (e: any) {
-      setError(e.message || "Failed to send invitation");
+      setError(translateApiError(e.message || "Failed to send invitation", lang));
     } finally {
       setInviting(false);
     }
@@ -413,8 +416,9 @@ export function OrganizationsPage() {
               <input
                 type="text"
                 value={search}
+                maxLength={199}
                 onChange={(e) => {
-                  setSearch(e.target.value);
+                  setSearch(e.target.value.slice(0, 199));
                   setPage(1);
                 }}
                 placeholder={
@@ -547,37 +551,37 @@ export function OrganizationsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-muted">
+                    <tr className="bg-muted border-b border-border">
                       <SortHeader
-                        label={lang === "vi" ? "TỔ CHỨC" : "Organization"}
+                        label={lang === "vi" ? "Tổ Chức" : "Organization"}
                         sortKey="name"
                         sort={sort}
                         onSort={toggle}
-                        className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap"
+                        className="px-5 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
                       />
                       <SortHeader
-                        label={lang === "vi" ? "LOẠI HÌNH" : "Type"}
+                        label={lang === "vi" ? "Loại Hình" : "Type"}
                         sortKey="type"
                         sort={sort}
                         onSort={toggle}
-                        className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap"
+                        className="px-5 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
                       />
                       <SortHeader
-                        label={lang === "vi" ? "ĐỊA CHỈ" : "Address"}
+                        label={lang === "vi" ? "Địa Chỉ" : "Address"}
                         sortKey="address"
                         sort={sort}
                         onSort={toggle}
-                        className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap"
+                        className="px-5 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
                       />
                       <SortHeader
-                        label={lang === "vi" ? "TRẠNG THÁI" : "Status"}
+                        label={lang === "vi" ? "Trạng Thái" : "Status"}
                         sortKey="status"
                         sort={sort}
                         onSort={toggle}
-                        className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap"
+                        className="px-5 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap"
                       />
-                      <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
-                        {lang === "vi" ? "THAO TÁC" : "Actions"}
+                      <th className="text-left px-5 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap">
+                        {lang === "vi" ? "Thao Tác" : "Actions"}
                       </th>
                     </tr>
                   </thead>

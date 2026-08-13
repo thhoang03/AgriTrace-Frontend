@@ -261,7 +261,8 @@ export function BatchManagementPage() {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                maxLength={199}
+                onChange={(e) => { setSearch(e.target.value.slice(0, 199)); setPage(1); }}
                 placeholder={lang === "vi" ? "Tìm kiếm theo Mã Lô, sản phẩm, trang trại, nông dân..." : "Search by ID, product, farm, farmer..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm outline-none transition-all bg-input-background"
               />
@@ -385,41 +386,41 @@ export function BatchManagementPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-muted">
+                    <tr className="bg-muted border-b border-border">
                       <th
-                        className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
+                        className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("product")}
                       >
                         <div className="flex items-center gap-1.5">{lang === "vi" ? "Sản Phẩm" : "Product"} <SortIcon field="product" /></div>
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                      <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap">
                         {lang === "vi" ? "Mã Lô Hàng" : "Batch Code"}
                       </th>
                       <th
-                        className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
+                        className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("harvestDate")}
                       >
                         <div className="flex items-center gap-1.5">{lang === "vi" ? "Ngày Thu Hoạch" : "Harvest Date"} <SortIcon field="harvestDate" /></div>
                       </th>
                       <th
-                        className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
+                        className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("quantity")}
                       >
                         <div className="flex items-center gap-1.5">{lang === "vi" ? "Sản Lượng" : "Quantity"} <SortIcon field="quantity" /></div>
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                      <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap">
                         {lang === "vi" ? "Số Lượng Còn" : "Remaining Qty"}
                       </th>
                       <th
-                        className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer select-none whitespace-nowrap"
+                        className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest cursor-pointer select-none whitespace-nowrap"
                         onClick={() => handleSort("status")}
                       >
                         <div className="flex items-center gap-1.5">{lang === "vi" ? "Trạng Thái" : "Status"} <SortIcon field="status" /></div>
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                      <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap">
                         {lang === "vi" ? "Tình Trạng" : "State"}
                       </th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">
+                      <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap">
                         {lang === "vi" ? "Thao Tác" : "Actions"}
                       </th>
                     </tr>

@@ -168,7 +168,8 @@ export function OrganizationApprovalsPage() {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                maxLength={199}
+                onChange={(e) => { setSearch(e.target.value.slice(0, 199)); setPage(1); }}
                 placeholder={lang === "vi" ? "Tìm kiếm tổ chức..." : "Search organizations..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
               />
@@ -198,12 +199,12 @@ export function OrganizationApprovalsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-muted">
-                      <SortHeader label={lang === "vi" ? "TỔ CHỨC" : "Organization"} sortKey="name" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                      <SortHeader label={lang === "vi" ? "LOẠI HÌNH" : "Type"} sortKey="type" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                      <SortHeader label={lang === "vi" ? "ĐỊA CHỈ" : "Address"} sortKey="address" sort={sort} onSort={toggle} className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                      <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
-                    </tr>
+                     <tr className="bg-muted border-b border-border">
+                       <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="name" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap" />
+                       <SortHeader label={lang === "vi" ? "Loại Hình" : "Type"} sortKey="type" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap" />
+                       <SortHeader label={lang === "vi" ? "Địa Chỉ" : "Address"} sortKey="address" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap" />
+                       <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
+                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {sortedOrgs.map((org) => {

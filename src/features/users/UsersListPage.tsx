@@ -42,6 +42,7 @@ import type {
 import type { Organization } from "../organizations/organizations.types";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { SortHeader, sortRows, useColumnSort } from "../../components/common/SortableHeader";
+import { translateApiError } from "../../utils/error-translator";
 
 const BANNER_IMG =
   "https://images.unsplash.com/photo-1529304344766-6b537de190f8?w=1400&q=80";
@@ -117,8 +118,10 @@ export function UsersListPage() {
     setTimeout(() => setAlert(null), 3000);
   };
 
-  const getApiErrorMessage = (err: unknown) =>
-    (err as any)?.response?.data?.message || (err as any)?.message || "An error occurred";
+  const getApiErrorMessage = (err: unknown) => {
+    const raw = (err as any)?.response?.data?.message || (err as any)?.message || "An error occurred";
+    return translateApiError(raw, lang);
+  };
 
   const { data, isLoading, isError } = useUsers({
     search,
@@ -196,7 +199,7 @@ export function UsersListPage() {
       qc.invalidateQueries({ queryKey: ["users"] });
       setForm(emptyUserForm);
       setShowAdd(false);
-      showAlert("success", `User "${form.fullName}" created successfully`);
+      showAlert("success", lang === "vi" ? `Tạo người dùng "${form.fullName}" thành công` : `User "${form.fullName}" created successfully`);
     } catch (e: any) {
       showAlert("error", getApiErrorMessage(e));
     } finally {
@@ -210,12 +213,12 @@ export function UsersListPage() {
 
 const handleResetPassword = async (user: UserItem) => {
   const password = window.prompt(
-    `Set a new password for ${user.fullName}`
+    lang === "vi" ? `Đặt mật khẩu mới cho ${user.fullName}` : `Set a new password for ${user.fullName}`
   );
   if (!password) return;
   try {
     await resetPassword.mutateAsync({ id: user.id, newPassword: password });
-    showAlert("success", `Password reset for "${user.fullName}" successfully`);
+    showAlert("success", lang === "vi" ? `Đặt lại mật khẩu cho "${user.fullName}" thành công` : `Password reset for "${user.fullName}" successfully`);
   } catch (e: any) {
     showAlert("error", getApiErrorMessage(e));
   }
@@ -223,13 +226,17 @@ const handleResetPassword = async (user: UserItem) => {
 
   const handleStatusToggle = async (user: UserItem) => {
     const nextStatus = user.status === "Active" ? "Inactive" : "Active";
-    const action = nextStatus === "Active" ? "activate" : "deactivate";
-    if (!confirm(`Are you sure you want to ${action} user "${user.fullName}"?`)) return;
+    const confirmMsg = lang === "vi"
+      ? `Bạn có chắc muốn ${nextStatus === "Active" ? "kích hoạt" : "vô hiệu hóa"} người dùng "${user.fullName}"?`
+      : `Are you sure you want to ${nextStatus === "Active" ? "activate" : "deactivate"} user "${user.fullName}"?`;
+    if (!confirm(confirmMsg)) return;
     try {
       await toggleStatus.mutateAsync({ id: user.id, isActive: nextStatus === "Active" });
       showAlert(
         "success",
-        `"${user.fullName}" has been ${nextStatus === "Active" ? "activated" : "deactivated"}`
+        lang === "vi"
+          ? `"${user.fullName}" đã được ${nextStatus === "Active" ? "kích hoạt" : "vô hiệu hóa"}`
+          : `"${user.fullName}" has been ${nextStatus === "Active" ? "activated" : "deactivated"}`
       );
     } catch (e: any) {
       showAlert("error", getApiErrorMessage(e));
@@ -303,7 +310,8 @@ const handleResetPassword = async (user: UserItem) => {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                maxLength={199}
+                onChange={(e) => { setSearch(e.target.value.slice(0, 199)); setPage(1); }}
                 placeholder={lang === "vi" ? "Tìm kiếm người dùng..." : "Search users..."}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
               />
@@ -412,24 +420,24 @@ const handleResetPassword = async (user: UserItem) => {
                 {lang === "vi" ? "Không thể tải dữ liệu người dùng." : "Unable to load users right now."}
               </div>
             ) : (
-              <table className="w-full">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-muted">
-                    <SortHeader label={lang === "vi" ? "NGƯỜI DÙNG" : "User"} sortKey="name" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "TỔ CHỨC" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "LOẠI ĐƠN VỊ" : "Org. Type"} sortKey="orgType" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "VAI TRÒ" : "Role"} sortKey="role" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "TRẠNG THÁI" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <SortHeader label={lang === "vi" ? "LIÊN HỆ" : "Contact"} sortKey="contact" sort={sort} onSort={toggle} className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap" />
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider whitespace-nowrap">{lang === "vi" ? "THAO TÁC" : "Actions"}</th>
+                  <tr className="bg-muted/60 border-b border-border">
+                    <SortHeader label={lang === "vi" ? "Người Dùng" : "User"} sortKey="name" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[220px]" />
+                    <SortHeader label={lang === "vi" ? "Tổ Chức" : "Organization"} sortKey="organization" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[140px]" />
+                    <SortHeader label={lang === "vi" ? "Loại Đơn Vị" : "Org. Type"} sortKey="orgType" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[110px]" />
+                    <SortHeader label={lang === "vi" ? "Vai Trò" : "Role"} sortKey="role" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[100px]" />
+                    <SortHeader label={lang === "vi" ? "Trạng Thái" : "Status"} sortKey="status" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[110px]" />
+                    <SortHeader label={lang === "vi" ? "Liên Hệ" : "Contact"} sortKey="contact" sort={sort} onSort={toggle} className="px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[180px]" />
+                    <th className="text-right px-4 py-2.5 text-[11px] font-medium text-muted-foreground/70 uppercase tracking-widest whitespace-nowrap min-w-[110px]">{lang === "vi" ? "Thao Tác" : "Actions"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {sortedUsers.map((user) => {
-const roleCfg = roleColors[user.role.toUpperCase()] || {
-                       bg: "#F5F5F5",
-                       color: "#666",
-                     };
+                    const roleCfg = roleColors[user.role.toUpperCase()] || {
+                      bg: "#F5F5F5",
+                      color: "#666",
+                    };
                     const staCfg = statusConfig[user.status];
                     const encodedName = encodeURIComponent(user.fullName);
                     const apiUrl = `https://ui-avatars.com/api/?name=${encodedName}&background=random&color=fff&rounded=true&size=128`;
@@ -438,7 +446,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                         key={user.id}
                         className="hover:bg-green-50/20 transition-colors group"
                       >
-                        <td className="px-5 py-4">
+                        <td className="px-4 py-3.5">
                           <div className="flex items-center gap-3">
                             <img
                               src={apiUrl}
@@ -455,14 +463,14 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                             </div>
                           </div>
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="px-4 py-3.5">
                           <div className="text-sm text-muted-foreground max-w-40 truncate">
                             {user.organization || "—"}
                           </div>
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="px-4 py-3.5">
                            <span
-                             className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                             className="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                              style={{
                                backgroundColor: (orgTypeColors[user.organizationType.toUpperCase()] || { bg: "#F5F5F5", color: "#666" }).bg,
                                color: (orgTypeColors[user.organizationType.toUpperCase()] || { bg: "#F5F5F5", color: "#666" }).color,
@@ -471,9 +479,9 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                              {user.organizationType || "—"}
                            </span>
                          </td>
-                         <td className="px-5 py-4">
+                         <td className="px-4 py-3.5">
                            <span
-                             className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                             className="px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                              style={{
                                backgroundColor: roleCfg.bg,
                                color: roleCfg.color,
@@ -482,10 +490,10 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                              {user.role}
                            </span>
                          </td>
-                        <td className="px-5 py-4">
+                        <td className="px-4 py-3.5">
                           <button
                             onClick={() => handleStatusToggle(user)}
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-2 whitespace-nowrap"
                             title="Toggle account status"
                           >
                             <div
@@ -493,23 +501,23 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                               style={{ background: staCfg.dot }}
                             />
                             <span
-                              className="text-sm"
+                              className="text-sm font-medium"
                               style={{ color: staCfg.color }}
                             >
                               {user.status}
                             </span>
                           </button>
                         </td>
-                        <td className="px-5 py-4">
-                          <div className="text-sm text-muted-foreground">
-                            {user.phone}
+                        <td className="px-4 py-3.5">
+                          <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                            {user.phone || "—"}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground truncate max-w-[200px]">
                             {user.email}
                           </div>
                         </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-1 opacity-100 transition-opacity">
+                        <td className="px-4 py-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity">
                              <button
                                onClick={() => setSelectedUser(user)}
                                className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-500 transition-colors"
@@ -524,7 +532,7 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                              >
                                <Key className="w-3.5 h-3.5" />
                              </button>
-<button
+                              <button
                                 onClick={() => handleStatusToggle(user)}
                                 className={`p-1.5 rounded-lg transition-colors ${
                                    user.status === "Active" 
@@ -816,20 +824,30 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                   <label className="text-sm font-medium text-foreground mb-1.5 block">
                     Role
                   </label>
-                  <select
-                    value={selectedUser.role}
-                    onChange={(e) =>
-                      setSelectedUser({
-                        ...selectedUser,
-                        role: e.target.value as UserRole,
-                      })
-                    }
-                    className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
-                  >
-                    {["MANAGER", "STAFF"].map((r) => (
-                      <option key={r} value={r}>{r}</option>
-                    ))}
-                  </select>
+                  {!isAdmin || selectedUser.role.toUpperCase() === "ADMIN" ? (
+                    <div
+                      className="w-full px-3 py-2.5 rounded-xl border border-border text-sm bg-muted text-muted-foreground cursor-not-allowed"
+                      title={!isAdmin ? (lang === "vi" ? "Chỉ Admin mới có quyền thay đổi vai trò" : "Only Admin can change roles") : (lang === "vi" ? "Không thể thay đổi vai trò Admin" : "Cannot change Admin role")}
+                    >
+                      {selectedUser.role.toUpperCase()}
+                      <span className="ml-2 text-xs opacity-60">🔒</span>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedUser.role}
+                      onChange={(e) =>
+                        setSelectedUser({
+                          ...selectedUser,
+                          role: e.target.value as UserRole,
+                        })
+                      }
+                      className="w-full px-3 py-2.5 rounded-xl border border-border text-sm outline-none bg-input-background"
+                    >
+                      {["MANAGER", "STAFF"].map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground mb-1.5 block">
@@ -881,9 +899,8 @@ const roleCfg = roleColors[user.role.toUpperCase()] || {
                           organization: selectedUser.organization,
                         },
                       });
-                      showAlert("success", `User "${selectedUser.fullName}" updated successfully`);
+                      showAlert("success", lang === "vi" ? `Cập nhật "${selectedUser.fullName}" thành công` : `User "${selectedUser.fullName}" updated successfully`);
                       setSelectedUser(null);
-                      showAlert("success", "User updated successfully");
                     } catch (e: any) {
                       showAlert("error", getApiErrorMessage(e));
                     }
