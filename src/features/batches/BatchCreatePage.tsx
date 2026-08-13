@@ -360,10 +360,12 @@ export function BatchCreatePage() {
               <ArrowLeft className="w-4 h-4" /> {lang === "vi" ? "Quay lại danh sách Lô hàng" : "Back to Batches"}
             </button>
             <h1 className="text-white" style={{ fontSize: 26, fontWeight: 800 }}>
-              Khởi Tạo Lô Hàng Mới
+              {lang === "vi" ? "Khởi Tạo Lô Hàng Mới" : "Create New Batch"}
             </h1>
             <p className="text-green-100 text-sm mt-0.5 opacity-90">
-              Khai báo mã lô nông sản — dữ liệu sẽ được mã hóa SHA-256 và ghi vào sổ cái Blockchain
+              {lang === "vi"
+                ? "Khai báo mã lô nông sản — dữ liệu sẽ được mã hóa SHA-256 và ghi vào sổ cái Blockchain"
+                : "Declare agricultural batch — data will be SHA-256 encrypted and recorded on the Blockchain ledger"}
             </p>
           </div>
           <div className="ml-auto flex flex-col items-center gap-2">
@@ -376,7 +378,7 @@ export function BatchCreatePage() {
             {/* Mini completion ring */}
             <div className="text-white text-xs font-bold text-center">
               <div className="text-lg font-extrabold leading-none">{completionScore}%</div>
-              <div className="text-[10px] text-green-200">Hoàn thành</div>
+              <div className="text-[10px] text-green-200">{lang === "vi" ? "Hoàn thành" : "Completed"}</div>
             </div>
           </div>
         </div>
@@ -424,12 +426,12 @@ export function BatchCreatePage() {
                 </div>
                 <div className="mt-3 space-y-1">
                   {[
-                    { label: "Sản phẩm", done: Boolean(form.productId || form.product) },
-                    { label: "Số lượng & Đơn vị", done: Number(form.quantity) > 0 && Boolean(form.unit || form.unitId) },
-                    { label: "Ngày sản xuất", done: Boolean(form.productionDate) },
-                    { label: "Địa chỉ trang trại", done: Boolean(form.location) },
-                    { label: "Tọa độ GPS", done: Boolean(form.gps) },
-                    { label: "Mã số vùng trồng", done: Boolean(msvt) },
+                    { label: lang === "vi" ? "Sản phẩm" : "Product", done: Boolean(form.productId || form.product) },
+                    { label: lang === "vi" ? "Số lượng & Đơn vị" : "Quantity & Unit", done: Number(form.quantity) > 0 && Boolean(form.unit || form.unitId) },
+                    { label: lang === "vi" ? "Ngày sản xuất" : "Production Date", done: Boolean(form.productionDate) },
+                    { label: lang === "vi" ? "Địa chỉ trang trại" : "Farm Address", done: Boolean(form.location) },
+                    { label: lang === "vi" ? "Tọa độ GPS" : "GPS Coordinates", done: Boolean(form.gps) },
+                    { label: lang === "vi" ? "Mã số vùng trồng" : "Planting Zone Code", done: Boolean(msvt) },
                   ].map((check) => (
                     <div key={check.label} className="flex items-center gap-2 text-[11px]">
                       <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 ${check.done ? "bg-green-500" : "bg-muted"}`}>
@@ -454,8 +456,8 @@ export function BatchCreatePage() {
                     <Package className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-bold text-foreground text-sm">1. Thông tin Sản phẩm (Product Details)</div>
-                    <div className="text-xs text-muted-foreground">Chọn sản phẩm nông sản và danh mục liên quan</div>
+                    <div className="font-bold text-foreground text-sm">{lang === "vi" ? "1. Thông tin Sản phẩm (Product Details)" : "1. Product Details"}</div>
+                    <div className="text-xs text-muted-foreground">{lang === "vi" ? "Chọn sản phẩm nông sản và danh mục liên quan" : "Select agricultural product and category"}</div>
                   </div>
                   {(form.productId || form.product) && (
                     <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
@@ -586,8 +588,8 @@ export function BatchCreatePage() {
                     <Calendar className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-bold text-foreground text-sm">2. Sản xuất &amp; Số lượng (Production &amp; Volume)</div>
-                    <div className="text-xs text-muted-foreground">Quy mô sản xuất, đơn vị tính, ngày khởi tạo và hạn sử dụng</div>
+                    <div className="font-bold text-foreground text-sm">{lang === "vi" ? "2. Sản xuất & Số lượng (Production & Volume)" : "2. Production & Quantity"}</div>
+                    <div className="text-xs text-muted-foreground">{lang === "vi" ? "Quy mô sản xuất, đơn vị tính, ngày khởi tạo và hạn sử dụng" : "Production scale, unit, creation date and expiry"}</div>
                   </div>
                   {Number(form.quantity) > 0 && (form.unit || form.unitId) && form.productionDate && (
                     <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
@@ -622,7 +624,7 @@ export function BatchCreatePage() {
                   </label>
 
                   <label className="space-y-1.5">
-                    <FieldLabel required>Ngày bắt đầu sản xuất / Gieo trồng</FieldLabel>
+                    <FieldLabel required>{lang === "vi" ? "Ngày bắt đầu sản xuất / Gieo trồng" : "Production / Planting Date"}</FieldLabel>
                     <input
                       type="date"
                       value={form.productionDate}
@@ -646,7 +648,7 @@ export function BatchCreatePage() {
                     <div className="md:col-span-2 p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200 flex items-center gap-3">
                       <Sparkles className="w-4 h-4 text-emerald-700 flex-shrink-0" />
                       <div>
-                        <div className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider">Mã Lô Dự Kiến Hệ Thống Tạo</div>
+                        <div className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider">{lang === "vi" ? "Mã Lô Dự Kiến Hệ Thống Tạo" : "System Generated Batch Code Preview"}</div>
                         <code className="font-mono text-sm font-bold text-emerald-900">{previewCode}</code>
                       </div>
                     </div>
@@ -661,8 +663,8 @@ export function BatchCreatePage() {
                     <Leaf className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-bold text-foreground text-sm">3. Nguồn gốc Trang trại &amp; Ghi chú (Origin &amp; Notes)</div>
-                    <div className="text-xs text-muted-foreground">Đơn vị chủ quản, mã số vùng trồng và ghi chú bổ sung</div>
+                    <div className="font-bold text-foreground text-sm">{lang === "vi" ? "3. Nguồn gốc Trang trại & Ghi chú (Origin & Notes)" : "3. Origin & Notes"}</div>
+                    <div className="text-xs text-muted-foreground">{lang === "vi" ? "Đơn vị chủ quản, mã số vùng trồng và ghi chú bổ sung" : "Managing unit, planting zone code and additional notes"}</div>
                   </div>
                   {form.location && form.gps && (
                     <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
@@ -674,7 +676,7 @@ export function BatchCreatePage() {
                   {/* Location Mapping Action Bar */}
                   <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 md:col-span-2">
                     <div>
-                      <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">Interactive Location Mapping</span>
+                      <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">{lang === "vi" ? "Bản đồ Tương tác Vị trí" : "Interactive Location Mapping"}</span>
                       <p className="text-xs text-emerald-600 mt-0.5">{lang === "vi" ? "Chọn vị trí trên bản đồ tương tác hoặc định vị GPS thiết bị hiện tại" : "Select location on interactive map or use current device GPS"}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -683,7 +685,7 @@ export function BatchCreatePage() {
                         onClick={() => setIsMapPickerOpen(true)}
                         className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5"
                       >
-                        <Map className="w-4 h-4" /> Pick on Map
+                        <Map className="w-4 h-4" /> {lang === "vi" ? "Chọn trên Bản đồ" : "Pick on Map"}
                       </button>
                       <button
                         type="button"
@@ -692,7 +694,7 @@ export function BatchCreatePage() {
                         className="px-3.5 py-2 bg-card hover:bg-emerald-100 disabled:opacity-50 text-emerald-700 border border-emerald-300 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5"
                       >
                         <LocateFixed className={`w-4 h-4 ${detectingGps ? "animate-spin" : ""}`} />
-                        {detectingGps ? "Đang định vị..." : "Use Device GPS"}
+                        {detectingGps ? (lang === "vi" ? "Đang định vị..." : "Locating...") : (lang === "vi" ? "Dùng GPS thiết bị" : "Use Device GPS")}
                       </button>
                     </div>
                   </div>
@@ -735,12 +737,12 @@ export function BatchCreatePage() {
                   </label>
 
                   <label className="space-y-1.5">
-                    <FieldLabel>Vùng canh tác / Khu vực gieo trồng</FieldLabel>
+                    <FieldLabel>{lang === "vi" ? "Vùng canh tác / Khu vực gieo trồng" : "Farming / Planting Area"}</FieldLabel>
                     <input
                       value={form.productionArea || ""}
                       onChange={(e) => handleChange("productionArea", e.target.value)}
                       className={inputClass}
-                      placeholder="vd: Khu vực A - Nông trường 1, Bình Thuận"
+                      placeholder={lang === "vi" ? "vd: Khu vực A - Nông trường 1, Bình Thuận" : "e.g. Area A - Farm 1, Binh Thuan"}
                     />
                   </label>
 
@@ -748,7 +750,7 @@ export function BatchCreatePage() {
                   <label className="space-y-1.5">
                     <FieldLabel>
                       <Hash className="w-3 h-3 text-emerald-600" />
-                      Mã số vùng trồng (MSVT - Bộ NN&amp;PTNT)
+                      {lang === "vi" ? "Mã số vùng trồng (MSVT - Bộ NN&PTNT)" : "Planting Zone Code (MARD Standard)"}
                     </FieldLabel>
                     <div className="relative flex items-center">
                       <span className="absolute left-3 text-[10px] text-emerald-700 font-bold font-mono">MSVT</span>
@@ -760,7 +762,7 @@ export function BatchCreatePage() {
                         maxLength={20}
                       />
                     </div>
-                    <p className="text-[10px] text-muted-foreground">Mã phân bổ bởi Cục Trồng Trọt — Bộ Nông nghiệp & PTNT Việt Nam</p>
+                    <p className="text-[10px] text-muted-foreground">{lang === "vi" ? "Mã phân bổ bởi Cục Trồng Trọt — Bộ Nông nghiệp & PTNT Việt Nam" : "Code allocated by Department of Crop Production - MARD Vietnam"}</p>
                   </label>
 
                   <div className="space-y-1.5">
@@ -783,7 +785,7 @@ export function BatchCreatePage() {
                     </div>
                     {form.gps && (
                       <div className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                        <CheckCircle className="w-3 h-3 text-green-500" /> Tọa độ đã nhập ({form.gps})
+                        <CheckCircle className="w-3 h-3 text-green-500" /> {lang === "vi" ? "Tọa độ đã nhập" : "Entered coordinates"} ({form.gps})
                       </div>
                     )}
                   </div>
@@ -807,8 +809,8 @@ export function BatchCreatePage() {
                     <QrCode className="w-4 h-4 text-emerald-700" />
                   </div>
                   <div>
-                    <div className="font-bold text-foreground text-sm">4. Xem Lại &amp; Xác Nhận Thông Tin Lô Hàng</div>
-                    <div className="text-xs text-muted-foreground">Kiểm tra thông tin trước khi ghi vào sổ cái AgriTrace Blockchain</div>
+                    <div className="font-bold text-foreground text-sm">{lang === "vi" ? "4. Xem Lại & Xác Nhận Thông Tin Lô Hàng" : "4. Review & Confirm Batch Details"}</div>
+                    <div className="text-xs text-muted-foreground">{lang === "vi" ? "Kiểm tra thông tin trước khi ghi vào sổ cái AgriTrace Blockchain" : "Review information before committing to AgriTrace Blockchain ledger"}</div>
                   </div>
                 </div>
                 <div className="p-6">
@@ -816,16 +818,16 @@ export function BatchCreatePage() {
                     {/* Left: summary info */}
                     <div className="space-y-2.5">
                       {[
-                        { label: "Sản phẩm", value: form.productName || "(chưa chọn)", highlight: !form.productName },
-                        { label: "Danh mục", value: form.category || "—" },
-                        { label: "Số lượng", value: form.quantity ? `${Number(form.quantity).toLocaleString()} ${form.unit || ""}` : "(chưa nhập)", highlight: !form.quantity },
-                        { label: "Ngày sản xuất", value: form.productionDate || "(chưa nhập)", highlight: !form.productionDate },
-                        { label: "Hạn sử dụng", value: form.expiryDate || "Không giới hạn" },
-                        { label: "Trang trại", value: form.farm || user?.organization || "—" },
-                        { label: "Người lập hồ sơ", value: form.farmer || user?.name || "—" },
-                        { label: "Địa chỉ", value: form.location || "(chưa nhập)" },
-                        { label: "GPS", value: form.gps || "(chưa nhập)" },
-                        { label: "MSVT", value: msvt || "(chưa nhập)" },
+                        { label: lang === "vi" ? "Sản phẩm" : "Product", value: form.productName || (lang === "vi" ? "(chưa chọn)" : "(not selected)"), highlight: !form.productName },
+                        { label: lang === "vi" ? "Danh mục" : "Category", value: form.category || "—" },
+                        { label: lang === "vi" ? "Số lượng" : "Quantity", value: form.quantity ? `${Number(form.quantity).toLocaleString()} ${form.unit || ""}` : (lang === "vi" ? "(chưa nhập)" : "(not entered)"), highlight: !form.quantity },
+                        { label: lang === "vi" ? "Ngày sản xuất" : "Production Date", value: form.productionDate || (lang === "vi" ? "(chưa nhập)" : "(not entered)"), highlight: !form.productionDate },
+                        { label: lang === "vi" ? "Hạn sử dụng" : "Expiry Date", value: form.expiryDate || (lang === "vi" ? "Không giới hạn" : "No Expiry") },
+                        { label: lang === "vi" ? "Trang trại" : "Farm", value: form.farm || user?.organization || "—" },
+                        { label: lang === "vi" ? "Người lập hồ sơ" : "Profile Creator", value: form.farmer || user?.name || "—" },
+                        { label: lang === "vi" ? "Địa chỉ" : "Address", value: form.location || (lang === "vi" ? "(chưa nhập)" : "(not entered)") },
+                        { label: lang === "vi" ? "GPS" : "GPS", value: form.gps || (lang === "vi" ? "(chưa nhập)" : "(not entered)") },
+                        { label: lang === "vi" ? "MSVT" : "Planting Code", value: msvt || (lang === "vi" ? "(chưa nhập)" : "(not entered)") },
                       ].map(({ label, value, highlight }) => (
                         <div key={label} className="flex items-center justify-between text-xs py-1.5 border-b border-border">
                           <span className="text-muted-foreground font-medium">{label}</span>
@@ -839,7 +841,7 @@ export function BatchCreatePage() {
                     {/* Right: Batch code preview + QR concept */}
                     <div className="flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-green-50 to-emerald-100/50 rounded-2xl p-6 border border-emerald-200/60">
                       <div className="text-center space-y-1">
-                        <div className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider">Mã Lô Hàng Dự Kiến</div>
+                        <div className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider">{lang === "vi" ? "Mã Lô Hàng Dự Kiến" : "Expected Batch Code"}</div>
                         <code className="text-base font-extrabold font-mono text-green-900 block">
                           {previewCode}
                         </code>
@@ -870,7 +872,7 @@ export function BatchCreatePage() {
                       </div>
 
                       <p className="text-[11px] text-emerald-600 text-center leading-relaxed font-medium">
-                        Mã QR ISO/IEC 18004 sẽ được tạo tự động sau khi xác nhận lô hàng
+                        {lang === "vi" ? "Mã QR ISO/IEC 18004 sẽ được tạo tự động sau khi xác nhận lô hàng" : "ISO/IEC 18004 QR Code will be automatically generated upon batch confirmation"}
                       </p>
 
                       <div className="flex items-center gap-2 text-[10px] text-emerald-800 bg-emerald-100 px-3 py-1.5 rounded-full font-bold">
@@ -884,9 +886,9 @@ export function BatchCreatePage() {
                   <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-100 flex items-start gap-3 text-xs text-blue-800">
                     <FileText className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-bold mb-0.5">Cam kết Minh Bạch Dữ Liệu (Blockchain Immutability)</div>
+                      <div className="font-bold mb-0.5">{lang === "vi" ? "Cam kết Minh Bạch Dữ Liệu (Blockchain Immutability)" : "Blockchain Immutability Commitment"}</div>
                       <div className="text-blue-600 leading-relaxed">
-                        Sau khi tạo, thông tin lô hàng sẽ được đóng dấu thời gian và mã hóa SHA-256 trên sổ cái AgriTrace — không thể chỉnh sửa hay xóa nhật ký sự kiện (Append-only). Mọi cập nhật đều tạo ra sự kiện mới được ghi nhận đầy đủ.
+                        {lang === "vi" ? "Sau khi tạo, thông tin lô hàng sẽ được đóng dấu thời gian và mã hóa SHA-256 trên sổ cái AgriTrace — không thể chỉnh sửa hay xóa nhật ký sự kiện (Append-only). Mọi cập nhật đều tạo ra sự kiện mới được ghi nhận đầy đủ." : "Once created, batch information is timestamped and SHA-256 encrypted on the AgriTrace ledger — event logs cannot be edited or deleted (Append-only). Any updates create new fully logged events."}
                       </div>
                     </div>
                   </div>
@@ -910,7 +912,7 @@ export function BatchCreatePage() {
                   onClick={() => navigate("/app/batches")}
                   className="px-5 py-2.5 rounded-xl border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors"
                 >
-                  Hủy bỏ
+                  {lang === "vi" ? "Hủy bỏ" : "Cancel"}
                 </button>
 
                 <div className="flex items-center gap-3">
@@ -921,7 +923,7 @@ export function BatchCreatePage() {
                       onClick={() => scrollToSection("preview")}
                       className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-emerald-300 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition-colors"
                     >
-                      Xem trước lô hàng <ArrowRight className="w-4 h-4" />
+                      {lang === "vi" ? "Xem trước lô hàng" : "Preview Batch"} <ArrowRight className="w-4 h-4" />
                     </button>
                   )}
 
@@ -932,7 +934,7 @@ export function BatchCreatePage() {
                     style={{ background: "linear-gradient(135deg, #2E7D32, #388E3C)" }}
                   >
                     <Save className="w-4 h-4" />
-                    {createBatch.isPending ? "Đang khởi tạo & mã hoá..." : "Khởi Tạo Lô Hàng"}
+                    {createBatch.isPending ? (lang === "vi" ? "Đang khởi tạo & mã hoá..." : "Creating & Encrypting...") : (lang === "vi" ? "Khởi Tạo Lô Hàng" : "Create Batch")}
                   </button>
                 </div>
               </div>
