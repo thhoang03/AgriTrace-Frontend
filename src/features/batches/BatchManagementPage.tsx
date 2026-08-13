@@ -217,6 +217,7 @@ export function BatchManagementPage() {
           {statusCounts.filter((s) => s.count > 0).map(({ status, count }) => {
             const cfg = statusConfig[status] ?? { bg: "#F3F4F6", color: "#6B7280", label: status };
             const statusLabelMap: Record<string, string> = {
+              Created: "Đã tạo",
               Harvested: "Đã thu hoạch",
               Processing: "Đang chế biến",
               Packaged: "Đã đóng gói",
@@ -314,6 +315,7 @@ export function BatchManagementPage() {
                   const cfg = statusConfig[s];
                   const count = normalizedBatches.filter((b) => b.status === s).length;
                   const statusLabelMap: Record<string, string> = {
+                    Created: "Đã tạo",
                     Harvested: "Đã thu hoạch",
                     Processing: "Đang chế biến",
                     Packaged: "Đã đóng gói",
@@ -429,6 +431,7 @@ export function BatchManagementPage() {
                     {paginated.map((batch) => {
                       const cfg = statusConfig[batch.status] ?? { bg: "#F3F4F6", color: "#6B7280", label: batch.status };
                       const statusLabelMap: Record<string, string> = {
+                        Created: "Đã tạo",
                         Harvested: "Đã thu hoạch",
                         Processing: "Đang chế biến",
                         Packaged: "Đã đóng gói",
@@ -458,7 +461,7 @@ export function BatchManagementPage() {
                               <button
                                 onClick={(e) => { e.stopPropagation(); setShowQRBatch(batch); }}
                                 className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
-                                title="View QR Code"
+                                title={lang === "vi" ? "Xem mã QR" : "View QR Code"}
                               >
                                 <QrCode className="w-3.5 h-3.5" />
                               </button>
@@ -494,7 +497,7 @@ export function BatchManagementPage() {
                               <button
                                 onClick={() => navigate(`/app/batches/${batch.id}`)}
                                 className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-green-600 transition-colors"
-                                title="View details"
+                                title={lang === "vi" ? "Xem chi tiết" : "View details"}
                               >
                                 <Eye className="w-4 h-4" />
                               </button>
@@ -517,13 +520,13 @@ export function BatchManagementPage() {
                                         onClick={() => { setSplitTarget(batch); setOpenMenuId(null); }}
                                         className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center gap-2"
                                       >
-                                        <Scissors className="w-4 h-4 text-blue-500" /> Split Batch
+                                        <Scissors className="w-4 h-4 text-blue-500" /> {lang === "vi" ? "Tách Lô Hàng" : "Split Batch"}
                                       </button>
                                       <button
                                         onClick={() => { setMergeTarget(batch); setOpenMenuId(null); }}
                                         className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center gap-2"
                                       >
-                                        <Merge className="w-4 h-4 text-purple-500" /> Merge Batches
+                                        <Merge className="w-4 h-4 text-purple-500" /> {lang === "vi" ? "Gộp Lô Hàng" : "Merge Batches"}
                                       </button>
                                       <div className="border-t border-border my-1"></div>
                                       <button
@@ -541,7 +544,7 @@ export function BatchManagementPage() {
                                         }`}
                                       >
                                         <Power className="w-4 h-4" /> 
-                                        {batch.isDeleted ? "Set Active" : "Set Inactive"}
+                                        {batch.isDeleted ? (lang === "vi" ? "Kích hoạt" : "Set Active") : (lang === "vi" ? "Ngưng hoạt động" : "Set Inactive")}
                                       </button>
                                     </div>
                                   </>
@@ -559,7 +562,9 @@ export function BatchManagementPage() {
               {/* Pagination */}
               <div className="flex items-center justify-between px-6 py-4 border-t border-border">
                 <span className="text-sm text-muted-foreground">
-                  Page {page} of {totalPages || 1} · {sorted.length} results
+                  {lang === "vi"
+                    ? <>Trang <span className="font-semibold text-foreground">{page}</span> / <span className="font-semibold text-foreground">{totalPages || 1}</span> · {sorted.length} kết quả</>
+                    : <>Page <span className="font-semibold text-foreground">{page}</span> of <span className="font-semibold text-foreground">{totalPages || 1}</span> · {sorted.length} results</>}
                 </span>
                 <div className="flex items-center gap-1">
                   <button
@@ -601,7 +606,7 @@ export function BatchManagementPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowQRBatch(null)}>
           <div className="bg-card rounded-2xl p-8 max-w-xs w-full mx-4" onClick={(e) => e.stopPropagation()} style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-foreground">QR Code</h3>
+              <h3 className="font-semibold text-foreground">{lang === "vi" ? "Mã QR" : "QR Code"}</h3>
               <button onClick={() => setShowQRBatch(null)} className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground"><X className="w-4 h-4" /></button>
             </div>
             <div className="flex flex-col items-center gap-4">
@@ -636,14 +641,14 @@ export function BatchManagementPage() {
                   }}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-border text-foreground hover:bg-muted flex items-center justify-center gap-1.5"
                 >
-                  <Download className="w-3.5 h-3.5" /> Download
+                  <Download className="w-3.5 h-3.5" /> {lang === "vi" ? "Tải xuống" : "Download"}
                 </button>
                 <button
                   onClick={() => window.print()}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-1.5"
                   style={{ background: "#2E7D32" }}
                 >
-                  Print
+                  {lang === "vi" ? "In" : "Print"}
                 </button>
               </div>
             </div>
