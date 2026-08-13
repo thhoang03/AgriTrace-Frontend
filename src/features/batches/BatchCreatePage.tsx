@@ -266,9 +266,17 @@ export function BatchCreatePage() {
         gpsLocation: coordsStr || curr.gpsLocation,
         productionArea: addressOnly || curr.productionArea,
       }));
-      toast.success("Đã lấy tọa độ GPS thành công!");
+      toast.success(
+        lang === "vi"
+          ? "Đã lấy tọa độ GPS thành công!"
+          : "GPS coordinates fetched successfully!"
+      );
     } catch (err: any) {
-      toast.error("Không thể lấy GPS. Vui lòng chọn thủ công trên bản đồ.");
+      toast.error(
+        lang === "vi"
+          ? "Không thể lấy GPS. Vui lòng chọn thủ công trên bản đồ."
+          : "Failed to fetch GPS location. Please select manually on the map."
+      );
     } finally {
       setDetectingGps(false);
     }
@@ -322,11 +330,20 @@ export function BatchCreatePage() {
       };
       const result = await createBatch.mutateAsync(payload);
       const newBatchId = result.data.id;
-      toast.success("Lô hàng đã được khởi tạo thành công trên hệ thống AgriTrace!");
+      toast.success(
+        lang === "vi"
+          ? "Lô hàng đã được khởi tạo thành công trên hệ thống AgriTrace!"
+          : "Batch has been created successfully on AgriTrace system!"
+      );
       navigate(`/app/batches/${newBatchId}`);
     } catch (err: any) {
       const serverErrors = err?.response?.data?.errors;
-      let msg = err?.response?.data?.message || err?.message || lang === "vi" ? "Không thể tạo lô hàng lúc này. Vui lòng thử lại." : "Cannot create batch at this time. Please try again.";
+      let msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        (lang === "vi"
+          ? "Không thể tạo lô hàng lúc này. Vui lòng thử lại."
+          : "Cannot create batch at this time. Please try again.");
       if (Array.isArray(serverErrors) && serverErrors.length > 0) {
         msg = serverErrors.map((e: any) => e.message || e.field).join(" | ");
       }

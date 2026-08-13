@@ -76,7 +76,7 @@ export function SplitBatchModal({ isOpen, onClose, batch, onSuccess }: SplitBatc
         err?.response?.data?.message ||
         err?.response?.data?.title ||
         err?.message ||
-        "Failed to split batch.";
+        (lang === "vi" ? "Không thể tách lô hàng." : "Failed to split batch.");
       setError(msg);
     } finally {
       setLoading(false);

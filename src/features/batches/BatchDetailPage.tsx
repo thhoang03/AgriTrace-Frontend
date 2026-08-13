@@ -123,9 +123,17 @@ export function BatchDetailPage() {
     }
     try {
       await navigator.clipboard.writeText(publicTraceUrl);
-      alert("Đã sao chép liên kết tra cứu công khai vào clipboard!");
+      alert(
+        lang === "vi"
+          ? "Đã sao chép liên kết tra cứu công khai vào clipboard!"
+          : "Public trace URL copied to clipboard!"
+      );
     } catch {
-      alert(`Liên kết tra cứu công khai: ${publicTraceUrl}`);
+      alert(
+        (lang === "vi"
+          ? "Liên kết tra cứu công khai: "
+          : "Public trace URL: ") + publicTraceUrl
+      );
     }
   };
 

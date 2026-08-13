@@ -76,7 +76,7 @@ export function MergeBatchModal({ isOpen, onClose, availableBatches, onSuccess }
         err?.response?.data?.message ||
         err?.response?.data?.title ||
         err?.message ||
-        "Failed to merge batches.";
+        (lang === "vi" ? "Không thể gộp lô hàng." : "Failed to merge batches.");
       setError(msg);
     } finally {
       setLoading(false);
