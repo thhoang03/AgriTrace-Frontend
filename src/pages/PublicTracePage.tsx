@@ -6,7 +6,7 @@ import {
   ArrowLeft, Leaf, Award, AlertTriangle, GitBranch, GitMerge, ShieldCheck,
   Copy, RefreshCw, Layers, Microscope, PlusCircle, Inbox, Factory,
   Package, Truck, Boxes, Store, ClipboardCheck,
-  Lock, Printer, ZoomIn, User,
+  Lock, Printer, ZoomIn,
   Eye, X
 } from "lucide-react";
 import { publicTraceApi } from "../features/public-trace/public-trace.api";
@@ -451,14 +451,6 @@ export function PublicTracePage() {
                             <div>
                               <div className="text-[10px] text-gray-400 font-bold uppercase">{lang === "vi" ? "Thời gian ghi nhận" : "Recorded Timestamp"}</div>
                               <div className="font-bold text-gray-900">{event.time || (lang === "vi" ? "Chưa cập nhật" : "Not provided")}</div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-2.5 bg-gray-50 p-3 rounded-xl border border-gray-100 sm:col-span-2">
-                            <User className="w-4 h-4 text-green-700 flex-shrink-0 mt-0.5" />
-                            <div>
-                              <div className="text-[10px] text-gray-400 font-bold uppercase">{lang === "vi" ? "Người tạo sự kiện" : "Recorded By"}</div>
-                              <div className="font-bold text-gray-900">{event.performedByName || (lang === "vi" ? "Chưa cập nhật" : "Not provided")}</div>
                             </div>
                           </div>
                         </div>
